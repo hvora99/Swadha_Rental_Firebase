@@ -13,7 +13,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -23,16 +22,12 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.JsonArrayRequest;
-import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.material.button.MaterialButton;
@@ -346,12 +341,14 @@ public class NewBookingActivity extends AppCompatActivity {
                         check.setOnClickListener(v -> {
 
                             if(check.isChecked()){
-                                selectedItems.add(item);
-                            }else{
-                                selectedItems.remove(item);
-                            }
 
-                            updateSelectedItemsUI();
+                                showRentDepositDialog(item, check);
+
+                            }else{
+
+                                selectedItems.remove(item);
+                                updateSelectedItemsUI();
+                            }
                         });
 
                         return convertView;
@@ -436,18 +433,65 @@ public class NewBookingActivity extends AppCompatActivity {
                 return;
             }
 
-            if(selectedItems.contains(selected)){
-                selectedItems.remove(selected);
+            if(!selectedItems.contains(selected)){
+                showRentDepositDialog(selected,null);
             }else{
-                selectedItems.add(selected);
+                selectedItems.remove(selected);
+                updateSelectedItemsUI();
             }
 
-            updateSelectedItemsUI();
         });
 
         dialog.show();
     }
 
+    private void showRentDepositDialog(ItemModel item, CheckBox check){
+
+        View view = getLayoutInflater().inflate(R.layout.dialog_rent_deposit,null);
+
+        EditText etRent = view.findViewById(R.id.etRent);
+        EditText etDeposit = view.findViewById(R.id.etDeposit);
+
+        etRent.setText(String.valueOf(item.getRent()));
+        etDeposit.setText(String.valueOf(item.getDeposit()));
+
+        new AlertDialog.Builder(this)
+                .setTitle("Item : " + item.getItemNo())
+                .setView(view)
+                .setPositiveButton("Save",(d,w)->{
+
+                    try{
+
+                        double rent = Double.parseDouble(etRent.getText().toString());
+                        double deposit = Double.parseDouble(etDeposit.getText().toString());
+
+                        item.setRent(rent);
+                        item.setDeposit(deposit);
+
+                        if(!selectedItems.contains(item)){
+                            selectedItems.add(item);
+                        }
+
+                        updateSelectedItemsUI();
+
+                    }catch(Exception e){
+                        Toast.makeText(this,"Invalid value",Toast.LENGTH_SHORT).show();
+
+                        if(check != null){
+                            check.setChecked(false);
+                        }
+                    }
+
+                })
+                .setNegativeButton("Cancel",(d,w)->{
+
+                    if(check != null){
+                        check.setChecked(false);
+                    }
+
+                })
+                .show();
+    }
     private void updateSelectedItemsUI(){
 
         layoutSelectedItems.removeAllViews();
@@ -512,7 +556,9 @@ public class NewBookingActivity extends AppCompatActivity {
                                 pickupMs,
                                 returnMs,
                                 washMs,
-                                item.isRequiresWash()
+                                item.isRequiresWash(),
+                                item.getRent(),       // ⭐ add this
+                                item.getDeposit()     // ⭐ add this
                         )
                 );
             }
@@ -532,7 +578,7 @@ public class NewBookingActivity extends AppCompatActivity {
         });
 
         etTotalRent.setText(String.valueOf(totalRent));
-        SuggestedDeposit.setText("₹ " + totalDeposit);
+        SuggestedDeposit.setText(String.format(Locale.getDefault(),"₹ %,.0f", totalDeposit));
         if(RentPaidNow.getText().toString().isEmpty()){
             RentPaidNow.setText("0");
         }
@@ -956,7 +1002,8 @@ public class NewBookingActivity extends AppCompatActivity {
                 itemObj.put("returnMs", item.getReturnMs());
                 itemObj.put("washMs", item.getWashMs());
                 itemObj.put("requiresWash", item.isRequiresWash());
-
+                itemObj.put("rent", item.getRent());
+                itemObj.put("deposit", item.getDeposit());
                 itemsArray.put(itemObj);
             }
 
@@ -1020,60 +1067,40 @@ public class NewBookingActivity extends AppCompatActivity {
 
     private void setupCurrencyFormatter(EditText editText){
 
-        editText.addTextChangedListener(new TextWatcher(){
+        editText.setOnFocusChangeListener((v, hasFocus) -> {
 
-            private String current = "";
+            String text = editText.getText().toString().replaceAll("[₹,\\s]", "");
 
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after){}
+            if(hasFocus){
 
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count){}
-
-            @Override
-            public void afterTextChanged(Editable s){
-
-                if(s.toString().equals(current)){
-                    return;
+                // Remove formatting when user starts editing
+                if(!text.isEmpty()){
+                    editText.setText(text);
+                    editText.setSelection(editText.getText().length());
                 }
 
-                editText.removeTextChangedListener(this);
+            }else{
 
-                String clean = s.toString().replaceAll("[₹,\\s]", "");
-
-                if(clean.isEmpty()){
-                    current = "";
-                    editText.setText("");
-                    editText.addTextChangedListener(this);
-                    return;
-                }
+                if(text.isEmpty()) return;
 
                 try{
 
-                    long parsed = Long.parseLong(clean);
+                    double value = Double.parseDouble(text);
 
-                    String formatted = String.format("₹ %,d", parsed);
-
-                    current = formatted;
+                    String formatted = String.format(Locale.getDefault(),"₹ %,.2f", value);
 
                     editText.setText(formatted);
-                    editText.setSelection(formatted.length());
 
-                }catch(NumberFormatException e){
-                    e.printStackTrace();
-                }
-
-                editText.addTextChangedListener(this);
+                }catch(Exception ignored){}
             }
         });
     }
-
-    private long getCurrencyValue(EditText et){
+    private double getCurrencyValue(EditText et){
 
         String clean = et.getText().toString().replaceAll("[₹,\\s]", "");
 
         if(clean.isEmpty()) return 0;
 
-        return Long.parseLong(clean);
+        return Double.parseDouble(clean);
     }
 }

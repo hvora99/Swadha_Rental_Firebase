@@ -26,6 +26,7 @@ public class RentalBooking {
     private String orderId;
     private List<ItemStatus> items = new ArrayList<>();
 
+    private double rent;
 
     public RentalBooking(String timestamp,
                          String orderId,

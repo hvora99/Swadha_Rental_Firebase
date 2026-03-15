@@ -41,6 +41,15 @@ public class ItemModel {
     public String getStatus() {
         return status;
     }
+
+    public void setRent(double rent) {
+        this.rent = rent;
+    }
+
+    public void setDeposit(double deposit) {
+        this.deposit = deposit;
+    }
+
     @Override
     public String toString() {
         return itemNo + " - " + itemName;
