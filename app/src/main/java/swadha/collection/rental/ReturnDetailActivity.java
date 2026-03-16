@@ -58,6 +58,9 @@ public class ReturnDetailActivity extends AppCompatActivity {
     private RequestQueue queue;
     private boolean isProcessing = false;
 
+    private static final String ACTION_PICKUP = "pickup";
+    private static final String ACTION_RETURN = "return";
+    private static final String ACTION_CANCEL = "cancel";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -275,8 +278,36 @@ public class ReturnDetailActivity extends AppCompatActivity {
                     balance
             );
         });
+    }
 
+    private double calculateAmount(String action, ArrayList<RentalBooking.ItemStatus> items, ListView listView){
 
+        double amount = 0;
+
+        for(int i=0;i<items.size();i++){
+
+            if(listView.isItemChecked(i)){
+
+                RentalBooking.ItemStatus item = items.get(i);
+
+                switch(action){
+
+                    case ACTION_PICKUP:
+                        amount += item.getBalance();
+                        break;
+
+                    case ACTION_RETURN:
+                        amount += item.getDeposit();
+                        break;
+
+                    case ACTION_CANCEL:
+                        amount += item.getDeposit() + item.getRentPaid();
+                        break;
+                }
+            }
+        }
+
+        return amount;
     }
 
     private void updateButtonStates(){
@@ -381,9 +412,10 @@ public class ReturnDetailActivity extends AppCompatActivity {
                     item.getItemNo()
                             + " - "
                             + item.getItemName()
-                            + " ("
-                            + item.getStatus()
-                            + ")";
+                            + "  |  "
+                            + "Rent ₹" + item.getRent()
+                            + "  |  "
+                            + item.getStatus();
 
             checked[i] = false;
         }
@@ -405,21 +437,7 @@ public class ReturnDetailActivity extends AppCompatActivity {
         EditText amountInput = view.findViewById(R.id.etRefund);
 
 
-        if(action.equals("pickup")){
-            amountInput.setText(String.valueOf(totalRent - rentPaid));
-            amountInput.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
-
-        }
-        else if(action.equals("return")){
-            amountInput.setText(String.valueOf(deposit));
-            amountInput.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
-
-        }
-        else if(action.equals("cancel")){
-            amountInput.setText(String.valueOf(deposit + rentPaid));
-            amountInput.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_DECIMAL);
-
-        }
+        amountInput.setText("0");
 
         ArrayAdapter<String> adapter =
                 new ArrayAdapter<>(this,
@@ -433,83 +451,46 @@ public class ReturnDetailActivity extends AppCompatActivity {
 
             for(int i=0;i<items.size();i++){
 
-                String status = items.get(i).getStatus();
+                RentalBooking.ItemStatus item = items.get(i);
 
-                boolean disable = false;
+                boolean selectable = isItemSelectable(action, item);
 
-                if(action.equals("pickup") && status.equals("PickedUp")){
-                    disable = true;
-                }
-                else if(action.equals("return") && status.equals("Returned")){
-                    disable = true;
-                }
-                else if(action.equals("cancel") && status.equals("Cancelled")){
-                    disable = true;
-                }
+                View itemView = listView.getChildAt(i);
 
-                if(disable){
+                if(itemView != null){
 
-                    listView.setItemChecked(i,false);
+                    itemView.setEnabled(selectable);
 
-                    View itemView = listView.getChildAt(i);
-
-                    if(itemView != null){
-                        itemView.setEnabled(false);
+                    if(!selectable){
                         itemView.setAlpha(0.4f);
                     }
                 }
-            }
 
+                if(!selectable){
+                    listView.setItemChecked(i,false);
+                }
+            }
         });
 
         listView.setOnItemClickListener((parent, view1, position, id) -> {
 
-            String status = items.get(position).getStatus();
+            RentalBooking.ItemStatus item = items.get(position);
 
-            if(action.equals("pickup") && status.equals("PickedUp")){
+            if(!isItemSelectable(action, item)){
+
                 listView.setItemChecked(position,false);
-                Toast.makeText(this,"Already picked up",Toast.LENGTH_SHORT).show();
+
+                Toast.makeText(this,
+                        "Action not allowed for this item",
+                        Toast.LENGTH_SHORT).show();
+
                 return;
             }
 
-            if(action.equals("return") && status.equals("Returned")){
-                listView.setItemChecked(position,false);
-                Toast.makeText(this,"Already returned",Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            if(action.equals("cancel") && status.equals("Cancelled")){
-                listView.setItemChecked(position,false);
-                Toast.makeText(this,"Already cancelled",Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            // 🔹 Recalculate amount based on selected items
-            double amount = 0;
-
-            for(int i=0;i<items.size();i++){
-
-                if(listView.isItemChecked(i)){
-
-                    RentalBooking.ItemStatus item = items.get(i);
-
-                    if(action.equals("pickup")){
-                        amount += item.getRent();
-                    }
-
-                    if(action.equals("return")){
-                        amount += item.getDeposit();
-                    }
-
-                    if(action.equals("cancel")){
-                        amount += item.getRent() + item.getDeposit();
-                    }
-                }
-            }
+            double amount = calculateAmount(action, items, listView);
 
             amountInput.setText(String.valueOf((int)amount));
             amountInput.setSelection(amountInput.getText().length());
-
         });
 
         AlertDialog dialog = new AlertDialog.Builder(this)
@@ -525,32 +506,7 @@ public class ReturnDetailActivity extends AppCompatActivity {
 
             confirm.setOnClickListener(v -> {
                 confirm.setEnabled(false);
-                ArrayList<String> selectedItems = new ArrayList<>();
-
-                for(int i=0;i<items.size();i++){
-
-                    if(listView.isItemChecked(i)){
-
-                        String status = items.get(i).getStatus();
-
-                        if(action.equals("pickup") && status.equals("PickedUp")){
-                            Toast.makeText(this,"Already picked up",Toast.LENGTH_SHORT).show();
-                            continue;
-                        }
-
-                        if(action.equals("return") && status.equals("Returned")){
-                            Toast.makeText(this,"Already returned",Toast.LENGTH_SHORT).show();
-                            continue;
-                        }
-
-                        if(action.equals("cancel") && status.equals("Cancelled")){
-                            Toast.makeText(this,"Already cancelled",Toast.LENGTH_SHORT).show();
-                            continue;
-                        }
-
-                        selectedItems.add(items.get(i).getItemNo());
-                    }
-                }
+                ArrayList<String> selectedItems = getSelectedItems(listView, items);
 
                 if(selectedItems.isEmpty()){
                     Toast.makeText(this,"Select at least one item",Toast.LENGTH_SHORT).show();
@@ -564,8 +520,11 @@ public class ReturnDetailActivity extends AppCompatActivity {
 
                 if(action.equals("pickup")){
 
-                    double remaining = totalRent - rentPaid;
+                    double remaining = 0;
 
+                    for(RentalBooking.ItemStatus item : itemsList){
+                        remaining += item.getBalance();
+                    }
                     if(amount > remaining){
 
                         Toast.makeText(this,
@@ -576,17 +535,7 @@ public class ReturnDetailActivity extends AppCompatActivity {
                     }
                 }
 
-                if(action.equals("pickup")){
-                    markAsPickedUp(orderId,selectedItems,amount);
-                }
-                else if(action.equals("return")){
-                    markItemAsReturned(orderId,selectedItems,amount);
-                }
-                else if(action.equals("cancel")){
-                    cancelBookingWithRefund(orderId,selectedItems,amount);
-                }
-
-                dialog.dismiss();
+                executeAction(action, orderId, selectedItems, amount);
 
                 dialog.dismiss();
             });
@@ -594,6 +543,41 @@ public class ReturnDetailActivity extends AppCompatActivity {
         });
 
         dialog.show();
+    }
+
+    private boolean isItemSelectable(String action, RentalBooking.ItemStatus item){
+
+        switch(action){
+
+            case ACTION_PICKUP:
+                return item.getStatus().equalsIgnoreCase("Booked");
+
+            case ACTION_RETURN:
+                return item.getStatus().equalsIgnoreCase("PickedUp");
+
+            case ACTION_CANCEL:
+                return item.getStatus().equalsIgnoreCase("Booked");
+
+            default:
+                return false;
+        }
+    }
+    private void executeAction(String action, String orderId, ArrayList<String> items, double amount){
+
+        switch(action){
+
+            case ACTION_PICKUP:
+                markAsPickedUp(orderId, items, amount);
+                break;
+
+            case ACTION_RETURN:
+                markItemAsReturned(orderId, items, amount);
+                break;
+
+            case ACTION_CANCEL:
+                cancelBookingWithRefund(orderId, items, amount);
+                break;
+        }
     }
 
     private void markAsPickedUp(String orderId,
@@ -633,7 +617,19 @@ public class ReturnDetailActivity extends AppCompatActivity {
 
         queue.add(request);
     }
+    private ArrayList<String> getSelectedItems(ListView listView, ArrayList<RentalBooking.ItemStatus> items){
 
+        ArrayList<String> selected = new ArrayList<>();
+
+        for(int i=0;i<items.size();i++){
+
+            if(listView.isItemChecked(i)){
+                selected.add(items.get(i).getItemNo());
+            }
+        }
+
+        return selected;
+    }
 
     private void cancelBookingWithRefund(String orderId,
                                          ArrayList<String> items,

@@ -131,8 +131,21 @@ public class RentalBooking {
         return items;
     }
 
-    public void addItem(String itemNo, String itemName, String status, double rent, double deposit){
-        items.add(new ItemStatus(itemNo, itemName, status, rent, deposit));
+    public void addItem(String itemNo,
+                        String itemName,
+                        String status,
+                        double rent,
+                        double deposit,
+                        double rentPaid){
+
+        items.add(new ItemStatus(
+                itemNo,
+                itemName,
+                status,
+                rent,
+                deposit,
+                rentPaid
+        ));
     }
 
     public long getWashMs() { return washMs; }
@@ -155,13 +168,30 @@ public class RentalBooking {
         private double rent;
         private double deposit;
         String itemName;
+        private double rentPaid;
 
-        public ItemStatus(String itemNo, String itemName, String status, double rent, double deposit){
+        public ItemStatus(
+                String itemNo,
+                String itemName,
+                String status,
+                double rent,
+                double deposit,
+                double rentPaid){
+
             this.itemNo = itemNo;
             this.itemName = itemName;
             this.status = status;
             this.rent = rent;
             this.deposit = deposit;
+            this.rentPaid = rentPaid;
+        }
+
+        public double getRentPaid(){
+            return rentPaid;
+        }
+
+        public double getBalance(){
+            return rent - rentPaid;
         }
 
         public String getItemNo(){

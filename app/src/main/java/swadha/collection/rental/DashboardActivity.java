@@ -433,7 +433,8 @@ public class DashboardActivity extends AppCompatActivity {
                                 item.optString("itemName",""),
                                 item.getString("status"),
                                 item.optDouble("rent",0),
-                                item.optDouble("deposit",0)
+                                item.optDouble("deposit",0),
+                                item.optDouble("rentPaid",0)
                         );
                     }
                 }
