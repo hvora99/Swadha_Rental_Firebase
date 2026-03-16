@@ -1,174 +1,201 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="#F8F9FA"
-    android:padding="20dp">
+    android:background="#FBFBFE">
 
-    <com.google.android.material.card.MaterialCardView
-        android:layout_width="110dp"
-        android:layout_height="110dp"
-        android:layout_gravity="center"
-        android:layout_marginTop="20dp"
-        app:cardCornerRadius="55dp"
-        app:cardElevation="8dp"
-        app:strokeWidth="3dp"
-        app:strokeColor="#FFFFFF">
-
-        <TextView
-            android:id="@+id/tvDetailItemCode"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="#800020"
-            android:gravity="center"
-            android:text="CH01"
-            android:textColor="#FFFFFF"
-            android:textSize="22sp"
-            android:textStyle="bold" />
-    </com.google.android.material.card.MaterialCardView>
-
-    <com.google.android.material.card.MaterialCardView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="-45dp"
-        app:cardCornerRadius="24dp"
-        app:cardElevation="2dp"
-        app:cardBackgroundColor="#FFFFFF">
+        android:orientation="vertical"
+        android:padding="20dp">
 
-        <LinearLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingTop="65dp"
-            android:paddingHorizontal="20dp"
-            android:paddingBottom="24dp">
+            android:layout_marginTop="20dp"
+            android:layout_marginBottom="30dp">
+
+            <TextView
+                android:id="@+id/tvDetailItemCode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="CH01"
+                android:textColor="#1A1C1E"
+                android:textSize="48sp"
+                android:fontFamily="sans-serif-condensed-light"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Product Details"
-                android:textColor="#BDBDBD"
+                android:text="IDENTIFICATION CODE"
+                android:textColor="#9E9E9E"
                 android:textSize="10sp"
                 android:letterSpacing="0.2"
-                android:textStyle="bold"/>
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="@id/tvDetailItemCode"
+                app:layout_constraintTop_toBottomOf="@id/tvDetailItemCode" />
 
-            <EditText
-                android:id="@+id/etDetailItemName"
-                android:layout_width="match_parent"
-                android:layout_height="55dp"
-                android:layout_marginTop="8dp"
-                android:textColor="#000000"
-                android:background="@drawable/bg_minimal_line"
-                android:hint="Item Name"
-                android:paddingHorizontal="16dp"
-                android:textSize="16sp" />
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="#F2F4F7"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/tvDetailItemCode"
+                app:layout_constraintBottom_toBottomOf="@id/tvDetailItemCode">
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:orientation="horizontal"
-                android:weightSum="2">
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:padding="12dp"
+                    android:src="@drawable/ic_inventory"
+                    app:tint="#800020"/>
+            </com.google.android.material.card.MaterialCardView>
 
-                <EditText
-                    android:id="@+id/etDetailRent"
-                    android:layout_width="0dp"
-                    android:layout_height="55dp"
-                    android:layout_weight="1"
-                    android:layout_marginEnd="6dp"
-                    android:background="@drawable/bg_minimal_line"
-                    android:hint="Rent (₹)"
-                    android:textColor="#000000"
-                    android:inputType="number"
-                    android:paddingHorizontal="16dp"
-                    android:textSize="16sp" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
-                <EditText
-                    android:id="@+id/etDetailDeposit"
-                    android:layout_width="0dp"
-                    android:layout_height="55dp"
-                    android:layout_weight="1"
-                    android:layout_marginStart="6dp"
-                    android:background="@drawable/bg_minimal_line"
-                    android:hint="Deposit (₹)"
-                    android:textColor="#000000"
-                    android:inputType="number"
-                    android:paddingHorizontal="16dp"
-                    android:textSize="16sp" />
-            </LinearLayout>
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="24dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="#FFFFFF"
+            app:strokeWidth="0dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="24dp">
+                android:orientation="vertical"
+                android:padding="20dp">
 
-                <Button
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ITEM SPECIFICATIONS"
+                    android:textColor="#800020"
+                    android:textSize="11sp"
+                    android:letterSpacing="0.1"
+                    android:textStyle="bold"/>
+
+                <EditText
+                    android:id="@+id/etDetailItemName"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/bg_minimal_line"
+                    android:hint="Item Name"
+                    android:paddingHorizontal="16dp"
+                    android:textColor="#1A1C1E"
+                    android:textSize="16sp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:orientation="horizontal"
+                    android:weightSum="2">
+
+                    <EditText
+                        android:id="@+id/etDetailRent"
+                        android:layout_width="0dp"
+                        android:layout_height="56dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:background="@drawable/bg_minimal_line"
+                        android:hint="Rent (₹)"
+                        android:inputType="number"
+                        android:paddingHorizontal="16dp" />
+
+                    <EditText
+                        android:id="@+id/etDetailDeposit"
+                        android:layout_width="0dp"
+                        android:layout_height="56dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:background="@drawable/bg_minimal_line"
+                        android:hint="Deposit (₹)"
+                        android:inputType="number"
+                        android:paddingHorizontal="16dp" />
+                </LinearLayout>
+
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnUpdateItem"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="56dp"
-                    android:layout_weight="1.5"
-                    android:text="Update"
-                    android:textColor="#FFFFFF"
+                    android:layout_marginTop="24dp"
+                    android:text="Save Specifications"
                     android:textAllCaps="false"
-                    android:textStyle="bold"
-                    android:backgroundTint="#0A0A0A" />
+                    android:fontFamily="sans-serif-medium"
+                    app:backgroundTint="#1A1C1E"
+                    app:cornerRadius="16dp" />
 
-                <Button
-                    android:id="@+id/btnRemoveItem"
-                    android:layout_width="0dp"
-                    android:layout_height="56dp"
-                    android:layout_weight="1"
-                    android:text="Remove"
-                    android:textColor="#FFFFFF"
-                    android:textAllCaps="false"
-                    android:layout_marginStart="10dp"
-                    android:backgroundTint="#D32F2F" />
             </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal"
+            android:weightSum="2">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnToggleLock"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="56dp"
+                android:layout_weight="1.2"
+                android:layout_marginEnd="6dp"
+                android:text="Lock Item"
+                android:textAllCaps="false"
+                android:textColor="#FF9800"
+                app:strokeColor="#FF9800"
+                app:cornerRadius="16dp"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnRemoveItem"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="0dp"
+                android:layout_height="56dp"
+                android:layout_weight="0.8"
+                android:text="Remove"
+                android:textColor="#D32F2F"
+                android:textAllCaps="false" />
         </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
 
-    <Button
-        android:id="@+id/btnToggleLock"
-        android:layout_width="match_parent"
-        android:layout_height="56dp"
-        android:layout_marginTop="12dp"
-        android:text="Lock Item"
-        android:textColor="#FFFFFF"
-        android:backgroundTint="#FF9800"
-        android:textAllCaps="false"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:text="Active Rental History"
+            android:textColor="#1A1C1E"
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Active Rental History"
-        android:textStyle="bold"
-        android:textSize="18sp"
-        android:textColor="#1A1C1E"
-        android:layout_marginTop="28dp"
-        android:layout_marginStart="8dp"/>
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvCurrentBooking"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:minHeight="100dp" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvCurrentBooking"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_marginTop="12dp"/>
+        <TextView
+            android:id="@+id/tvNoBooking"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/bg_minimal_line"
+            android:gravity="center"
+            android:padding="32dp"
+            android:text="No active bookings found"
+            android:textColor="#9E9E9E"
+            android:textSize="14sp" />
 
-    <TextView
-        android:id="@+id/tvNoBooking"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="No Active Bookings"
-        android:gravity="center"
-        android:textSize="14sp"
-        android:nestedScrollingEnabled="false"
-        android:textColor="#999999"
-        android:padding="40dp"
-        android:layout_marginTop="12dp"
-        android:background="@drawable/bg_minimal_line"
-        android:visibility="visible"/>
-
-</LinearLayout>
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

@@ -4,26 +4,28 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8F9FB"> <View
-    android:id="@+id/headerBg"
-    android:layout_width="match_parent"
-    android:layout_height="200dp"
-    android:background="#1A1C1E"
-    app:layout_constraintTop_toTopOf="parent" />
+    android:background="#F4F7FA">
+
+    <View
+        android:id="@+id/headerBg"
+        android:layout_width="match_parent"
+        android:layout_height="180dp"
+        android:background="#121417"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/tvStatus"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="32dp"
         android:background="@drawable/bg_status_glass"
-        android:paddingHorizontal="16dp"
-        android:paddingVertical="4dp"
+        android:paddingHorizontal="14dp"
+        android:paddingVertical="6dp"
         android:text="BOOKED"
         android:textColor="#FFFFFF"
-        android:textSize="11sp"
+        android:textSize="10sp"
         android:textStyle="bold"
-        android:letterSpacing="0.2"
+        android:letterSpacing="0.15"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -32,12 +34,11 @@
         android:id="@+id/detItemNo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:fontFamily="serif"
+        android:layout_marginTop="12dp"
+        android:fontFamily="sans-serif-medium"
         android:text="CH01"
         android:textColor="#FFFFFF"
-        android:textSize="28sp"
-        android:textStyle="bold"
+        android:textSize="32sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvStatus" />
@@ -45,9 +46,9 @@
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_marginTop="-30dp"
+        android:layout_marginTop="-24dp"
         android:background="@drawable/bg_sheet_top_rounded"
-        android:elevation="4dp"
+        android:elevation="8dp"
         app:layout_constraintBottom_toTopOf="@id/btnMarkReceived"
         app:layout_constraintTop_toBottomOf="@id/headerBg">
 
@@ -57,7 +58,7 @@
             android:orientation="vertical"
             android:padding="24dp">
 
-            <RelativeLayout
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="24dp">
@@ -66,102 +67,176 @@
                     android:id="@+id/detName"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:fontFamily="sans-serif-black"
+                    android:fontFamily="sans-serif-bold"
                     android:text="Hardik"
                     android:textColor="#1A1C1E"
-                    android:textSize="24sp" />
+                    android:textSize="22sp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
 
                 <TextView
                     android:id="@+id/detPhone"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/detName"
+                    android:layout_marginTop="2dp"
                     android:text="9876543210"
-                    android:textColor="#9E9E9E"
-                    android:textSize="14sp" />
+                    android:textColor="#667085"
+                    android:textSize="14sp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/detName" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnCallCustomer"
-                    style="@style/Widget.Material3.Button.IconButton"
-                    android:layout_width="52dp"
-                    android:layout_height="52dp"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    app:backgroundTint="#F1F8F1"
+                    style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
+                    app:backgroundTint="#E8F5E9"
                     app:icon="@android:drawable/ic_menu_call"
                     app:iconSize="24dp"
-                    app:iconTint="#2E7D32" />
-            </RelativeLayout>
+                    app:iconTint="#2E7D32"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
-            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0" android:layout_marginBottom="20dp"/>
             <TextView
                 android:id="@+id/tvOrderId"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                android:background="#F2F4F7"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="4dp"
                 android:text="Order ID"
-                android:textColor="#000000"
-                android:textSize="12sp"/>
-
-            <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0" android:layout_marginBottom="20dp"/>
+                android:textColor="#475467"
+                android:textSize="11sp"
+                android:textStyle="bold" />
 
             <LinearLayout
                 android:id="@+id/layoutItemTimeline"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_marginTop="16dp"/>
+                android:orientation="vertical" />
 
-            <View android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="#F0F0F0"
-                android:layout_marginBottom="20dp"/>
-
-            <LinearLayout
+            <GridLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:weightSum="2">
+                android:columnCount="2"
+                android:layout_marginTop="16dp">
 
-                <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
-                    <TextView android:text="PICKUP" android:textSize="9sp" android:textColor="#BDBDBD" android:textStyle="bold" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-                    <TextView android:id="@+id/detPickup" android:text="27 Feb 2026" android:textSize="14sp" android:textStyle="bold" android:textColor="#1A1C1E" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:orientation="vertical"
+                    android:layout_marginBottom="20dp">
+
+                    <TextView
+                        android:text="PICKUP"
+                        android:textSize="10sp"
+                        android:textColor="#98A2B3"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <TextView
+                        android:id="@+id/detPickup"
+                        android:text="27 Feb 2026"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="#1D2939"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp" />
                 </LinearLayout>
 
-                <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="end">
-                    <TextView android:text="RETURN" android:textSize="9sp" android:textColor="#800020" android:textStyle="bold" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-                    <TextView android:id="@+id/detReturn" android:text="28 Feb 2026" android:textSize="14sp" android:textStyle="bold" android:textColor="#800020" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-                </LinearLayout>
-            </LinearLayout>
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:weightSum="2">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:orientation="vertical"
+                    android:gravity="end">
 
-                <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical">
-                    <TextView android:text="Actual Pick Up" android:textSize="9sp"
-                        android:textColor="#BDBDBD" android:textStyle="bold" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-                    <TextView android:id="@+id/detActualPickup" android:text="27 Feb 2026"
-                        android:textSize="14sp" android:textStyle="bold" android:textColor="#1A1C1E" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+                    <TextView
+                        android:text="RETURN"
+                        android:textSize="10sp"
+                        android:textColor="#FDA29B"
+                        android:textStyle="bold"
+                        android:letterSpacing="0.1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <TextView
+                        android:id="@+id/detReturn"
+                        android:text="28 Feb 2026"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:textColor="#D32F2F"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp" />
                 </LinearLayout>
 
-                <LinearLayout android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:orientation="vertical" android:gravity="end">
-                    <TextView android:text="WashTime" android:textSize="9sp"
-                        android:textColor="#800020" android:textStyle="bold" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-                    <TextView android:id="@+id/detWash" android:text="28 Feb 2026"
-                        android:textSize="14sp" android:textStyle="bold" android:textColor="#800020" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:text="ACTUAL PICK UP"
+                        android:textSize="10sp"
+                        android:textColor="#98A2B3"
+                        android:textStyle="bold"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <TextView
+                        android:id="@+id/detActualPickup"
+                        android:text="27 Feb 2026"
+                        android:textSize="15sp"
+                        android:textColor="#475467"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp" />
                 </LinearLayout>
-            </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_columnWeight="1"
+                    android:orientation="vertical"
+                    android:gravity="end">
+
+                    <TextView
+                        android:text="WASH TIME"
+                        android:textSize="10sp"
+                        android:textColor="#98A2B3"
+                        android:textStyle="bold"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <TextView
+                        android:id="@+id/detWash"
+                        android:text="28 Feb 2026"
+                        android:textSize="15sp"
+                        android:textColor="#475467"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp" />
+                </LinearLayout>
+            </GridLayout>
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
-                app:cardCornerRadius="20dp"
+                app:cardCornerRadius="24dp"
                 app:cardElevation="0dp"
                 app:strokeWidth="1dp"
-                app:strokeColor="#F0F0F0"
-                app:cardBackgroundColor="#FDFDFD">
+                app:strokeColor="#EAECF0"
+                app:cardBackgroundColor="#FFFFFF">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -169,80 +244,24 @@
                     android:orientation="vertical"
                     android:padding="20dp">
 
-                    <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
+                    <androidx.constraintlayout.widget.ConstraintLayout android:layout_width="match_parent" android:layout_height="wrap_content">
+                        <TextView android:text="Total Rent" android:textColor="#667085" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                        <TextView android:id="@+id/detTotal" android:text="₹ 3000" android:textStyle="bold" android:textColor="#1D2939" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="parent" android:layout_width="wrap_content" android:layout_height="wrap_content" />
 
-                        <TextView
-                            android:text="Total Rent"
-                            android:textColor="#616161"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content" />
+                        <TextView android:id="@+id/lblDep" android:layout_marginTop="12dp" android:text="Deposit" android:textColor="#667085" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toBottomOf="@id/detTotal" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                        <TextView android:id="@+id/detDeposit" android:text="₹ 500" android:textColor="#3949AB" android:textStyle="bold" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="@id/lblDep" android:layout_width="wrap_content" android:layout_height="wrap_content" />
 
-                        <TextView
-                            android:id="@+id/detTotal"
-                            android:layout_alignParentEnd="true"
-                            android:text="₹ 3000"
-                            android:textStyle="bold"
-                            android:textColor="#1A1C1E"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content" />
-                    </RelativeLayout>
+                        <TextView android:id="@+id/lblPaid" android:layout_marginTop="12dp" android:text="Rent Paid ₹" android:textColor="#667085" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toBottomOf="@id/detDeposit" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                        <TextView android:id="@+id/detAdvance" android:text="₹ 2000" android:textColor="#2E7D32" android:textStyle="bold" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="@id/lblPaid" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                    </androidx.constraintlayout.widget.ConstraintLayout>
 
-                    <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp">
-
-                        <TextView
-                            android:text="Deposit"
-                            android:textColor="#616161"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content" />
-
-                        <TextView
-                            android:id="@+id/detDeposit"
-                            android:layout_alignParentEnd="true"
-                            android:text="₹ 500"
-                            android:textColor="#3949AB"
-                            android:textStyle="bold"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content" />
-                    </RelativeLayout>
-
-                    <RelativeLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp">
-
-                        <TextView
-                            android:text="Rent Paid ₹"
-                            android:textColor="#616161"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content" />
-
-
-                        <TextView
-                            android:id="@+id/detAdvance"
-                            android:layout_alignParentEnd="true"
-                            android:text="₹ 2000"
-                            android:textColor="#2E7D32"
-                            android:textStyle="bold"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content" />
-                    </RelativeLayout>
-
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:background="#F0F0F0"
-                        android:layout_marginVertical="20dp" />
+                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F2F4F7" android:layout_marginVertical="20dp" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center"
-                        android:text="OUTSTANDING"
+                        android:text="OUTSTANDING BALANCE"
                         android:textColor="#D32F2F"
                         android:textSize="10sp"
                         android:textStyle="bold"
@@ -251,49 +270,47 @@
                     <TextView
                         android:id="@+id/detBalance"
                         android:layout_width="match_parent"
-                        android:layout_height="50dp"
+                        android:layout_height="wrap_content"
                         android:gravity="center"
                         android:text="₹ 1500"
-                        android:textColor="#C62828"
-                        android:textSize="30dp"
-                        android:textStyle="bold" />
+                        android:textColor="#B71C1C"
+                        android:textSize="24dp"
+                        android:layout_marginTop="4dp"
+                        android:fontFamily="sans-serif-black" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSendWhatsapp"
+                style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="32dp"
                 android:text="SHARE DETAILS"
-                android:textColor="#FFFFFF"
-                android:textStyle="bold"
-                app:backgroundTint="#3949AB"
-                app:cornerRadius="18dp"
+                android:textColor="#3949AB"
+                app:cornerRadius="16dp"
                 app:icon="@android:drawable/ic_menu_share"
-                app:iconTint="#FFFFFF" />
+                app:iconTint="#3949AB" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnPickedUp"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
-                android:layout_marginTop="14dp"
+                android:layout_marginTop="12dp"
                 android:text="MARK AS PICKED UP"
                 android:textColor="#FFFFFF"
                 android:textStyle="bold"
                 app:backgroundTint="#00897B"
-                app:cornerRadius="18dp" />
+                app:cornerRadius="16dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnCancelBooking"
+                style="@style/Widget.Material3.Button.TextButton"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
-                android:layout_marginTop="14dp"
-                android:text="CANCEL BOOKING"
-                android:textStyle="bold"
-                android:textColor="#E53935"
-                app:backgroundTint="#FDECEC"
-                app:cornerRadius="18dp" />
+                android:layout_marginTop="8dp"
+                android:text="Cancel Booking"
+                android:textColor="#D32F2F" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
@@ -301,14 +318,14 @@
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnMarkReceived"
         android:layout_width="match_parent"
-        android:layout_height="68dp"
-        android:layout_margin="16dp"
+        android:layout_height="64dp"
+        android:layout_margin="20dp"
         android:text="MARK AS RECEIVED"
         android:textColor="#FFFFFF"
         android:textSize="16sp"
-        android:textStyle="bold"
+        android:fontFamily="sans-serif-bold"
         app:backgroundTint="#1E88E5"
-        app:cornerRadius="22dp"
+        app:cornerRadius="20dp"
         app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

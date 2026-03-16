@@ -1,43 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    android:padding="20dp"
+    android:padding="24dp"
+    android:background="#FFFFFF"
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
     <TextView
         android:id="@+id/tvItemTitle"
-        android:text="Item"
+        android:text="Item : MD08"
         android:textStyle="bold"
-        android:textSize="18sp"
+        android:textSize="20sp"
+        android:textColor="#1A1C1E"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"/>
 
     <Button
         android:id="@+id/btnPickupDate"
-        android:text="Pickup Date"
+        style="@style/Widget.Material3.Button.OutlinedButton"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"/>
+        android:layout_height="56dp"
+        android:layout_marginTop="20dp"
+        android:text="01 Apr 2026"
+        android:textColor="#1A1C1E"
+        android:textAllCaps="false"
+        app:cornerRadius="12dp"
+        app:icon="@drawable/ic_calendar"
+        app:iconTint="#1A1C1E"
+        app:strokeColor="#E0E2E6" />
 
     <Button
         android:id="@+id/btnPickupTime"
-        android:text="Pickup Time"
+        style="@style/Widget.Material3.Button.OutlinedButton"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="56dp"
+        android:layout_marginTop="8dp"
+        android:text="22:11"
+        android:textColor="#1A1C1E"
+        android:textAllCaps="false"
+        app:cornerRadius="12dp"
+        app:icon="@drawable/ic_time"
+        app:iconTint="#1A1C1E"
+        app:strokeColor="#E0E2E6" />
 
     <Button
         android:id="@+id/btnReturnDate"
-        android:text="Return Date"
+        style="@style/Widget.Material3.Button.OutlinedButton"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"/>
+        android:layout_height="56dp"
+        android:layout_marginTop="20dp"
+        android:text="02 Apr 2026"
+        android:textColor="#D32F2F"
+        android:textAllCaps="false"
+        app:cornerRadius="12dp"
+        app:icon="@drawable/ic_calendar"
+        app:iconTint="#D32F2F"
+        app:strokeColor="#FEE4E2"
+        app:backgroundTint="#FFF1F0" />
 
     <Button
         android:id="@+id/btnReturnTime"
-        android:text="Return Time"
+        style="@style/Widget.Material3.Button.OutlinedButton"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="56dp"
+        android:layout_marginTop="8dp"
+        android:text="22:12"
+        android:textColor="#D32F2F"
+        android:textAllCaps="false"
+        app:cornerRadius="12dp"
+        app:icon="@drawable/ic_time"
+        app:iconTint="#D32F2F"
+        app:strokeColor="#FEE4E2"
+        app:backgroundTint="#FFF1F0" />
 
 </LinearLayout>

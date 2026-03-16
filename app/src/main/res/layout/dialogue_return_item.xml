@@ -1,34 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:padding="16dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:background="#FFFFFF"
+    android:orientation="vertical"
+    android:padding="24dp">
 
     <TextView
-        android:text="Select Returned Items"
-        android:textStyle="bold"
-        android:textSize="16sp"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:letterSpacing="0.01"
+        android:text="Select Returned Items"
+        android:textColor="#1A1C1E"
+        android:textSize="20sp"
+        android:textStyle="bold" />
 
-    <ListView
-        android:id="@+id/listItems"
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
-        android:layout_height="200dp"
-        android:choiceMode="multipleChoice"/>
+        android:layout_height="220dp"
+        android:layout_marginTop="16dp"
+        app:cardBackgroundColor="#F8F9FA"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="0dp"
+        app:strokeColor="#ECEEF1"
+        app:strokeWidth="1dp">
+
+        <ListView
+            android:id="@+id/listItems"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:choiceMode="multipleChoice"
+            android:clipToPadding="false"
+            android:divider="#ECEEF1"
+            android:dividerHeight="1dp"
+            android:listSelector="@android:color/transparent"
+            android:padding="8dp" />
+    </com.google.android.material.card.MaterialCardView>
 
     <TextView
         android:id="@+id/textviewtitle_dialoue"
-        android:text="Refund Deposit"
-        android:layout_marginTop="10dp"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:layout_marginTop="28dp"
+        android:letterSpacing="0.1"
+        android:text="REFUND DEPOSIT"
+        android:textAllCaps="true"
+        android:textColor="#667085"
+        android:textSize="11sp"
+        android:textStyle="bold" />
 
-    <EditText
-        android:id="@+id/etRefund"
-        android:hint="Enter refund amount"
-        android:inputType="number"
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        app:boxCornerRadiusBottomEnd="14dp"
+        app:boxCornerRadiusBottomStart="14dp"
+        app:boxCornerRadiusTopEnd="14dp"
+        app:boxCornerRadiusTopStart="14dp"
+        app:boxStrokeColor="#1E88E5"
+        app:hintEnabled="false"
+        app:prefixText="₹ "
+        app:prefixTextColor="#1E88E5"
+        app:startIconDrawable="@android:drawable/ic_menu_edit"
+        app:startIconTint="#667085">
+
+        <EditText
+            android:id="@+id/etRefund"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@null"
+            android:hint="0.00"
+            android:inputType="numberDecimal"
+            android:padding="16dp"
+            android:textColor="#1A1C1E"
+            android:textSize="16sp" />
+
+    </com.google.android.material.textfield.TextInputLayout>
 
 </LinearLayout>
