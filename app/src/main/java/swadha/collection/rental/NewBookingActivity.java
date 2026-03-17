@@ -5,6 +5,7 @@ import android.app.TimePickerDialog; // Added for Time
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -123,6 +124,16 @@ public class NewBookingActivity extends AppCompatActivity {
         btnSaveBooking.setOnClickListener(v -> {
 
             saveDataToSheet();
+            // 🔒 Disable immediately (prevent double click)
+            btnSaveBooking.setEnabled(false);
+
+            // Call booking function
+            saveDataToSheet();
+
+            // ⏳ Re-enable after 3 seconds (fallback safety)
+            new Handler().postDelayed(() -> {
+                btnSaveBooking.setEnabled(true);
+            }, 6000);
         });
 
         btnSaveBooking.setEnabled(false); // Disable by default
@@ -1036,6 +1047,7 @@ public class NewBookingActivity extends AppCompatActivity {
                 response -> {
                     hideLoading();
                     try {
+                        btnSaveBooking.setEnabled(true); // 🔥 re-enable on response
                         JSONObject res = new JSONObject(response);
                         if (res.getString("status").equals("success")) {
                             getSharedPreferences("RentalPrefs", MODE_PRIVATE).edit().remove("cache_data").apply();
@@ -1049,6 +1061,7 @@ public class NewBookingActivity extends AppCompatActivity {
                 },
                 error -> {
                     hideLoading();
+                    btnSaveBooking.setEnabled(true); // 🔥 re-enable on response
                     if (error.networkResponse != null && error.networkResponse.statusCode == 302) {
                         finish();
                     } else {
