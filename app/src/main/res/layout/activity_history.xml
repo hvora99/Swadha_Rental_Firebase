@@ -9,27 +9,63 @@
         android:id="@+id/headerArea"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="#1A1C1E"
         android:orientation="vertical"
-        android:padding="16dp"
-        android:background="#800020">
+        android:paddingHorizontal="20dp"
+        android:paddingTop="40dp"
+        android:paddingBottom="24dp">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Booking History"
-            android:textColor="#FFFFFF"
-            android:textSize="22sp"
-            android:textStyle="bold" />
-
-        <EditText
-            android:id="@+id/etHistorySearch"
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_marginTop="12dp"
-            android:background="@android:color/white"
-            android:hint="Search Name, Phone or Item..."
-            android:paddingHorizontal="15dp"
-            android:textSize="14sp" />
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-black"
+                android:letterSpacing="0.02"
+                android:text="Booking History"
+                android:textColor="#FFFFFF"
+                android:textSize="24sp" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
+                app:cardBackgroundColor="#33FFFFFF"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="0dp">
+
+                <Spinner
+                    android:id="@+id/spinnerHistoryYear"
+                    android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    android:backgroundTint="#FFFFFF"
+                    android:paddingHorizontal="8dp" />
+            </com.google.android.material.card.MaterialCardView>
+        </RelativeLayout>
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="20dp"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="4dp">
+
+            <EditText
+                android:id="@+id/etHistorySearch"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@android:color/transparent"
+                android:drawableStart="@android:drawable/ic_menu_search"
+                android:drawablePadding="12dp"
+                android:hint="Search Name, Phone or Item..."
+                android:inputType="text"
+                android:paddingHorizontal="16dp"
+                android:textColor="#1A1C1E"
+                android:textSize="14sp" />
+        </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
@@ -38,39 +74,57 @@
         android:layout_height="match_parent"
         android:layout_above="@id/summaryCard"
         android:layout_below="@id/headerArea"
-        android:padding="8dp" />
+        android:clipToPadding="false"
+        android:padding="12dp" />
 
-    <androidx.cardview.widget.CardView
+    <com.google.android.material.card.MaterialCardView
         android:id="@+id/summaryCard"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        app:cardElevation="10dp">
+        app:cardCornerRadius="0dp"
+        app:cardElevation="16dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:background="#FFFFFF"
+            android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:padding="20dp"
-            android:background="#FFFFFF">
+            android:padding="20dp">
 
-            <TextView
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Total Earnings:"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/tvTotalEarnings"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="₹0"
-                android:textColor="#2E7D32"
-                android:textSize="20sp"
-                android:textStyle="bold" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.1"
+                    android:text="TOTAL EARNINGS"
+                    android:textColor="#9E9E9E"
+                    android:textSize="10sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvTotalEarnings"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-black"
+                    android:text="₹0"
+                    android:textColor="#2E7D32"
+                    android:textSize="26sp" />
+            </LinearLayout>
+
+            <ImageView
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:alpha="0.1"
+                android:src="@android:drawable/ic_menu_today"
+                app:tint="#2E7D32" />
         </LinearLayout>
-    </androidx.cardview.widget.CardView>
+    </com.google.android.material.card.MaterialCardView>
 
 </RelativeLayout>
