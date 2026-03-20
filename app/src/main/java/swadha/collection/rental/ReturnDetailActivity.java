@@ -18,6 +18,8 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonObjectRequest;
@@ -573,7 +575,6 @@ public class ReturnDetailActivity extends AppCompatActivity {
                 break;
         }
     }
-
     private void markAsPickedUp(String orderId,
                                 ArrayList<String> items,
                                 double paidNow){
@@ -582,34 +583,71 @@ public class ReturnDetailActivity extends AppCompatActivity {
         isProcessing = true;
 
         disableActionButtons();
-
-        Intent intent = new Intent();
-        intent.putExtra("refresh", true);
-        intent.putExtra("orderId", orderId);
-
-        setResult(RESULT_OK, intent);
-        finish();
-
+        showLoading("Processing...");
         JSONObject params = new JSONObject();
 
         try {
-
             params.put("action","markPickedUp");
             params.put("orderId",orderId);
             params.put("items",new JSONArray(items));
             params.put("paidNow",paidNow);
-
         } catch (Exception ignored){}
 
         JsonObjectRequest request = new JsonObjectRequest(
                 Request.Method.POST,
                 webAppUrl,
                 params,
-                response -> {},
-                error -> Log.e("API_ERROR",error.toString())
+
+                response -> {
+
+                    hideLoading();
+
+                    new android.os.Handler().postDelayed(() -> {
+
+                        Intent intent = new Intent();
+                        intent.putExtra("refresh", true);
+                        intent.putExtra("orderId", orderId);
+
+                        setResult(RESULT_OK, intent);
+                        finish();
+
+                    }, 600);
+                },
+
+                error -> {
+
+                    hideLoading();
+
+                    isProcessing = false;
+                    enableActionButtons();
+
+                    Toast.makeText(this,
+                            "Failed to update. Try again.",
+                            Toast.LENGTH_SHORT).show();
+
+                    Log.e("API_ERROR", error.toString());
+                }
         );
 
+        // ✅ Add retry policy (important)
+        request.setRetryPolicy(new DefaultRetryPolicy(
+                30000,
+                1,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
+        ));
+
         queue.add(request);
+    }
+
+    private void enableActionButtons(){
+
+        btnPickedUp.setEnabled(true);
+        btnCancel.setEnabled(true);
+        BtnMarkReceived.setEnabled(true);
+
+        btnPickedUp.setAlpha(1f);
+        btnCancel.setAlpha(1f);
+        BtnMarkReceived.setAlpha(1f);
     }
     private ArrayList<String> getSelectedItems(ListView listView, ArrayList<RentalBooking.ItemStatus> items){
 
@@ -624,7 +662,6 @@ public class ReturnDetailActivity extends AppCompatActivity {
 
         return selected;
     }
-
     private void cancelBookingWithRefund(String orderId,
                                          ArrayList<String> items,
                                          double refundAmount){
@@ -633,50 +670,71 @@ public class ReturnDetailActivity extends AppCompatActivity {
         isProcessing = true;
 
         disableActionButtons();
-
-        Intent intent = new Intent();
-        intent.putExtra("refresh", true);
-        intent.putExtra("orderId", orderId);
-        setResult(RESULT_OK, intent);
-        finish();
+        showLoading("Processing...");
 
         JSONObject params = new JSONObject();
 
         try {
-
             params.put("action","cancelBooking");
             params.put("orderId",orderId);
             params.put("items",new JSONArray(items));
             params.put("refundAmount",refundAmount);
-
         } catch (Exception ignored){}
 
         JsonObjectRequest request = new JsonObjectRequest(
                 Request.Method.POST,
                 webAppUrl,
                 params,
-                response -> {},
-                error -> Log.e("API_ERROR",error.toString())
+
+                response -> {
+
+                    hideLoading();
+
+                    new android.os.Handler().postDelayed(() -> {
+
+                        Intent intent = new Intent();
+                        intent.putExtra("refresh", true);
+                        intent.putExtra("orderId", orderId);
+
+                        setResult(RESULT_OK, intent);
+                        finish();
+
+                    }, 600);
+                },
+
+                error -> {
+
+                    hideLoading();
+
+                    isProcessing = false;
+                    enableActionButtons();
+
+                    Toast.makeText(this,
+                            "Cancel failed. Try again.",
+                            Toast.LENGTH_SHORT).show();
+
+                    Log.e("API_ERROR", error.toString());
+                }
         );
+
+        // ✅ Retry policy
+        request.setRetryPolicy(new DefaultRetryPolicy(
+                30000,
+                1,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
+        ));
 
         queue.add(request);
     }
-
-
     private void markItemAsReturned(String orderId,
                                     List<String> items,
                                     double refundAmount){
+
         if(isProcessing) return;
         isProcessing = true;
+
         disableActionButtons();
-
-        // Close activity immediately and refresh dashboard
-        Intent intent = new Intent();
-        intent.putExtra("refresh", true);
-        intent.putExtra("orderId", orderId);
-        setResult(RESULT_OK, intent);
-        finish();
-
+        showLoading("Processing...");
         JSONObject params = new JSONObject();
 
         try{
@@ -701,17 +759,47 @@ public class ReturnDetailActivity extends AppCompatActivity {
                 Request.Method.POST,
                 webAppUrl,
                 params,
+
                 response -> {
-                    // no UI needed, dashboard already refreshed
+
+                    hideLoading();
+
+                    new android.os.Handler().postDelayed(() -> {
+
+                        Intent intent = new Intent();
+                        intent.putExtra("refresh", true);
+                        intent.putExtra("orderId", orderId);
+
+                        setResult(RESULT_OK, intent);
+                        finish();
+
+                    }, 600);
                 },
+
                 error -> {
+
+                    hideLoading();
+
+                    isProcessing = false;
+                    enableActionButtons();
+
+                    Toast.makeText(this,
+                            "Return failed. Try again.",
+                            Toast.LENGTH_SHORT).show();
+
                     Log.e("API_ERROR", error.toString());
                 }
         );
 
+        // ✅ retry policy
+        request.setRetryPolicy(new DefaultRetryPolicy(
+                30000,
+                1,
+                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
+        ));
+
         queue.add(request);
     }
-
     private void disableActionButtons(){
 
         btnPickedUp.setEnabled(false);

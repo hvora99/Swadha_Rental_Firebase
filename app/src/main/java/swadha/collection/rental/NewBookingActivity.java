@@ -123,7 +123,6 @@ public class NewBookingActivity extends AppCompatActivity {
 
         btnSaveBooking.setOnClickListener(v -> {
 
-            saveDataToSheet();
             // 🔒 Disable immediately (prevent double click)
             btnSaveBooking.setEnabled(false);
 
