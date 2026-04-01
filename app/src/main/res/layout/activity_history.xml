@@ -38,7 +38,7 @@
                 app:cardElevation="0dp">
 
                 <Spinner
-                    android:id="@+id/spinnerHistoryYear"
+                    android:id="@+id/spinnerYear"
                     android:layout_width="wrap_content"
                     android:layout_height="32dp"
                     android:backgroundTint="#FFFFFF"
