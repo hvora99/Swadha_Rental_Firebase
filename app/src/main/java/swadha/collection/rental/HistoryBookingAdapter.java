@@ -10,6 +10,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class HistoryBookingAdapter
@@ -56,7 +57,7 @@ public class HistoryBookingAdapter
             Intent intent = new Intent(v.getContext(),
                     HistoryDetailActivity.class);
 
-            intent.putExtra("itemNo", booking.getItemNo());
+            intent.putExtra("orderId", booking.getOrderId());
             intent.putExtra("name", booking.getName());
             intent.putExtra("phone", booking.getPhone());
             intent.putExtra("pickupDateTime", booking.getPickupDateTime());
@@ -66,6 +67,8 @@ public class HistoryBookingAdapter
             intent.putExtra("deposit", booking.getDeposit());
             intent.putExtra("rentPaid", booking.getRentPaid());
             intent.putExtra("balance", booking.getBalance());
+            intent.putExtra("itemsList",
+                    new ArrayList<>(booking.getItemsList())); // 👈 YOU NEED THIS FIELD
 
             intent.putExtra("status", booking.getStatus());
             intent.putExtra("actualPickup", booking.getActualPickup());
