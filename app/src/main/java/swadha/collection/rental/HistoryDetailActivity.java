@@ -1,77 +1,73 @@
 package swadha.collection.rental;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.gson.Gson;
+
 public class HistoryDetailActivity extends AppCompatActivity {
+
+    TextView tvItemNo, tvCustomer, tvPhone,
+            tvPickupScheduled, tvReturnScheduled,
+            tvTotalRent, tvRentPaid, tvDeposit, tvFinalSettlement;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_history_detail);
 
-        // Receive Intent
-        String itemNo = getIntent().getStringExtra("itemNo");
-        String name = getIntent().getStringExtra("name");
-        String phone = getIntent().getStringExtra("phone");
-        String pickupDateTime = getIntent().getStringExtra("pickupDateTime");
-        String returnDateTime = getIntent().getStringExtra("returnDateTime");
+        // ✅ FIRST get JSON
+        String json = getIntent().getStringExtra("data");
 
-        double totalRent = getIntent().getDoubleExtra("totalRent", 0.0);
-        double deposit = getIntent().getDoubleExtra("deposit", 0.0);
-        double rentPaid = getIntent().getDoubleExtra("rentPaid", 0.0);
-        double balance = getIntent().getDoubleExtra("balance", 0.0);
+        // ✅ Convert to OrderHistoryModel
+        OrderHistoryModel m =
+                new Gson().fromJson(json, OrderHistoryModel.class);
 
-        String status = getIntent().getStringExtra("status");
-        String actualPickup = getIntent().getStringExtra("actualPickup");
-        String actualReceive = getIntent().getStringExtra("actualReceive");
+        // Bind views
+        tvItemNo = findViewById(R.id.tvItemNo);
+        tvCustomer = findViewById(R.id.tvCustomer);
+        tvPhone = findViewById(R.id.tvPhone);
 
-        // Bind Views
-        TextView tvItemNo = findViewById(R.id.tvItemNo);
-        TextView tvStatus = findViewById(R.id.tvStatus);
-        TextView tvCustomer = findViewById(R.id.tvCustomer);
-        TextView tvPhone = findViewById(R.id.tvPhone);
+        tvPickupScheduled = findViewById(R.id.tvPickupScheduled);
+        tvReturnScheduled = findViewById(R.id.tvReturnScheduled);
 
-        TextView tvPickupScheduled = findViewById(R.id.tvPickupScheduled);
-        TextView tvReturnScheduled = findViewById(R.id.tvReturnScheduled);
-        TextView tvActualPickup = findViewById(R.id.tvActualPickup);
-        TextView tvActualReturn = findViewById(R.id.tvActualReturn);
+        tvTotalRent = findViewById(R.id.tvTotalRent);
+        tvRentPaid = findViewById(R.id.tvRentPaid);
+        tvDeposit = findViewById(R.id.tvDeposit);
+        tvFinalSettlement = findViewById(R.id.tvFinalSettlement);
 
-        TextView tvTotalRent = findViewById(R.id.tvTotalRent);
-        TextView tvRentPaid = findViewById(R.id.tvRentPaid);
-        TextView tvDeposit = findViewById(R.id.tvDeposit);
-        TextView tvFinalSettlement = findViewById(R.id.tvFinalSettlement);
+        // Set values
+        tvItemNo.setText(m.orderId);
+        tvCustomer.setText(m.name);
+        tvPhone.setText(m.phone);
 
-        // Set Data
-        tvItemNo.setText(itemNo);
-        tvStatus.setText(status);
+        tvPickupScheduled.setText(formatDateTime(m.pickupDateTime));
+        tvReturnScheduled.setText(formatDateTime(m.returnDateTime));
 
-        tvCustomer.setText(name);
-        tvPhone.setText(phone);
+        tvTotalRent.setText("₹ " + m.totalRent);
+        tvRentPaid.setText("₹ " + m.rentPaid);
+        tvDeposit.setText("₹ " + m.deposit);
 
-        tvPickupScheduled.setText(pickupDateTime);
-        tvReturnScheduled.setText(returnDateTime);
-        tvActualPickup.setText(actualPickup != null ? actualPickup : "-");
-        tvActualReturn.setText(actualReceive != null ? actualReceive : "-");
+        double finalSettlement = m.rentPaid - m.deposit;
+        tvFinalSettlement.setText("₹ " + finalSettlement);
+    }
 
-        tvTotalRent.setText("₹ " + String.format("%.2f", totalRent));
-        tvRentPaid.setText("₹ " + String.format("%.2f", rentPaid));
-        tvDeposit.setText("₹ " + String.format("%.2f", deposit));
+    private String formatDateTime(String input) {
 
-        if (balance < 0) {
-            tvFinalSettlement.setText("Refund ₹ " + String.format("%.2f", Math.abs(balance)));
-            tvFinalSettlement.setTextColor(Color.parseColor("#2E7D32"));
-        }
-        else if (balance > 0) {
-            tvFinalSettlement.setText("Customer Paid Extra ₹ " + String.format("%.2f", balance));
-            tvFinalSettlement.setTextColor(Color.parseColor("#D32F2F"));
-        }
-        else {
-            tvFinalSettlement.setText("Settled");
-            tvFinalSettlement.setTextColor(Color.GRAY);
+        try {
+            // Input example: "4/1/2026 10:33:00 PM"
+            java.text.SimpleDateFormat inputFormat =
+                    new java.text.SimpleDateFormat("M/d/yyyy hh:mm:ss a");
+
+            java.text.SimpleDateFormat outputFormat =
+                    new java.text.SimpleDateFormat("dd MMM yyyy, hh:mm a");
+
+            return outputFormat.format(inputFormat.parse(input));
+
+        } catch (Exception e) {
+            return input; // fallback
         }
     }
 }

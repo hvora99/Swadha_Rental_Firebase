@@ -19,245 +19,189 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.android.volley.DefaultRetryPolicy;
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonArrayRequest;
+import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class HistoryActivity extends AppCompatActivity {
 
-    private List<HistoryBooking> allHistory = new ArrayList<>();
-    private HistoryBookingAdapter adapter;
+    private RecyclerView rvHistory;
+    private Spinner spinnerYear;
     private TextView tvTotalEarnings;
-    // Use a different key for history so it doesn't overwrite the Dashboard cache
-    private static final String HISTORY_CACHE_KEY = "history_cache_data";
-    Spinner spinnerYear;
+
+    private HistoryAdapter adapter;
+
+    private List<OrderHistoryModel> fullList = new ArrayList<>();
+    private List<OrderHistoryModel> filteredList = new ArrayList<>();
+
+    private String BASE_URL = "https://script.google.com/macros/s/AKfycby9Bfc8ohJDS6bvWDu1I8E21yxzRg_GQBhpRXkzY9hLfcKrDlqzxYe2LyMl4Vmb6CXj/exec"; // 🔥 change this
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_history);
-
-        tvTotalEarnings = findViewById(R.id.tvTotalEarnings);
-        RecyclerView rv = findViewById(R.id.rvHistory);
-        EditText etSearch = findViewById(R.id.etHistorySearch);
-
+        rvHistory = findViewById(R.id.rvHistory);
         spinnerYear = findViewById(R.id.spinnerYear);
-        ArrayList<String> years = new ArrayList<>();
+        tvTotalEarnings = findViewById(R.id.tvTotalEarnings);
 
-        int currentYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR);
+        rvHistory.setLayoutManager(new LinearLayoutManager(this));
 
-// last 5 years + current
-        for(int i = 0; i < 5; i++){
-            years.add(String.valueOf(currentYear - i));
+        adapter = new HistoryAdapter(filteredList, this);
+        rvHistory.setAdapter(adapter);
+
+        loadHistory();
+    }
+
+    // ================= LOAD API =================
+
+    private void loadHistory() {
+
+        String url = BASE_URL + "?mode=history";
+
+        StringRequest request = new StringRequest(Request.Method.GET, url,
+                response -> {
+
+                    try {
+
+                        JSONArray arr = new JSONArray(response);
+
+                        fullList.clear();
+
+                        for (int i = 0; i < arr.length(); i++) {
+
+                            JSONObject obj = arr.getJSONObject(i);
+
+                            OrderHistoryModel m = new OrderHistoryModel();
+
+                            m.timestamp = obj.optLong("timestamp");
+                            m.orderId = obj.optString("orderId");
+                            m.name = obj.optString("name");
+                            m.phone = obj.optString("phone");
+
+                            m.pickupDateTime = obj.optString("pickupDateTime");
+                            m.returnDateTime = obj.optString("returnDateTime");
+
+                            m.totalRent = obj.optDouble("totalRent");
+                            m.deposit = obj.optDouble("deposit");
+                            m.rentPaid = obj.optDouble("rentPaid");
+                            m.balance = obj.optDouble("balance");
+
+                            m.status = obj.optString("status");
+
+                            // 🔥 SAFE items parsing
+                            JSONArray itemsArr = obj.optJSONArray("items");
+                            List<String> itemList = new ArrayList<>();
+
+                            if (itemsArr != null) {
+                                for (int j = 0; j < itemsArr.length(); j++) {
+                                    itemList.add(itemsArr.optString(j));
+                                }
+                            }
+
+                            m.items = itemList;
+
+                            fullList.add(m);
+                        }
+
+                        Log.d("PARSED_SIZE", "FullList size = " + fullList.size());
+
+                        setupYearSpinner();
+                        applyFilter("All");
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                    Log.d("API_RESPONSE", response);
+
+                }, error -> {
+
+        Log.e("API_ERROR", error.toString());
+
+        Toast.makeText(this,
+                "Failed to load history",
+                Toast.LENGTH_LONG).show();
+        });
+
+
+        Volley.newRequestQueue(this).add(request);
+    }
+
+    // ================= YEAR SPINNER =================
+
+    private void setupYearSpinner() {
+
+        Set<Integer> yearSet = new HashSet<>();
+
+        for (OrderHistoryModel m : fullList) {
+            yearSet.add(getYear(m.timestamp));
         }
 
-// optional
+        List<String> years = new ArrayList<>();
         years.add("All");
 
-        ArrayAdapter<String> adapter1 =
+        for (Integer y : yearSet) {
+            years.add(String.valueOf(y));
+        }
+
+        Collections.sort(years, Collections.reverseOrder());
+
+        ArrayAdapter<String> adapter =
                 new ArrayAdapter<>(this,
                         android.R.layout.simple_spinner_dropdown_item,
                         years);
 
-        spinnerYear.setAdapter(adapter1);
+        spinnerYear.setAdapter(adapter);
 
         spinnerYear.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-
-                String selectedYear = years.get(position);
-
-                fetchHistory(selectedYear); // 👈 call API
-
+            public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+                applyFilter(years.get(pos));
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {}
         });
-
-        if (rv != null) {
-            rv.setLayoutManager(new LinearLayoutManager(this));
-            adapter = new HistoryBookingAdapter(new ArrayList<>());
-            rv.setAdapter(adapter);
-        }
-
-        if (etSearch != null) {
-            etSearch.addTextChangedListener(new TextWatcher() {
-                @Override
-                public void onTextChanged(CharSequence s, int start, int before, int count) {
-                    applyFilters(s.toString());
-                }
-                @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-                @Override public void afterTextChanged(Editable s) {}
-            });
-        }
-
-        // STEP 1: Load cache immediately so the screen isn't empty
-        loadHistoryFromCache();
-
-        // STEP 2: Fetch fresh data from the server
     }
 
+    // ================= FILTER =================
 
-    private void applyFilters(String query) {
-        List<HistoryBooking> filtered = new ArrayList<>();
+    private void applyFilter(String yearStr) {
+
+        filteredList.clear();
+
         double total = 0;
 
-        for (HistoryBooking b : allHistory) {
+        for (OrderHistoryModel m : fullList) {
 
-            boolean matchesSearch =
-                    b.getName().toLowerCase().contains(query.toLowerCase()) ||
-                            b.getItemNo().toLowerCase().contains(query.toLowerCase()) ||
-                            b.getPhone().contains(query);
+            if (yearStr.equals("All") ||
+                    getYear(m.timestamp) == Integer.parseInt(yearStr)) {
 
-            if (matchesSearch) {
-                filtered.add(b);
-                total += b.getRentPaid();   // 🔥 earnings = rentPaid
+                filteredList.add(m);
+
+                total += m.rentPaid;
             }
         }
 
-        adapter = new HistoryBookingAdapter(filtered);
-        RecyclerView rv = findViewById(R.id.rvHistory);
-        rv.setAdapter(adapter);
-
-        tvTotalEarnings.setText("Filtered Earnings: ₹ " + total);
-    }
-    private void calculateEarnings(List<HistoryBooking> list) {
-        double total = 0;
-        for (HistoryBooking b : list) {
-            total += b.getNetIncome();
-        }
-        tvTotalEarnings.setText("Total Earnings: ₹ " + total);
+        tvTotalEarnings.setText("₹ " + total);
+        Log.d("c", "Filtered size = " + filteredList.size());
+        adapter.notifyDataSetChanged();
     }
 
-    private void saveHistoryToCache(String year, String data) {
-        getSharedPreferences("history_cache", MODE_PRIVATE)
-                .edit()
-                .putString("history_" + year, data)
-                .apply();
+    private int getYear(long timestamp) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTimeInMillis(timestamp);
+        return cal.get(Calendar.YEAR);
     }
 
-    private String getHistoryFromCache(String year) {
-        return getSharedPreferences("history_cache", MODE_PRIVATE)
-                .getString("history_" + year, null);
-    }
-
-    private void loadHistoryFromCache() {
-        String cachedData = getSharedPreferences("RentalPrefs", MODE_PRIVATE).getString(HISTORY_CACHE_KEY, null);
-        if (cachedData != null) {
-            parseHistoryJson(cachedData);
-        }
-    }
-
-    private void parseHistoryJson(String jsonString) {
-        try {
-            org.json.JSONArray response = new org.json.JSONArray(jsonString);
-            allHistory.clear();
-
-            for (int i = 0; i < response.length(); i++) {
-
-                JSONObject obj = response.getJSONObject(i);
-
-                allHistory.add(new HistoryBooking(
-                        obj.optString("timestamp"),
-                        obj.optString("itemNo"),
-                        obj.optString("name"),
-                        obj.optString("phone"),
-                        obj.optString("pickupDateTime"),
-                        obj.optString("returnDateTime"),
-
-                        obj.optDouble("totalRent", 0.0),
-                        obj.optDouble("deposit", 0.0),
-                        obj.optDouble("rentPaid", 0.0),
-                        obj.optDouble("balance", 0.0),
-
-                        obj.optString("status", ""),
-                        obj.optString("actualPickup", ""),
-                        obj.optString("actualReceive", "")
-                ));
-            }
-
-            // Refresh adapter
-            adapter = new HistoryBookingAdapter(allHistory);
-            RecyclerView rv = findViewById(R.id.rvHistory);
-            rv.setAdapter(adapter);
-
-            calculateEarnings(allHistory);
-
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void fetchHistory(String year) {
-
-        boolean showDialog = allHistory.isEmpty();
-        android.app.ProgressDialog progressDialog = null;
-
-        if (showDialog) {
-            progressDialog = new android.app.ProgressDialog(this);
-            progressDialog.setMessage("Loading " + year + " history...");
-            progressDialog.setCancelable(false);
-            progressDialog.show();
-        }
-
-        String url;
-
-        if (year.equals("All")) {
-            url = "https://script.google.com/macros/s/AKfycby9Bfc8ohJDS6bvWDu1I8E21yxzRg_GQBhpRXkzY9hLfcKrDlqzxYe2LyMl4Vmb6CXj/exec?" + "?mode=history&year=all";
-        } else {
-            url = "https://script.google.com/macros/s/AKfycby9Bfc8ohJDS6bvWDu1I8E21yxzRg_GQBhpRXkzY9hLfcKrDlqzxYe2LyMl4Vmb6CXj/exec?" + "?mode=history&year=" + year;
-        }
-
-        final android.app.ProgressDialog finalDialog = progressDialog;
-
-        JsonArrayRequest request = new JsonArrayRequest(
-                Request.Method.GET,
-                url,
-                null,
-
-                response -> {
-                    if (finalDialog != null) finalDialog.dismiss();
-
-                    // ✅ cache per year
-                    saveHistoryToCache(year, response.toString());
-
-                    // ✅ parse
-                    parseHistoryJson(response.toString());
-                },
-
-                error -> {
-                    if (finalDialog != null) finalDialog.dismiss();
-
-                    Log.e("VOLLEY", error.toString());
-
-                    String cached = getHistoryFromCache(year);
-
-                    if (cached != null) {
-                        parseHistoryJson(cached);
-                        Toast.makeText(this,
-                                "Offline Mode (" + year + ")",
-                                Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(this,
-                                "Check your connection",
-                                Toast.LENGTH_SHORT).show();
-                    }
-                }
-        );
-
-        request.setRetryPolicy(new DefaultRetryPolicy(
-                20000,
-                1,
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
-        ));
-
-        Volley.newRequestQueue(this).add(request);
-    }
-
-    // ... applyFilters and calculateEarnings stay the same ...
 }
