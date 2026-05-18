@@ -91,6 +91,9 @@ public class HistoryActivity extends AppCompatActivity {
                             m.pickupDateTime = obj.optString("pickupDateTime");
                             m.returnDateTime = obj.optString("returnDateTime");
 
+                            m.actualPickup = obj.optString("actualPickup");
+                            m.actualReturn = obj.optString("actualReturn");
+
                             m.totalRent = obj.optDouble("totalRent");
                             m.deposit = obj.optDouble("deposit");
                             m.rentPaid = obj.optDouble("rentPaid");
@@ -100,11 +103,45 @@ public class HistoryActivity extends AppCompatActivity {
 
                             // 🔥 SAFE items parsing
                             JSONArray itemsArr = obj.optJSONArray("items");
-                            List<String> itemList = new ArrayList<>();
+
+                            List<OrderHistoryModel.HistoryItem> itemList =
+                                    new ArrayList<>();
 
                             if (itemsArr != null) {
+
                                 for (int j = 0; j < itemsArr.length(); j++) {
-                                    itemList.add(itemsArr.optString(j));
+
+                                    JSONObject itemObj =
+                                            itemsArr.getJSONObject(j);
+
+                                    OrderHistoryModel.HistoryItem item =
+                                            new OrderHistoryModel.HistoryItem();
+
+                                    item.itemNo =
+                                            itemObj.optString("itemNo");
+
+                                    item.pickupScheduled =
+                                            itemObj.optString("pickupScheduled");
+
+                                    item.returnScheduled =
+                                            itemObj.optString("returnScheduled");
+
+                                    item.actualPickup =
+                                            itemObj.optString("actualPickup");
+
+                                    item.actualReturn =
+                                            itemObj.optString("actualReturn");
+
+                                    item.status =
+                                            itemObj.optString("status");
+
+                                    item.rent =
+                                            itemObj.optDouble("rent");
+
+                                    item.deposit =
+                                            itemObj.optDouble("deposit");
+
+                                    itemList.add(item);
                                 }
                             }
 

@@ -48,6 +48,10 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.VH> {
 
             Intent i = new Intent(context, HistoryDetailActivity.class);
             i.putExtra("data", new Gson().toJson(m));
+            android.util.Log.d(
+                    "ADAPTER_TEST",
+                    new Gson().toJson(m)
+            );
             context.startActivity(i);
         });
     }

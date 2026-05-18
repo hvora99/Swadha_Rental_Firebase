@@ -30,7 +30,7 @@
         android:fontFamily="sans-serif-condensed-light"
         android:text="CH01"
         android:textColor="#FFFFFF"
-        android:textSize="42sp"
+        android:textSize="24sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -134,38 +134,187 @@
                 android:layout_marginVertical="20dp"
                 android:background="#F2F4F7" />
 
-            <GridLayout
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:columnCount="2">
+                android:layout_marginTop="12dp"
+                android:orientation="vertical">
 
                 <LinearLayout
-                    android:layout_width="0dp"
+                    android:id="@+id/layoutItemsTimeline"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_columnWeight="1"
-                    android:orientation="vertical">
+                    android:layout_marginTop="20dp"
+                    android:orientation="vertical"/>
 
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="PICKUP SCHEDULED" android:textColor="#BDBDBD" android:textSize="9sp" android:textStyle="bold" />
-                    <TextView android:id="@+id/tvPickupScheduled" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="27 Feb 2026" android:textColor="#1A1C1E" android:textStyle="bold" />
+                <!-- PICKUP CARD -->
 
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:text="ACTUAL PICKUP" android:textColor="#BDBDBD" android:textSize="9sp" android:textStyle="bold" />
-                    <TextView android:id="@+id/tvActualPickup" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="27 Feb 10:30" android:textColor="#2E7D32" android:textStyle="bold" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_columnWeight="1"
-                    android:gravity="end"
-                    android:orientation="vertical">
+                    android:layout_marginBottom="16dp"
+                    app:cardBackgroundColor="#F8FFF8"
+                    app:cardCornerRadius="18dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="#D7F0DA"
+                    app:strokeWidth="1dp">
 
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="RETURN SCHEDULED" android:textColor="#BDBDBD" android:textSize="9sp" android:textStyle="bold" />
-                    <TextView android:id="@+id/tvReturnScheduled" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="28 Feb 2026" android:textColor="#1A1C1E" android:textStyle="bold" />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="18dp">
 
-                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="16dp" android:text="ACTUAL RETURN" android:textColor="#BDBDBD" android:textSize="9sp" android:textStyle="bold" />
-                    <TextView android:id="@+id/tvActualReturn" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="28 Feb 18:00" android:textColor="#D32F2F" android:textStyle="bold" />
-                </LinearLayout>
-            </GridLayout>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="PICKUP"
+                            android:textColor="#2E7D32"
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="14dp"
+                            android:orientation="horizontal">
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="SCHEDULED"
+                                    android:textColor="#9E9E9E"
+                                    android:textSize="10sp" />
+
+                                <TextView
+                                    android:id="@+id/tvPickupScheduled"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="4dp"
+                                    android:textColor="#1A1C1E"
+                                    android:textSize="15sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="ACTUAL"
+                                    android:textColor="#9E9E9E"
+                                    android:textSize="10sp" />
+
+                                <TextView
+                                    android:id="@+id/tvActualPickup"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="4dp"
+                                    android:textColor="#2E7D32"
+                                    android:textSize="15sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- RETURN CARD -->
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardBackgroundColor="#FFF8F8"
+                    app:cardCornerRadius="18dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="#F2D7D7"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="18dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="RETURN"
+                            android:textColor="#C62828"
+                            android:textSize="11sp"
+                            android:textStyle="bold" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="14dp"
+                            android:orientation="horizontal">
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="SCHEDULED"
+                                    android:textColor="#9E9E9E"
+                                    android:textSize="10sp" />
+
+                                <TextView
+                                    android:id="@+id/tvReturnScheduled"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="4dp"
+                                    android:textColor="#1A1C1E"
+                                    android:textSize="15sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="ACTUAL"
+                                    android:textColor="#9E9E9E"
+                                    android:textSize="10sp" />
+
+                                <TextView
+                                    android:id="@+id/tvActualReturn"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="4dp"
+                                    android:textColor="#C62828"
+                                    android:textSize="15sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
