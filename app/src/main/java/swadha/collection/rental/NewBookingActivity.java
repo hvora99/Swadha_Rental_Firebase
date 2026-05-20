@@ -1073,7 +1073,7 @@ public class NewBookingActivity extends AppCompatActivity {
             public String getBodyContentType() { return "application/json; charset=utf-8"; }
         };
         Log.d("BOOKING_DEBUG", jsonBody.toString());
-        request.setRetryPolicy(new DefaultRetryPolicy(30000, 0, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
+        request.setRetryPolicy(new DefaultRetryPolicy(60000, 0, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
         Volley.newRequestQueue(this).add(request);
     }
 

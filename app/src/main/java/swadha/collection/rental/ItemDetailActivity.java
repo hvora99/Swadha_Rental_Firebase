@@ -243,6 +243,7 @@ public class ItemDetailActivity extends AppCompatActivity {
                         rv.setAdapter(null);
                         rv.setVisibility(View.GONE);
                         tvNoBooking.setVisibility(View.VISIBLE);
+                        btnRemove.setEnabled(true);
                         btnRemove.setAlpha(1f);
                         hideLoading();
 
