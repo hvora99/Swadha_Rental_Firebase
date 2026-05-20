@@ -132,15 +132,8 @@ public class DashboardActivity extends AppCompatActivity {
             }
         });
 
-
-
         loadDailyStats();
-
-
     }
-
-
-
     private void updateStatusInSheet(RentalBooking booking) {
 
         JSONObject jsonBody = new JSONObject();
@@ -255,8 +248,6 @@ public class DashboardActivity extends AppCompatActivity {
         }
     }
 
-
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -309,10 +300,6 @@ public class DashboardActivity extends AppCompatActivity {
 
         calculateTotalBalance();
     }
-
-
-
-
 
     private void loadDailyStats() {
         // 1. Stop any current scrolling
@@ -485,6 +472,4 @@ public class DashboardActivity extends AppCompatActivity {
 
         tvTotalBalance.setText("₹ " + String.format("%.2f", totalDue));
     }
-
-
 }
