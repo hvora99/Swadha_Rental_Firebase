@@ -19,13 +19,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.android.volley.Request;
-import com.android.volley.toolbox.JsonArrayRequest;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,22 +27,22 @@ import java.util.List;
 public class ItemDetailActivity extends AppCompatActivity {
 
     private String itemNo;
-    private static final String webAppUrl = "https://script.google.com/macros/s/AKfycby9Bfc8ohJDS6bvWDu1I8E21yxzRg_GQBhpRXkzY9hLfcKrDlqzxYe2LyMl4Vmb6CXj/exec";
+    private FirebaseItemRepository repository;
     EditText etName, etRent, etDeposit;
     boolean isLocked;
     private AlertDialog progressDialog;
     Button btnRemove;
+
+    private boolean requiresWash;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_item_detail);
 
-        itemNo = getIntent().getStringExtra("itemNo");
-        String itemName = getIntent().getStringExtra("itemName");
-        double rent = getIntent().getDoubleExtra("rent", 0);
-        double deposit = getIntent().getDoubleExtra("deposit", 0);
-        isLocked = getIntent().getBooleanExtra("isLocked", false);
+        repository = new FirebaseItemRepository();
 
+        itemNo = getIntent().getStringExtra("itemNo");
+        loadItemDetails();
 
         TextView tvCode = findViewById(R.id.tvDetailItemCode);
         etName = findViewById(R.id.etDetailItemName);
@@ -62,49 +56,60 @@ public class ItemDetailActivity extends AppCompatActivity {
 
 
         btnToggleLock.setOnClickListener(v -> {
+
             showLoading();
-            JSONObject params = new JSONObject();
-            try {
-                params.put("action", "toggleLock");
-                params.put("itemNo", itemNo);
-                params.put("lock", !isLocked);
-            } catch (Exception ignored) {}
 
-            JsonObjectRequest request = new JsonObjectRequest(
-                    Request.Method.POST,
-                    webAppUrl,
-                    params,
-                    response -> {
+            boolean newLockState = !isLocked;
 
-                        if (response.optString("status").equals("success")) {
+            repository.updateLockStatus(
 
-                            isLocked = !isLocked;
-                            btnToggleLock.setText(isLocked ? "Unlock Item" : "Lock Item");
+                    itemNo,
 
-                            Toast.makeText(this,
-                                    isLocked ? "Item Locked" : "Item Unlocked",
-                                    Toast.LENGTH_SHORT).show();
+                    newLockState,
+
+                    new FirebaseItemRepository
+                            .SimpleCallback() {
+
+                        @Override
+                        public void onSuccess() {
+
+                            hideLoading();
+
+                            isLocked = newLockState;
+
+                            updateLockButtonUI(
+                                    btnToggleLock
+                            );
+
+                            Toast.makeText(
+                                    ItemDetailActivity.this,
+
+                                    isLocked
+                                            ? "Item Locked"
+                                            : "Item Unlocked",
+
+                                    Toast.LENGTH_SHORT
+                            ).show();
                         }
-                        hideLoading();
-                    },
-                    error -> {
-                        Toast.makeText(this,
-                                "Lock update failed",
-                                Toast.LENGTH_SHORT).show();
-                        hideLoading();
+
+                        @Override
+                        public void onError(
+                                String error
+                        ) {
+
+                            hideLoading();
+
+                            Toast.makeText(
+                                    ItemDetailActivity.this,
+                                    error,
+                                    Toast.LENGTH_LONG
+                            ).show();
+                        }
                     }
-
-
-
             );
-
-            Volley.newRequestQueue(this).add(request);
         });
 
         tvCode.setText(itemNo);
-        etName.setText(itemName);
-        etRent.setText(String.valueOf(rent));
-        etDeposit.setText(String.valueOf(deposit));
 
         Button btnUpdate = findViewById(R.id.btnUpdateItem);
         btnRemove = findViewById(R.id.btnRemoveItem);
@@ -138,7 +143,86 @@ public class ItemDetailActivity extends AppCompatActivity {
         });
 
         // Next step: load current booking
-        loadCurrentBooking();
+    }
+
+    private void loadItemDetails(){
+
+        showLoading();
+
+
+
+        com.google.firebase.firestore.FirebaseFirestore
+                .getInstance()
+
+                .collection("items")
+
+                .document(itemNo)
+
+                .get()
+
+                .addOnSuccessListener(documentSnapshot -> {
+
+                    hideLoading();
+
+                    FirebaseItemModel item =
+                            documentSnapshot.toObject(
+                                    FirebaseItemModel.class
+                            );
+
+                    if(item == null){
+
+                        Toast.makeText(
+                                this,
+                                "Item not found",
+                                Toast.LENGTH_SHORT
+                        ).show();
+
+                        finish();
+
+                        return;
+                    }
+
+                    isLocked = item.isLocked;
+
+                    TextView tvCode =
+                            findViewById(
+                                    R.id.tvDetailItemCode
+                            );
+
+                    tvCode.setText(item.itemNo);
+
+                    etName.setText(item.itemName);
+
+                    etRent.setText(
+                            String.valueOf(item.rent)
+                    );
+
+                    etDeposit.setText(
+                            String.valueOf(item.deposit)
+                    );
+
+                    requiresWash = item.requiresWash;
+
+                    Button btnToggleLock =
+                            findViewById(
+                                    R.id.btnToggleLock
+                            );
+
+                    updateLockButtonUI(btnToggleLock);
+
+                    updateBookingUI(item);
+                })
+
+                .addOnFailureListener(e -> {
+
+                    hideLoading();
+
+                    Toast.makeText(
+                            this,
+                            e.getMessage(),
+                            Toast.LENGTH_LONG
+                    ).show();
+                });
     }
     private void showLoading() {
 
@@ -188,167 +272,194 @@ public class ItemDetailActivity extends AppCompatActivity {
         }
     }
 
-    private void loadCurrentBooking() {
-        RecyclerView rv = findViewById(R.id.rvCurrentBooking);
-        TextView tvNoBooking = findViewById(R.id.tvNoBooking);
+    private void updateBookingUI(
+            FirebaseItemModel item
+    ){
 
-        rv.setLayoutManager(new LinearLayoutManager(this));
+        RecyclerView rv =
+                findViewById(
+                        R.id.rvCurrentBooking
+                );
 
-        String url = webAppUrl + "?mode=currentBooking&itemNo=" + itemNo;
+        TextView tvNoBooking =
+                findViewById(
+                        R.id.tvNoBooking
+                );
+
+        rv.setLayoutManager(
+                new LinearLayoutManager(this)
+        );
+
+        if(item.currentOrderId == null ||
+                item.currentOrderId.isEmpty()){
+
+            rv.setVisibility(View.GONE);
+
+            tvNoBooking.setVisibility(View.VISIBLE);
+
+            btnRemove.setEnabled(true);
+
+            btnRemove.setAlpha(1f);
+
+            return;
+        }
+
+        tvNoBooking.setVisibility(View.GONE);
+
+        rv.setVisibility(View.VISIBLE);
+
+        btnRemove.setEnabled(false);
+
+        btnRemove.setAlpha(0.4f);
+
+        List<CurrentBookingModel> list =
+                new ArrayList<>();
+
+        list.add(
+
+                new CurrentBookingModel(
+
+                        "Order: " + item.currentOrderId,
+
+                        "",
+
+                        item.currentStatus,
+
+                        "",
+
+                        "",
+
+                        "",
+
+                        ""
+                )
+        );
+
+        rv.setAdapter(
+                new CurrentBookingAdapter(list)
+        );
+
+        expandRecyclerView(rv);
+    }
+    private void updateItemOnServer(
+
+            String name,
+
+            String rent,
+
+            String deposit
+    ){
 
         showLoading();
-        JsonObjectRequest request = new JsonObjectRequest(
-                Request.Method.GET,
-                url,
-                null,
-                response -> {
-                    String status = response.optString("status", "available");
 
-                    if ("booked".equals(status)) {
+        repository.updateBasicInfo(
 
-                        JSONArray bookingArray = response.optJSONArray("bookings");
+                itemNo,
 
-                        if (bookingArray != null && bookingArray.length() > 0) {
+                name,
 
-                            List<CurrentBookingModel> list = new ArrayList<>();
+                Double.parseDouble(rent),
 
-                            for (int i = 0; i < bookingArray.length(); i++) {
+                Double.parseDouble(deposit),
 
-                                JSONObject booking = bookingArray.optJSONObject(i);
-                                if (booking == null) continue;
+                requiresWash,
 
-                                list.add(new CurrentBookingModel(
-                                        booking.optString("name"),
-                                        booking.optString("phone"),
-                                        booking.optString("pickup"),
-                                        booking.optString("return"),
-                                        String.valueOf(booking.optDouble("totalRent")),
-                                        String.valueOf(booking.optDouble("rentPaid")),
-                                        String.valueOf(booking.optDouble("balance"))
-                                ));
-                            }
-                            Log.d("BOOKINGS_COUNT","Total="+bookingArray.length());
-                            rv.setAdapter(new CurrentBookingAdapter(list));
-                            expandRecyclerView(rv);
-                            rv.setVisibility(View.VISIBLE);
-                            tvNoBooking.setVisibility(View.GONE);
-                            btnRemove.setEnabled(false);
-                            btnRemove.setAlpha(0.4f);
-                            hideLoading();
+                new FirebaseItemRepository
+                        .SimpleCallback() {
 
-                        }
+                    @Override
+                    public void onSuccess() {
 
-                    } else {
-
-                        rv.setAdapter(null);
-                        rv.setVisibility(View.GONE);
-                        tvNoBooking.setVisibility(View.VISIBLE);
-                        btnRemove.setEnabled(true);
-                        btnRemove.setAlpha(1f);
                         hideLoading();
 
+                        Toast.makeText(
+
+                                ItemDetailActivity.this,
+
+                                "Item Updated",
+
+                                Toast.LENGTH_SHORT
+
+                        ).show();
+
+                        setResult(RESULT_OK);
+
+                        finish();
                     }
-                },
-                error -> {
 
-                        Log.e("BOOKING_ERROR", error.toString());
+                    @Override
+                    public void onError(
+                            String error
+                    ) {
 
-                        if (error.networkResponse != null) {
-                            Log.e("BOOKING_ERROR_BODY",
-                                    new String(error.networkResponse.data));
-                        }
-
-                        Toast.makeText(this, "Error loading booking", Toast.LENGTH_SHORT).show();
                         hideLoading();
+
+                        Toast.makeText(
+
+                                ItemDetailActivity.this,
+
+                                error,
+
+                                Toast.LENGTH_LONG
+
+                        ).show();
                     }
-        );
-
-        Volley.newRequestQueue(this).add(request);
-    }
-
-    private void updateItemOnServer(String name, String rent, String deposit) {
-
-        JSONObject params = new JSONObject();
-
-        try {
-            params.put("action", "updateItem");
-            params.put("itemNo", itemNo);
-            params.put("itemName", name);
-            params.put("rent", rent);
-            params.put("deposit", deposit);
-        } catch (Exception ignored) {}
-
-        JsonObjectRequest request = new JsonObjectRequest(
-                Request.Method.POST,
-                webAppUrl,
-                params,
-                response -> {
-
-                    if (response.optString("status").equals("success")) {
-                        if (response.optString("status").equals("success")) {
-                            if (response.optString("status").equals("success")) {
-                                if (response.optString("status").equals("success")) {
-                                    Toast.makeText(this, "Item Updated", Toast.LENGTH_SHORT).show();
-                                    setResult(RESULT_OK);
-                                    finish();
-                                }
-                            }                            setResult(RESULT_OK);
-                            finish();
-                        }                    } else {
-                        Toast.makeText(this,
-                                response.optString("message"),
-                                Toast.LENGTH_LONG).show();
-                    }
-
-                },
-                error -> Toast.makeText(this, "Update failed", Toast.LENGTH_SHORT).show()
-        );
-
-        Volley.newRequestQueue(this).add(request);
-    }
-
-
-
-    private void deleteItemFromServer(String itemNo) {
-
-        JSONObject params = new JSONObject();
-        try {
-            params.put("action", "deleteItem");
-            params.put("itemNo", itemNo);
-        } catch (Exception ignored) {}
-
-        JsonObjectRequest request = new JsonObjectRequest(
-                Request.Method.POST,
-                webAppUrl,
-                params,
-                response -> {
-
-                    if (response.optString("status").equals("success")) {
-
-                        Toast.makeText(this, "Item Removed", Toast.LENGTH_SHORT).show();
-
-                        setResult(RESULT_OK);   // 👈 Important
-                        finish();               // 👈 Go back
-
-                    } else {
-                        Toast.makeText(this,
-                                response.optString("message"),
-                                Toast.LENGTH_LONG).show();
-                    }
-
-                },
-                error ->
-                {
-                        Log.e("API_ERROR", error.toString());
-                        Toast.makeText(this, "API Failed", Toast.LENGTH_SHORT).show();
-
-                    Toast.makeText(this, "Error deleting item", Toast.LENGTH_SHORT).show();
                 }
         );
-
-        Volley.newRequestQueue(this).add(request);
     }
+    private void deleteItemFromServer(
+            String itemNo
+    ){
 
+        showLoading();
+
+        repository.deleteItem(
+
+                itemNo,
+
+                new FirebaseItemRepository
+                        .SimpleCallback() {
+
+                    @Override
+                    public void onSuccess() {
+
+                        hideLoading();
+
+                        Toast.makeText(
+
+                                ItemDetailActivity.this,
+
+                                "Item Removed",
+
+                                Toast.LENGTH_SHORT
+
+                        ).show();
+
+                        setResult(RESULT_OK);
+
+                        finish();
+                    }
+
+                    @Override
+                    public void onError(
+                            String error
+                    ) {
+
+                        hideLoading();
+
+                        Toast.makeText(
+
+                                ItemDetailActivity.this,
+
+                                error,
+
+                                Toast.LENGTH_LONG
+
+                        ).show();
+                    }
+                }
+        );
+    }
     private void expandRecyclerView(RecyclerView recyclerView){
 
         RecyclerView.Adapter adapter = recyclerView.getAdapter();

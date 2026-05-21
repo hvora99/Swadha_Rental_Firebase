@@ -1,5 +1,7 @@
 plugins {
     alias(libs.plugins.androidApplication)
+    alias(libs.plugins.googleServices)
+
 }
 
 android {
@@ -33,15 +35,26 @@ android {
 
 dependencies {
 
+
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.ext.junit)
-    androidTestImplementation(libs.espresso.core)
+
     implementation(libs.volley)
 
     implementation("com.google.code.gson:gson:2.10.1")
+
+    implementation(platform(libs.firebase.bom))
+
+    implementation(libs.firebase.firestore)
+
+    implementation(libs.firebase.auth)
+
+    testImplementation(libs.junit)
+
+    androidTestImplementation(libs.ext.junit)
+
+    androidTestImplementation(libs.espresso.core)
 
 }

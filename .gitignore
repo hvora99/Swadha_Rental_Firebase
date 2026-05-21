@@ -1,6 +1,12 @@
-.gradle
-.idea
-local.properties
-build
 *.iml
-*.jks
+.gradle
+/local.properties
+/.idea
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+
+# Firebase
+google-services.json

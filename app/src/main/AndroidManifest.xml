@@ -22,6 +22,7 @@
         <activity
             android:name=".ItemDetailActivity"
             android:exported="false" />
+        <activity android:name=".FirebaseTestActivity"/>
 
         <provider
             android:name="androidx.core.content.FileProvider"

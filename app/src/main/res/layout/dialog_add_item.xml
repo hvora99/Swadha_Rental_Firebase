@@ -90,7 +90,7 @@
                 android:layout_marginEnd="6dp"
                 android:background="@drawable/bg_minimal_line"
                 android:hint="Rent (₹)"
-                android:inputType="number"
+                android:inputType="numberDecimal"
                 android:paddingHorizontal="16dp" />
 
             <EditText
@@ -101,7 +101,7 @@
                 android:layout_marginStart="6dp"
                 android:background="@drawable/bg_minimal_line"
                 android:hint="Deposit (₹)"
-                android:inputType="number"
+                android:inputType="numberDecimal"
                 android:paddingHorizontal="16dp" />
         </LinearLayout>
 
@@ -121,10 +121,10 @@
             android:layout_height="60dp"
             android:layout_marginTop="32dp"
             android:backgroundTint="#0A0A0A"
-            android:text="Update Collection"
+            android:letterSpacing="0.1"
+            android:text="Add Item"
             android:textColor="#FFFFFF"
             android:textStyle="bold"
-            android:letterSpacing="0.1"
             app:cornerRadius="12dp" />
 
     </LinearLayout>

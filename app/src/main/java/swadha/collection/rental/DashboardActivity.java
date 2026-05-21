@@ -67,6 +67,7 @@ public class DashboardActivity extends AppCompatActivity {
         };
 
 
+
         ImageButton btnOpenInventory = findViewById(R.id.btnOpenInventory); // New Button
         rvDailyReturns = findViewById(R.id.rvDailyReturns);
         tvReturnCount = findViewById(R.id.tvReturnCount);
