@@ -27,15 +27,11 @@ import java.text.SimpleDateFormat;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.android.volley.DefaultRetryPolicy;
-import com.android.volley.Request;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
+
 import com.google.android.material.button.MaterialButton;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -55,10 +51,8 @@ public class NewBookingActivity extends AppCompatActivity {
     private LinearLayout layoutSelectedItems;
 
     private List<ItemModel> availableItems = new ArrayList<>();
-    private List<ItemModel> selectedItems = new ArrayList<>();
     MaterialButton btnSearchItems;
 
-    String url = "https://script.google.com/macros/s/AKfycby9Bfc8ohJDS6bvWDu1I8E21yxzRg_GQBhpRXkzY9hLfcKrDlqzxYe2LyMl4Vmb6CXj/exec";
     private AlertDialog progressDialog;
 
     private boolean isItemValid = false; // Your Booking Button
@@ -69,9 +63,13 @@ public class NewBookingActivity extends AppCompatActivity {
     private static final int TYPE_RETURN = 2;
     private static final int TYPE_WASH   = 3;
 
+    private FirebaseOrderRepository
+            orderRepository;
+
     private Calendar washCalendar = Calendar.getInstance();
 
-    List<BookingItem> bookingItems = new ArrayList<>();
+    private List<SelectedBookingItemModel>
+            selectedItems = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,11 +93,12 @@ public class NewBookingActivity extends AppCompatActivity {
         btnSearchItems = findViewById(R.id.btnSearchItems);
         layoutSelectedItems = findViewById(R.id.layoutSelectedItems);
 
+        orderRepository =
+                new FirebaseOrderRepository();
+
         setupCurrencyFormatter(etTotalRent);
         setupCurrencyFormatter(etdeposit);
         setupCurrencyFormatter(RentPaidNow);
-
-       // fetchAvailableItems();
 
 
         btnWashDate.setEnabled(false);
@@ -127,7 +126,7 @@ public class NewBookingActivity extends AppCompatActivity {
             btnSaveBooking.setEnabled(false);
 
             // Call booking function
-            saveDataToSheet();
+            saveBooking();
 
             // ⏳ Re-enable after 3 seconds (fallback safety)
             new Handler().postDelayed(() -> {
@@ -155,7 +154,6 @@ public class NewBookingActivity extends AppCompatActivity {
 
         availableItems.clear();
         selectedItems.clear();
-        bookingItems.clear();
 
         layoutSelectedItems.removeAllViews();
 
@@ -171,82 +169,142 @@ public class NewBookingActivity extends AppCompatActivity {
 
     private void fetchAvailableItems() {
 
-        if (selectedPickupDate.isEmpty() || selectedReturnDate.isEmpty() ||
-                selectedPickupTime.isEmpty() || selectedReturnTime.isEmpty()) {
-            Toast.makeText(this, "Please select all Dates & Times first!", Toast.LENGTH_SHORT).show();
+        if (selectedPickupDate.isEmpty()
+                || selectedReturnDate.isEmpty()
+                || selectedPickupTime.isEmpty()
+                || selectedReturnTime.isEmpty()) {
+
+            Toast.makeText(
+                    this,
+                    "Please select all Dates & Times first!",
+                    Toast.LENGTH_SHORT
+            ).show();
+
             return;
         }
 
         String currentSearchKey =
+
                 selectedPickupDate + "_" +
                         selectedPickupTime + "_" +
                         selectedReturnDate + "_" +
                         selectedReturnTime;
 
-        if(currentSearchKey.equals(lastSearchKey) && !availableItems.isEmpty()){
-            showSearchableDialog();   // reuse cached results
+        if(currentSearchKey.equals(lastSearchKey)
+                && !availableItems.isEmpty()){
+
+            showSearchableDialog();
+
             return;
         }
+
         lastSearchKey = currentSearchKey;
 
         showLoading();
 
-        String fetchUrl = url +
-                "?mode=items" +
-                "&startDate=" + selectedPickupDate +
-                "&startTime=" + selectedPickupTime +
-                "&endDate=" + selectedReturnDate +
-                "&endTime=" + selectedReturnTime +
-                "&showLocked=false";
+        availableItems.clear();
 
+        long pickupMs =
+                pickupCalendar.getTimeInMillis();
 
-        StringRequest request = new StringRequest(Request.Method.GET, fetchUrl,
-                response -> {
+        FirebaseFirestore
+                .getInstance()
+
+                .collection("items")
+
+                .get()
+
+                .addOnSuccessListener(querySnapshot -> {
+
                     hideLoading();
-                    Log.d("DEBUG_DATA", "Server sent: " + response); // Check this in Logcat
-                    try {
-                        org.json.JSONArray array = new org.json.JSONArray(response);
-                        availableItems.clear();
 
-                        if (array.length() == 0) {
-                            Toast.makeText(this, "Server says 0 items available", Toast.LENGTH_SHORT).show();
+                    for(QueryDocumentSnapshot doc
+                            : querySnapshot){
+
+                        FirebaseItemModel firebaseItem =
+
+                                doc.toObject(
+                                        FirebaseItemModel.class
+                                );
+
+                        ItemModel item = new ItemModel(
+
+                                firebaseItem.itemNo,
+
+                                firebaseItem.itemName,
+
+                                firebaseItem.rent,
+
+                                firebaseItem.deposit,
+
+                                firebaseItem.requiresWash,
+
+                                firebaseItem.isLocked,
+
+                                firebaseItem.nextAvailableMs,
+
+                                firebaseItem.currentStatus
+                        );
+
+                        // ====================
+                        // AVAILABILITY LOGIC
+                        // ====================
+
+                        if(firebaseItem.isLocked){
+
+                            item.setStatus("locked");
+
+                        }else if(
+
+                                firebaseItem
+                                        .nextAvailableMs
+
+                                        > pickupMs
+                        ){
+
+                            item.setStatus("booked");
+
+                        }else{
+
+                            item.setStatus("available");
                         }
 
-
-                        for (int i = 0; i < array.length(); i++) {
-                            JSONObject obj = array.getJSONObject(i);
-                            boolean isAvailable = obj.getBoolean("isAvailable");
-                            availableItems.add(new ItemModel(
-                                    obj.getString("itemNo"),
-                                    obj.getString("itemName"),
-                                    obj.getDouble("rent"),
-                                    obj.getDouble("deposit"),
-                                    obj.getBoolean("requiresWash"),
-                                    obj.getBoolean("isLocked"),
-                                    obj.optLong("nextAvailableMs",0),
-                                    obj.optString("status", "available")
-                            ));
-
-
-                        }
-
-                        if (!availableItems.isEmpty()) {
-                            showSearchableDialog();
-                        }
-                    } catch (JSONException e) {
-                        Log.e("DEBUG_DATA", "JSON Error: " + e.getMessage());
+                        availableItems.add(item);
                     }
-                },
 
-                error -> {
+                    if(availableItems.isEmpty()){
+
+                        Toast.makeText(
+
+                                this,
+
+                                "No inventory found",
+
+                                Toast.LENGTH_SHORT
+
+                        ).show();
+
+                        return;
+                    }
+
+                    showSearchableDialog();
+                })
+
+                .addOnFailureListener(e -> {
+
                     hideLoading();
-                    Log.e("API_ERROR", error.toString());
-                    Toast.makeText(this, "Connection Error", Toast.LENGTH_SHORT).show();
+
+                    Toast.makeText(
+
+                            this,
+
+                            e.getMessage(),
+
+                            Toast.LENGTH_LONG
+
+                    ).show();
                 });
-
-        Volley.newRequestQueue(this).add(request);
     }
-
     private void updateWashButtonText() {
 
         SimpleDateFormat dateFormat =
@@ -346,8 +404,20 @@ public class NewBookingActivity extends AppCompatActivity {
                                 check.setEnabled(true);
                         }
 
-                        check.setChecked(selectedItems.contains(item));
+                        boolean alreadySelected = false;
 
+                        for(SelectedBookingItemModel s : selectedItems){
+
+                            if(s.item.getItemNo()
+                                    .equals(item.getItemNo())){
+
+                                alreadySelected = true;
+
+                                break;
+                            }
+                        }
+
+                        check.setChecked(alreadySelected);
                         check.setOnClickListener(v -> {
 
                             if(check.isChecked()){
@@ -356,8 +426,10 @@ public class NewBookingActivity extends AppCompatActivity {
 
                             }else{
 
-                                selectedItems.remove(item);
-                                updateSelectedItemsUI();
+                                selectedItems.removeIf(s ->
+                                        s.item.getItemNo()
+                                                .equals(item.getItemNo())
+                                );                                updateSelectedItemsUI();
                             }
                         });
 
@@ -433,7 +505,8 @@ public class NewBookingActivity extends AppCompatActivity {
 
             ItemModel selected = (ItemModel) parent.getItemAtPosition(position);
 
-            if (!selected.isAvailable()) {
+            if (!selected.getStatus()
+                    .equals("available"))  {
 
                 Toast.makeText(this,
                         "Next available: " +
@@ -443,10 +516,38 @@ public class NewBookingActivity extends AppCompatActivity {
                 return;
             }
 
-            if(!selectedItems.contains(selected)){
-                showRentDepositDialog(selected,null);
+            boolean exists = false;
+
+            for(SelectedBookingItemModel s
+                    : selectedItems){
+
+                if(s.item.getItemNo()
+                        .equals(selected.getItemNo())){
+
+                    exists = true;
+
+                    break;
+                }
+            }
+
+            if(!exists){
+
+                showRentDepositDialog(
+                        selected,
+                        null
+                );
+
             }else{
-                selectedItems.remove(selected);
+
+                selectedItems.removeIf(s ->
+
+                        s.item.getItemNo()
+
+                                .equals(
+                                        selected.getItemNo()
+                                )
+                );
+
                 updateSelectedItemsUI();
             }
 
@@ -455,51 +556,127 @@ public class NewBookingActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    private void showRentDepositDialog(ItemModel item, CheckBox check){
+    private void showRentDepositDialog(
+            ItemModel item,
+            CheckBox check
+    ){
 
-        View view = getLayoutInflater().inflate(R.layout.dialog_rent_deposit,null);
+        View view = getLayoutInflater()
+                .inflate(
+                        R.layout.dialog_rent_deposit,
+                        null
+                );
 
-        EditText etRent = view.findViewById(R.id.etRent);
-        EditText etDeposit = view.findViewById(R.id.etDeposit);
+        EditText etRent =
+                view.findViewById(R.id.etRent);
 
-        etRent.setText(String.valueOf(item.getRent()));
-        etDeposit.setText(String.valueOf(item.getDeposit()));
+        EditText etDeposit =
+                view.findViewById(R.id.etDeposit);
+
+        etRent.setText(
+                String.valueOf(item.getRent())
+        );
+
+        etDeposit.setText(
+                String.valueOf(item.getDeposit())
+        );
 
         new AlertDialog.Builder(this)
-                .setTitle("Item : " + item.getItemNo())
+
+                .setTitle(
+                        "Item : " +
+                                item.getItemNo()
+                )
+
                 .setView(view)
-                .setPositiveButton("Save",(d,w)->{
 
-                    try{
+                .setPositiveButton(
+                        "Save",
+                        (d,w)->{
 
-                        double rent = Double.parseDouble(etRent.getText().toString());
-                        double deposit = Double.parseDouble(etDeposit.getText().toString());
+                            try{
 
-                        item.setRent(rent);
-                        item.setDeposit(deposit);
+                                double customRent =
+                                        Double.parseDouble(
 
-                        if(!selectedItems.contains(item)){
-                            selectedItems.add(item);
-                        }
+                                                etRent.getText()
+                                                        .toString()
+                                        );
 
-                        updateSelectedItemsUI();
+                                double customDeposit =
+                                        Double.parseDouble(
 
-                    }catch(Exception e){
-                        Toast.makeText(this,"Invalid value",Toast.LENGTH_SHORT).show();
+                                                etDeposit.getText()
+                                                        .toString()
+                                        );
 
-                        if(check != null){
-                            check.setChecked(false);
-                        }
-                    }
+                                SelectedBookingItemModel
+                                        selected =
+                                        new SelectedBookingItemModel();
 
-                })
-                .setNegativeButton("Cancel",(d,w)->{
+                                selected.item = item;
 
-                    if(check != null){
-                        check.setChecked(false);
-                    }
+                                selected.customRent =
+                                        customRent;
 
-                })
+                                selected.customDeposit =
+                                        customDeposit;
+
+                                selected.rentPaid = 0;
+
+                                selected.pickupMs =
+                                        pickupCalendar.getTimeInMillis();
+
+                                selected.returnMs =
+                                        returnCalendar.getTimeInMillis();
+
+                                selected.washMs =
+                                        washCalendar.getTimeInMillis();
+
+                                // remove old if exists
+
+                                selectedItems.removeIf(s ->
+
+                                        s.item.getItemNo()
+
+                                                .equals(
+                                                        item.getItemNo()
+                                                )
+                                );
+
+                                selectedItems.add(selected);
+
+                                updateSelectedItemsUI();
+
+                            }catch(Exception e){
+
+                                Toast.makeText(
+
+                                        this,
+
+                                        "Invalid value",
+
+                                        Toast.LENGTH_SHORT
+
+                                ).show();
+
+                                if(check != null){
+
+                                    check.setChecked(false);
+                                }
+                            }
+                        })
+
+                .setNegativeButton(
+                        "Cancel",
+                        (d,w)->{
+
+                            if(check != null){
+
+                                check.setChecked(false);
+                            }
+                        })
+
                 .show();
     }
     private void updateSelectedItemsUI(){
@@ -511,8 +688,9 @@ public class NewBookingActivity extends AppCompatActivity {
 
         boolean washRequired = false;
 
-        for(ItemModel item : selectedItems){
-            if(item.isRequiresWash()){
+        for(SelectedBookingItemModel selected
+        : selectedItems){
+            if(selected.item.isRequiresWash()){
                 washRequired = true;
                 break;
             }
@@ -538,54 +716,18 @@ public class NewBookingActivity extends AppCompatActivity {
             btnWashTime.setAlpha(0.4f);
         }
 
-        for(ItemModel item : selectedItems){
+        for(SelectedBookingItemModel selected
+        : selectedItems){
 
-            totalRent += item.getRent();
-            totalDeposit += item.getDeposit();
+            totalRent += selected.customRent;
 
-            boolean exists = false;
+            totalDeposit +=
+                    selected.customDeposit;
 
-            for(BookingItem b : bookingItems){
 
-                if(b.getItemNo().equals(item.getItemNo())){
-                    exists = true;
-                    break;
-                }
-
-            }
-
-            if(!exists){
-
-                long pickupMs = pickupCalendar.getTimeInMillis();
-                long returnMs = returnCalendar.getTimeInMillis();
-                long washMs   = washCalendar.getTimeInMillis();
-
-                bookingItems.add(
-                        new BookingItem(
-                                item.getItemNo(),
-                                pickupMs,
-                                returnMs,
-                                washMs,
-                                item.isRequiresWash(),
-                                item.getRent(),       // ⭐ add this
-                                item.getDeposit()     // ⭐ add this
-                        )
-                );
-            }
         }
 
-        bookingItems.removeIf(b -> {
 
-            for(ItemModel item : selectedItems){
-
-                if(item.getItemNo().equals(b.getItemNo())){
-                    return false;
-                }
-
-            }
-
-            return true;
-        });
 
         etTotalRent.setText(String.valueOf(totalRent));
         SuggestedDeposit.setText(String.format(Locale.getDefault(),"₹ %,.0f", totalDeposit));
@@ -596,9 +738,10 @@ public class NewBookingActivity extends AppCompatActivity {
         SimpleDateFormat format =
                 new SimpleDateFormat("dd MMM HH:mm", Locale.getDefault());
 
-        for(int i=0;i<bookingItems.size();i++){
+        for(int i=0;i<selectedItems.size();i++){
 
-            BookingItem item = bookingItems.get(i);
+            SelectedBookingItemModel item =
+                    selectedItems.get(i);
 
             View card = getLayoutInflater()
                     .inflate(R.layout.item_timeline_chip,null);
@@ -606,21 +749,23 @@ public class NewBookingActivity extends AppCompatActivity {
             TextView tvItem = card.findViewById(R.id.tvItemCode);
             TextView tvTime = card.findViewById(R.id.tvTimeline);
 
-            tvItem.setText(item.getItemNo());
+            tvItem.setText(
+                    item.item.getItemNo()
+            );
 
             String timeline =
-                    format.format(new Date(item.getPickupMs()))
+                    format.format(new Date(item.pickupMs))
                             + " → "
-                            + format.format(new Date(item.getReturnMs()));
-
+                            + format.format(new Date(item.returnMs));
             tvTime.setText(timeline);
 
             int index = i;
 
             card.setOnClickListener(v -> {
 
-                showTimelineEditor(bookingItems.get(index));
-
+                showTimelineEditor(
+                        selectedItems.get(index)
+                );
             });
 
             layoutSelectedItems.addView(card);
@@ -633,7 +778,9 @@ public class NewBookingActivity extends AppCompatActivity {
 
 
 
-    private void showTimelineEditor(BookingItem item){
+    private void showTimelineEditor(
+            SelectedBookingItemModel item
+    ){
 
         View view = getLayoutInflater().inflate(
                 R.layout.dialog_edit_timeline,null);
@@ -645,13 +792,15 @@ public class NewBookingActivity extends AppCompatActivity {
         Button btnReturnDate = view.findViewById(R.id.btnReturnDate);
         Button btnReturnTime = view.findViewById(R.id.btnReturnTime);
 
-        tvItem.setText("Item : " + item.getItemNo());
-
+        tvItem.setText(
+                "Item : " +
+                        item.item.getItemNo()
+        );
         Calendar pickupCal = Calendar.getInstance();
-        pickupCal.setTimeInMillis(item.getPickupMs());
+        pickupCal.setTimeInMillis(item.pickupMs);
 
         Calendar returnCal = Calendar.getInstance();
-        returnCal.setTimeInMillis(item.getReturnMs());
+        returnCal.setTimeInMillis(item.returnMs);
 
         SimpleDateFormat dateFormat =
                 new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
@@ -768,8 +917,8 @@ public class NewBookingActivity extends AppCompatActivity {
                 .setView(view)
                 .setPositiveButton("Save",(d,w)->{
 
-                    item.setPickupMs(pickupCal.getTimeInMillis());
-                    item.setReturnMs(returnCal.getTimeInMillis());
+                    item.pickupMs = pickupCal.getTimeInMillis();
+                    item.returnMs = returnCal.getTimeInMillis();
                     updateSelectedItemsUI();
 
                 })
@@ -873,7 +1022,7 @@ public class NewBookingActivity extends AppCompatActivity {
             btnSaveBooking.setEnabled(false);
             btnSaveBooking.setBackgroundColor(Color.GRAY);
         }
-        
+
         final Calendar c = Calendar.getInstance();
 
         TimePickerDialog timePickerDialog = new TimePickerDialog(
@@ -948,7 +1097,7 @@ public class NewBookingActivity extends AppCompatActivity {
         return true;
     }
 
-    private void saveDataToSheet() {
+    private void saveBooking() {
 
         if (selectedItems.isEmpty()) {
             Toast.makeText(this, "Please select at least one item", Toast.LENGTH_SHORT).show();
@@ -981,100 +1130,145 @@ public class NewBookingActivity extends AppCompatActivity {
         showLoading();
         // 3. Prepare JSON
 
-        if(bookingItems.isEmpty()){
-            Toast.makeText(this,"Internal booking error",Toast.LENGTH_SHORT).show();
-            return;
-        }
 
         long globalWashMs = washCalendar.getTimeInMillis();
 
-        for (BookingItem item : bookingItems) {
+        for (SelectedBookingItemModel item
+                : selectedItems) {
 
-            if (item.isRequiresWash()) {
-                item.setWashMs(globalWashMs);
+            if (item.item.isRequiresWash()) {
+
+                item.washMs = globalWashMs;
+
             } else {
-                item.setWashMs(item.getReturnMs());
+
+                item.washMs = item.returnMs;
             }
         }
 
-        JSONObject jsonBody = new JSONObject();
-        try {
-            jsonBody.put("action", "add");
-            JSONArray itemsArray = new JSONArray();
 
+        long now = System.currentTimeMillis();
 
-            for (BookingItem item : bookingItems) {
+        FirebaseOrderModel order =
+                new FirebaseOrderModel();
 
-                JSONObject itemObj = new JSONObject();
+        order.orderId =
+                "SVD-" + now;
 
-                itemObj.put("itemNo", item.getItemNo());
-                itemObj.put("pickupMs", item.getPickupMs());
-                itemObj.put("returnMs", item.getReturnMs());
-                itemObj.put("washMs", item.getWashMs());
-                itemObj.put("requiresWash", item.isRequiresWash());
-                itemObj.put("rent", item.getRent());
-                itemObj.put("deposit", item.getDeposit());
-                itemsArray.put(itemObj);
+        order.customerName = name;
+
+        order.phone = phone;
+
+        order.totalRent =
+                getCurrencyValue(etTotalRent);
+
+        order.totalDeposit =
+                getCurrencyValue(SuggestedDeposit);
+
+        order.totalRentPaid =
+                getCurrencyValue(RentPaidNow);
+
+        order.balanceRent =
+                order.totalRent
+                        - order.totalRentPaid;
+
+        order.pickupMs =
+                pickupCalendar.getTimeInMillis();
+
+        order.returnMs =
+                returnCalendar.getTimeInMillis();
+
+        order.washBlockMs =
+                washCalendar.getTimeInMillis();
+
+        order.status =
+                Constants.STATUS_BOOKED;
+
+        order.createdAt = now;
+
+        order.updatedAt = now;
+
+        double remainingRentPaid =
+                order.totalRentPaid;
+
+        for(SelectedBookingItemModel item
+                : selectedItems){
+
+            if(remainingRentPaid <= 0){
+
+                item.rentPaid = 0;
+
+                continue;
             }
 
-            jsonBody.put("items", itemsArray);
-            jsonBody.put("name", name);
-            jsonBody.put("phone", phone);
-            jsonBody.put("pickupDate", selectedPickupDate);
-            jsonBody.put("pickupTime", selectedPickupTime);
-            jsonBody.put("returnDate", selectedReturnDate);
-            jsonBody.put("returnTime", selectedReturnTime);
+            double payable =
+                    item.customRent;
 
+            if(remainingRentPaid >= payable){
 
-            // Put financial values
-            double totalValue = getCurrencyValue(etTotalRent);
+                item.rentPaid = payable;
 
-            jsonBody.put("total", totalValue);
-            jsonBody.put("rentPaid", rentPaidValue);
-            jsonBody.put("deposit", depositValue);
-            long washBlockMs = washCalendar.getTimeInMillis();
-            jsonBody.put("washBlockMs", washBlockMs);
+                remainingRentPaid -= payable;
 
-            Log.d("BOOKING_DEBUG","Total="+totalValue);
-            Log.d("BOOKING_DEBUG","Deposit="+depositValue);
-            Log.d("BOOKING_DEBUG","RentPaid="+rentPaidValue);
+            }else{
 
-            } catch (JSONException e) { e.printStackTrace(); }
+                item.rentPaid =
+                        remainingRentPaid;
 
-        // 4. Send to Script
-        StringRequest request = new StringRequest(Request.Method.POST, url,
-                response -> {
-                    hideLoading();
-                    try {
-                        btnSaveBooking.setEnabled(true); // 🔥 re-enable on response
-                        JSONObject res = new JSONObject(response);
-                        if (res.getString("status").equals("success")) {
-                            getSharedPreferences("RentalPrefs", MODE_PRIVATE).edit().remove("cache_data").apply();
-                            Toast.makeText(this, "Booking Confirmed!", Toast.LENGTH_SHORT).show();
-                            finish();
-                        } else {
-                            // This handles the "Double Booking" error sent from Script's doPost
-                            Toast.makeText(this, "Error: " + res.getString("message"), Toast.LENGTH_LONG).show();
-                        }
-                    } catch (Exception e) { finish(); }
-                },
-                error -> {
-                    hideLoading();
-                    btnSaveBooking.setEnabled(true); // 🔥 re-enable on response
-                    if (error.networkResponse != null && error.networkResponse.statusCode == 302) {
+                remainingRentPaid = 0;
+            }
+        }
+
+        showLoading();
+
+        orderRepository.createBooking(
+
+                order,
+
+                selectedItems,
+
+                new FirebaseOrderRepository
+                        .OrderCallback() {
+
+                    @Override
+                    public void onSuccess() {
+
+                        hideLoading();
+
+                        Toast.makeText(
+
+                                NewBookingActivity.this,
+
+                                "Booking Confirmed",
+
+                                Toast.LENGTH_LONG
+
+                        ).show();
+
                         finish();
-                    } else {
-                        Toast.makeText(this, "Connection Error", Toast.LENGTH_SHORT).show();
                     }
-                }) {
-            @Override
-            public byte[] getBody() { return jsonBody.toString().getBytes(); }
-            @Override
-            public String getBodyContentType() { return "application/json; charset=utf-8"; }
-        };
-        Log.d("BOOKING_DEBUG", jsonBody.toString());
-        request.setRetryPolicy(new DefaultRetryPolicy(60000, 0, DefaultRetryPolicy.DEFAULT_BACKOFF_MULT));
-        Volley.newRequestQueue(this).add(request);
+
+                    @Override
+                    public void onError(
+                            String error
+                    ) {
+
+                        hideLoading();
+
+                        btnSaveBooking.setEnabled(true);
+
+                        Toast.makeText(
+
+                                NewBookingActivity.this,
+
+                                error,
+
+                                Toast.LENGTH_LONG
+
+                        ).show();
+                    }
+                }
+        );
     }
 
     private void setupCurrencyFormatter(EditText editText){

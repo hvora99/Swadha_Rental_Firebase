@@ -42,6 +42,10 @@ public class ItemModel {
         return status;
     }
 
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
     public void setRent(double rent) {
         this.rent = rent;
     }
@@ -70,7 +74,5 @@ public class ItemModel {
         return itemNo.equals(other.itemNo);
     }
 
-    public boolean isAvailable() {
-        return nextAvailableMs == 0 || nextAvailableMs < System.currentTimeMillis();
-    }
+
 }

@@ -1,8 +1,6 @@
 package swadha.collection.rental;
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -13,17 +11,13 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.android.volley.Request;
-import com.android.volley.toolbox.JsonArrayRequest;
-import com.android.volley.toolbox.JsonObjectRequest; // Added
-import com.android.volley.toolbox.Volley;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
+import android.graphics.Color;
+import android.view.Gravity;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List; // Added
 
@@ -34,6 +28,8 @@ public class ItemActivity extends AppCompatActivity {
     // Make sure this URL matches your script URL
 
     private FirebaseItemRepository repository;
+
+    private AlertDialog progressDialog;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -159,26 +155,27 @@ public class ItemActivity extends AppCompatActivity {
 
         btnSave.setOnClickListener(v -> {
 
-            String itemNo =
+            // =========================
+            // READ INPUTS
+            // =========================
+
+            String itemNo = normalizeItemCode(
+
                     etNo.getText()
                             .toString()
-                            .trim()
-                            .toUpperCase();
+            );
 
-            String itemName =
-                    etName.getText()
-                            .toString()
-                            .trim();
+            String itemName = etName.getText()
+                    .toString()
+                    .trim();
 
-            String rentText =
-                    etRent.getText()
-                            .toString()
-                            .trim();
+            String rentText = etRent.getText()
+                    .toString()
+                    .trim();
 
-            String depositText =
-                    etDeposit.getText()
-                            .toString()
-                            .trim();
+            String depositText = etDeposit.getText()
+                    .toString()
+                    .trim();
 
             // =========================
             // VALIDATION
@@ -220,89 +217,251 @@ public class ItemActivity extends AppCompatActivity {
 
             btnSave.setText("Saving...");
 
+            showLoading();
+
             // =========================
-            // CREATE MODEL
-            // =========================
-
-            FirebaseItemModel item =
-                    new FirebaseItemModel();
-
-            item.itemNo = itemNo;
-
-            item.itemName = itemName;
-
-            item.rent =
-                    Double.parseDouble(rentText);
-
-            item.deposit =
-                    Double.parseDouble(depositText);
-
-            item.requiresWash =
-                    cbWash.isChecked();
-
-            item.isLocked = false;
-
-            item.currentStatus = "Available";
-
-            item.currentOrderId = "";
-
-            item.nextAvailableMs = 0;
-
-            long now = System.currentTimeMillis();
-
-            item.createdAt = now;
-
-            item.updatedAt = now;
-            // =========================
-            // SAVE TO FIREBASE
+            // CHECK DUPLICATE
             // =========================
 
-            repository.addItem(
-                    item,
+            com.google.firebase.firestore.FirebaseFirestore
+                    .getInstance()
 
-                    new FirebaseItemRepository
-                            .SimpleCallback() {
+                    .collection("items")
 
-                        @Override
-                        public void onSuccess() {
+                    .document(itemNo)
 
-                            runOnUiThread(() -> {
+                    .get()
 
-                                Toast.makeText(
-                                        ItemActivity.this,
-                                        "Item Added",
-                                        Toast.LENGTH_SHORT
-                                ).show();
+                    .addOnSuccessListener(documentSnapshot -> {
 
-                                dialog.dismiss();
-                            });
+                        // =====================
+                        // DUPLICATE FOUND
+                        // =====================
+
+                        if(documentSnapshot.exists()){
+
+                            hideLoading();
+
+                            btnSave.setEnabled(true);
+
+                            btnSave.setText("Add Item");
+
+                            etNo.setError(
+                                    "Item already exists"
+                            );
+
+                            return;
                         }
 
-                        @Override
-                        public void onError(
-                                String error
-                        ) {
+                        // =====================
+                        // CREATE MODEL
+                        // =====================
 
-                            runOnUiThread(() -> {
+                        FirebaseItemModel item =
+                                new FirebaseItemModel();
 
-                                btnSave.setEnabled(true);
+                        item.itemNo = itemNo;
 
-                                btnSave.setText(
-                                        "Add Item"
+                        item.itemName = itemName;
+
+                        item.rent =
+                                Double.parseDouble(
+                                        rentText
                                 );
 
-                                Toast.makeText(
-                                        ItemActivity.this,
-                                        error,
-                                        Toast.LENGTH_LONG
-                                ).show();
-                            });
-                        }
-                    }
-            );
+                        item.deposit =
+                                Double.parseDouble(
+                                        depositText
+                                );
+
+                        item.requiresWash =
+                                cbWash.isChecked();
+
+                        item.isLocked = false;
+
+                        item.currentStatus =
+                                Constants.STATUS_AVAILABLE;
+
+                        item.currentOrderId = "";
+
+                        item.nextAvailableMs = 0;
+
+                        long now =
+                                System.currentTimeMillis();
+
+                        item.createdAt = now;
+
+                        item.updatedAt = now;
+
+                        // =====================
+                        // SAVE ITEM
+                        // =====================
+
+                        repository.addItem(
+
+                                item,
+
+                                new FirebaseItemRepository
+                                        .SimpleCallback() {
+
+                                    @Override
+                                    public void onSuccess() {
+
+                                        runOnUiThread(() -> {
+
+                                            hideLoading();
+
+                                            Toast.makeText(
+
+                                                    ItemActivity.this,
+
+                                                    "Item Added",
+
+                                                    Toast.LENGTH_SHORT
+
+                                            ).show();
+
+                                            dialog.dismiss();
+                                        });
+                                    }
+
+                                    @Override
+                                    public void onError(
+                                            String error
+                                    ) {
+
+                                        runOnUiThread(() -> {
+
+                                            hideLoading();
+
+                                            btnSave.setEnabled(
+                                                    true
+                                            );
+
+                                            btnSave.setText(
+                                                    "Add Item"
+                                            );
+
+                                            Toast.makeText(
+
+                                                    ItemActivity.this,
+
+                                                    error,
+
+                                                    Toast.LENGTH_LONG
+
+                                            ).show();
+                                        });
+                                    }
+                                }
+                        );
+                    })
+
+                    .addOnFailureListener(e -> {
+
+                        hideLoading();
+
+                        btnSave.setEnabled(true);
+
+                        btnSave.setText("Add Item");
+
+                        Toast.makeText(
+
+                                ItemActivity.this,
+
+                                e.getMessage(),
+
+                                Toast.LENGTH_LONG
+
+                        ).show();
+                    });
         });
 
         dialog.show();
     }
 
+    private String normalizeItemCode(
+            String code
+    ){
+
+        return code
+
+                .replaceAll("\\s+", "")
+
+                .replace("-", "")
+
+                .trim()
+
+                .toUpperCase();
+    }
+
+    private void showLoading() {
+
+        if(progressDialog != null &&
+                progressDialog.isShowing()){
+
+            return;
+        }
+
+        LinearLayout layout =
+                new LinearLayout(this);
+
+        layout.setOrientation(
+                LinearLayout.HORIZONTAL
+        );
+
+        layout.setPadding(
+                60,
+                50,
+                60,
+                50
+        );
+
+        layout.setGravity(Gravity.CENTER);
+
+        ProgressBar progressBar =
+                new ProgressBar(this);
+
+        progressBar.setIndeterminate(true);
+
+        progressBar.setPadding(
+                0,
+                0,
+                30,
+                0
+        );
+
+        TextView tv =
+                new TextView(this);
+
+        tv.setText("Loading...");
+
+        tv.setTextSize(18);
+
+        tv.setTextColor(Color.BLACK);
+
+        layout.addView(progressBar);
+
+        layout.addView(tv);
+
+        progressDialog =
+                new AlertDialog.Builder(this)
+
+                        .setView(layout)
+
+                        .setCancelable(false)
+
+                        .create();
+
+        progressDialog.show();
+    }
+
+    private void hideLoading() {
+
+        if(progressDialog != null &&
+                progressDialog.isShowing()){
+
+            progressDialog.dismiss();
+        }
+    }
 }
