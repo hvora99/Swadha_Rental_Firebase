@@ -26,7 +26,7 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/tvItemCircle"
+                android:id="@+id/tvItemCircle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
@@ -168,13 +168,17 @@
             android:id="@+id/tvReturnUrgency"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textSize="10sp"
+            android:textSize="11sp"
             android:textColor="#666666"
             android:text="Satus"
             android:layout_marginTop="4dp"
             android:textStyle="bold"
             android:ellipsize="end"
             android:maxLines="1"
+            android:letterSpacing="0.04"
+            android:fontFamily="sans-serif-medium"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="4dp"
             app:layout_constraintStart_toStartOf="@id/tvRowCustomerName"
             app:layout_constraintEnd_toEndOf="@id/balanceGroup"
             app:layout_constraintTop_toBottomOf="@id/timelineHub" />

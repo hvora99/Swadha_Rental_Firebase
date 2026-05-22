@@ -131,20 +131,29 @@ public class RentalBooking {
         return items;
     }
 
-    public void addItem(String itemNo,
-                        String itemName,
-                        String status,
-                        double rent,
-                        double deposit,
-                        double rentPaid){
+    public void addItem(
+            String itemNo,
+            String itemName,
+            String status,
+            double rent,
+            double deposit,
+            double rentPaid,
+            long pickupMs,
+            long returnMs,
+            long washMs
+    ){
 
         items.add(new ItemStatus(
+
                 itemNo,
                 itemName,
                 status,
                 rent,
                 deposit,
-                rentPaid
+                rentPaid,
+                pickupMs,
+                returnMs,
+                washMs
         ));
     }
 
@@ -169,21 +178,47 @@ public class RentalBooking {
         private double deposit;
         String itemName;
         private double rentPaid;
+        private long pickupMs;
+        private long returnMs;
+        private long washMs;
 
         public ItemStatus(
-                String itemNo,
-                String itemName,
-                String status,
-                double rent,
-                double deposit,
-                double rentPaid){
 
+                String itemNo,
+
+                String itemName,
+
+                String status,
+
+                double rent,
+
+                double deposit,
+
+                double rentPaid,
+
+                long pickupMs,
+
+                long returnMs,
+
+                long washMs
+        ){
             this.itemNo = itemNo;
+
             this.itemName = itemName;
+
             this.status = status;
+
             this.rent = rent;
+
             this.deposit = deposit;
+
             this.rentPaid = rentPaid;
+
+            this.pickupMs = pickupMs;
+
+            this.returnMs = returnMs;
+
+            this.washMs = washMs;
         }
 
         public double getRentPaid(){
@@ -212,6 +247,17 @@ public class RentalBooking {
 
         public String getItemName(){
             return itemName;
+        }
+        public long getPickupMs(){
+            return pickupMs;
+        }
+
+        public long getReturnMs(){
+            return returnMs;
+        }
+
+        public long getWashMs(){
+            return washMs;
         }
     }
 

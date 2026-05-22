@@ -19,15 +19,9 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.android.volley.DefaultRetryPolicy;
-import com.android.volley.Request;
-import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.JsonObjectRequest;
-import com.android.volley.toolbox.Volley;
+
 import com.google.android.material.button.MaterialButton;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -39,7 +33,6 @@ import java.util.Locale;
 public class ReturnDetailActivity extends AppCompatActivity {
 
     private String itemNo;
-    private static final String webAppUrl = "https://script.google.com/macros/s/AKfycby9Bfc8ohJDS6bvWDu1I8E21yxzRg_GQBhpRXkzY9hLfcKrDlqzxYe2LyMl4Vmb6CXj/exec";
     MaterialButton BtnMarkReceived;
     MaterialButton btnCancel;
     MaterialButton btnPickedUp;
@@ -51,19 +44,23 @@ public class ReturnDetailActivity extends AppCompatActivity {
     private double deposit;
     private double rentPaid;
     private AlertDialog loadingDialog;
-    private RequestQueue queue;
     private boolean isProcessing = false;
 
     private static final String ACTION_PICKUP = "pickup";
     private static final String ACTION_RETURN = "return";
     private static final String ACTION_CANCEL = "cancel";
 
+    private FirebaseReturnRepository
+            returnRepository;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_return_detail);
 
-        queue = Volley.newRequestQueue(this);
+        returnRepository =
+                new FirebaseReturnRepository();
+
 
 
         itemNo = getIntent().getStringExtra("itemNo");
@@ -84,12 +81,16 @@ public class ReturnDetailActivity extends AppCompatActivity {
         long washMs = getIntent().getLongExtra("washDateTime",0);
         long actualPickupMs = getIntent().getLongExtra("actualPickupDateTime",0);
 
-        itemsList =
-                (ArrayList<RentalBooking.ItemStatus>)
-                        getIntent().getSerializableExtra("itemsList");
+       TextView tvCustomerHeader =
+                findViewById(R.id.tvCustomerHeader);
+
+        TextView tvPhoneHeader =
+                findViewById(R.id.tvPhoneHeader);
 
 
+        tvCustomerHeader.setText(name);
 
+        tvPhoneHeader.setText(phone);
 
         bookingTimestamp = getIntent().getStringExtra("timestamp");
         if (bookingTimestamp == null) {
@@ -104,40 +105,21 @@ public class ReturnDetailActivity extends AppCompatActivity {
 
         Log.d("DETAIL_DEBUG", "Received timestamp: " + bookingTimestamp);
 
-// Views
-        TextView tvItem = findViewById(R.id.detItemNo);
-        TextView tvName = findViewById(R.id.detName);
-        TextView tvPhone = findViewById(R.id.detPhone);
-        TextView tvPickup = findViewById(R.id.detPickup);
-        TextView tvReturn = findViewById(R.id.detReturn);
+
         TextView tvBalance = findViewById(R.id.detBalance);
         TextView tvTotal = findViewById(R.id.detTotal);
         TextView tvAdvance = findViewById(R.id.detAdvance);
         TextView tvDeposit = findViewById(R.id.detDeposit);
         TextView tvStatus = findViewById(R.id.tvStatus);
-        TextView tvWash = findViewById(R.id.detWash);
         TextView tvOrder = findViewById(R.id.tvOrderId);
-        TextView tvActualPickup = findViewById(R.id.detActualPickup);
         layoutItemTimeline = findViewById(R.id.layoutItemTimeline);
         btnPickedUp = findViewById(R.id.btnPickedUp);
         btnCancel = findViewById(R.id.btnCancelBooking);
         BtnMarkReceived = findViewById(R.id.btnMarkReceived);
 
 
-        if(itemsList == null){
-            itemsList = new ArrayList<>();
-        }
+        itemsList = new ArrayList<>();
 
-        for(Object obj : itemsList){
-            Log.d("ITEM_TYPE", obj.getClass().getName());
-        }
-
-        renderItemTimeline(itemsList, pickupMs, returnMs);
-        updateButtonStates();
-// Set Data
-        tvItem.setText(items);
-        tvName.setText(name);
-        tvPhone.setText("Phone: " + (phone != null ? phone : "N/A"));
         tvOrder.setText(orderId != null ? "Order ID: " + orderId : "Order ID: N/A");
 
         Date pickupDate = new Date(pickupMs);
@@ -146,8 +128,6 @@ public class ReturnDetailActivity extends AppCompatActivity {
         SimpleDateFormat format =
                 new SimpleDateFormat("dd MMM yyyy HH:mm", Locale.getDefault());
 
-        tvPickup.setText(format.format(pickupDate));
-        tvReturn.setText(format.format(returnDate));
 
         tvTotal.setText("₹ " + String.format("%.2f", totalRent));
         tvAdvance.setText("₹ " + String.format("%.2f", rentPaid));
@@ -195,18 +175,7 @@ public class ReturnDetailActivity extends AppCompatActivity {
         }
 
 
-        Date washDate = new Date(washMs);
-        tvWash.setText(format.format(washDate));
-
-
-
-        if(washMs > 0){
-            tvWash.setText(format.format(new Date(washMs)));
-        }
-
-        if(actualPickupMs > 0){
-            tvActualPickup.setText(format.format(new Date(actualPickupMs)));
-        }
+        loadOrderItems();
 
 
         BtnMarkReceived.setOnClickListener(v -> {
@@ -274,6 +243,88 @@ public class ReturnDetailActivity extends AppCompatActivity {
                     balance
             );
         });
+    }
+
+    private void loadOrderItems(){
+
+        showLoading("Loading items...");
+
+        returnRepository.loadOrderItems(
+
+                orderId,
+
+                new FirebaseReturnRepository
+                        .OnItemsLoaded() {
+
+                    @Override
+                    public void onLoaded(
+
+                            List<FirebaseOrderItemModel> items
+                    ) {
+
+                        hideLoading();
+
+                        itemsList.clear();
+
+                        for(FirebaseOrderItemModel item
+                                : items){
+
+                            itemsList.add(
+
+                                    new RentalBooking.ItemStatus(
+
+                                            item.itemNo,
+
+                                            item.itemName,
+
+                                            item.status,
+
+                                            item.customRent,
+
+                                            item.customDeposit,
+
+                                            item.rentPaid,
+
+                                            item.pickupMs,
+
+                                            item.returnMs,
+
+                                            item.washMs
+                                    )
+                            );
+                        }
+
+                        renderItemTimeline(
+
+                                itemsList,
+
+                                0,
+
+                                0
+                        );
+
+                        updateButtonStates();
+                    }
+
+                    @Override
+                    public void onError(
+                            String error
+                    ) {
+
+                        hideLoading();
+
+                        Toast.makeText(
+
+                                ReturnDetailActivity.this,
+
+                                error,
+
+                                Toast.LENGTH_LONG
+
+                        ).show();
+                    }
+                }
+        );
     }
 
     private double calculateAmount(String action, ArrayList<RentalBooking.ItemStatus> items, ListView listView){
@@ -372,16 +423,6 @@ public class ReturnDetailActivity extends AppCompatActivity {
 
 
 
-    private ArrayList<String> extractItemCodes(ArrayList<RentalBooking.ItemStatus> items){
-
-        ArrayList<String> codes = new ArrayList<>();
-
-        for(RentalBooking.ItemStatus item : items){
-            codes.add(item.getItemNo());
-        }
-
-        return codes;
-    }
 
     private void showItemActionDialog(
             String title,
@@ -575,69 +616,78 @@ public class ReturnDetailActivity extends AppCompatActivity {
                 break;
         }
     }
-    private void markAsPickedUp(String orderId,
-                                ArrayList<String> items,
-                                double paidNow){
+
+    private void markAsPickedUp(
+
+            String orderId,
+
+            ArrayList<String> items,
+
+            double paidNow
+    ){
 
         if(isProcessing) return;
+
         isProcessing = true;
 
         disableActionButtons();
+
         showLoading("Processing...");
-        JSONObject params = new JSONObject();
 
-        try {
-            params.put("action","markPickedUp");
-            params.put("orderId",orderId);
-            params.put("items",new JSONArray(items));
-            params.put("paidNow",paidNow);
-        } catch (Exception ignored){}
+        returnRepository.markItemsPickedUp(
 
-        JsonObjectRequest request = new JsonObjectRequest(
-                Request.Method.POST,
-                webAppUrl,
-                params,
+                orderId,
 
-                response -> {
+                items,
 
-                    hideLoading();
+                paidNow,
 
-                    new android.os.Handler().postDelayed(() -> {
+                new FirebaseReturnRepository
+                        .ActionCallback() {
 
-                        Intent intent = new Intent();
-                        intent.putExtra("refresh", true);
-                        intent.putExtra("orderId", orderId);
+                    @Override
+                    public void onSuccess() {
 
-                        setResult(RESULT_OK, intent);
+                        hideLoading();
+
+                        Toast.makeText(
+
+                                ReturnDetailActivity.this,
+
+                                "Items picked up",
+
+                                Toast.LENGTH_SHORT
+
+                        ).show();
+
                         finish();
+                    }
 
-                    }, 600);
-                },
+                    @Override
+                    public void onError(
+                            String error
+                    ) {
 
-                error -> {
+                        hideLoading();
 
-                    hideLoading();
+                        isProcessing = false;
 
-                    isProcessing = false;
-                    enableActionButtons();
+                        enableActionButtons();
 
-                    Toast.makeText(this,
-                            "Failed to update. Try again.",
-                            Toast.LENGTH_SHORT).show();
+                        Toast.makeText(
 
-                    Log.e("API_ERROR", error.toString());
+                                ReturnDetailActivity.this,
+
+                                error,
+
+                                Toast.LENGTH_LONG
+
+                        ).show();
+                    }
                 }
         );
-
-        // ✅ Add retry policy (important)
-        request.setRetryPolicy(new DefaultRetryPolicy(
-                30000,
-                1,
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
-        ));
-
-        queue.add(request);
     }
+
 
     private void enableActionButtons(){
 
@@ -662,143 +712,145 @@ public class ReturnDetailActivity extends AppCompatActivity {
 
         return selected;
     }
-    private void cancelBookingWithRefund(String orderId,
-                                         ArrayList<String> items,
-                                         double refundAmount){
+    private void cancelBookingWithRefund(
+
+            String orderId,
+
+            List<String> items,
+
+            double refundAmount
+    ){
 
         if(isProcessing) return;
+
         isProcessing = true;
 
         disableActionButtons();
-        showLoading("Processing...");
 
-        JSONObject params = new JSONObject();
+        showLoading("Cancelling booking...");
 
-        try {
-            params.put("action","cancelBooking");
-            params.put("orderId",orderId);
-            params.put("items",new JSONArray(items));
-            params.put("refundAmount",refundAmount);
-        } catch (Exception ignored){}
+        returnRepository.cancelBooking(
 
-        JsonObjectRequest request = new JsonObjectRequest(
-                Request.Method.POST,
-                webAppUrl,
-                params,
+                orderId,
 
-                response -> {
+                items,
 
-                    hideLoading();
+                refundAmount,
 
-                    new android.os.Handler().postDelayed(() -> {
+                new FirebaseReturnRepository
+                        .ActionCallback() {
 
-                        Intent intent = new Intent();
-                        intent.putExtra("refresh", true);
-                        intent.putExtra("orderId", orderId);
+                    @Override
+                    public void onSuccess() {
 
-                        setResult(RESULT_OK, intent);
+                        hideLoading();
+
+                        Toast.makeText(
+
+                                ReturnDetailActivity.this,
+
+                                "Booking cancelled",
+
+                                Toast.LENGTH_SHORT
+
+                        ).show();
+
                         finish();
+                    }
 
-                    }, 600);
-                },
+                    @Override
+                    public void onError(
+                            String error
+                    ) {
 
-                error -> {
+                        hideLoading();
 
-                    hideLoading();
+                        isProcessing = false;
 
-                    isProcessing = false;
-                    enableActionButtons();
+                        enableActionButtons();
 
-                    Toast.makeText(this,
-                            "Cancel failed. Try again.",
-                            Toast.LENGTH_SHORT).show();
+                        Toast.makeText(
 
-                    Log.e("API_ERROR", error.toString());
+                                ReturnDetailActivity.this,
+
+                                error,
+
+                                Toast.LENGTH_LONG
+
+                        ).show();
+                    }
                 }
         );
-
-        // ✅ Retry policy
-        request.setRetryPolicy(new DefaultRetryPolicy(
-                30000,
-                1,
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
-        ));
-
-        queue.add(request);
     }
-    private void markItemAsReturned(String orderId,
-                                    List<String> items,
-                                    double refundAmount){
+    private void markItemAsReturned(
+
+            String orderId,
+
+            List<String> items,
+
+            double refundAmount
+    ){
 
         if(isProcessing) return;
+
         isProcessing = true;
 
         disableActionButtons();
+
         showLoading("Processing...");
-        JSONObject params = new JSONObject();
 
-        try{
+        returnRepository.markItemsReturned(
 
-            params.put("action","markReceived");
-            params.put("orderId",orderId);
-            params.put("refundAmount",refundAmount);
+                orderId,
 
-            JSONArray arr = new JSONArray();
+                items,
 
-            for(String item:items){
-                arr.put(item);
-            }
+                refundAmount,
 
-            params.put("items",arr);
+                new FirebaseReturnRepository
+                        .ActionCallback() {
 
-        }catch(Exception e){
-            e.printStackTrace();
-        }
+                    @Override
+                    public void onSuccess() {
 
-        JsonObjectRequest request = new JsonObjectRequest(
-                Request.Method.POST,
-                webAppUrl,
-                params,
+                        hideLoading();
 
-                response -> {
+                        Toast.makeText(
 
-                    hideLoading();
+                                ReturnDetailActivity.this,
 
-                    new android.os.Handler().postDelayed(() -> {
+                                "Items returned",
 
-                        Intent intent = new Intent();
-                        intent.putExtra("refresh", true);
-                        intent.putExtra("orderId", orderId);
+                                Toast.LENGTH_SHORT
 
-                        setResult(RESULT_OK, intent);
+                        ).show();
+
                         finish();
+                    }
 
-                    }, 600);
-                },
+                    @Override
+                    public void onError(
+                            String error
+                    ) {
 
-                error -> {
+                        hideLoading();
 
-                    hideLoading();
+                        isProcessing = false;
 
-                    isProcessing = false;
-                    enableActionButtons();
+                        enableActionButtons();
 
-                    Toast.makeText(this,
-                            "Return failed. Try again.",
-                            Toast.LENGTH_SHORT).show();
+                        Toast.makeText(
 
-                    Log.e("API_ERROR", error.toString());
+                                ReturnDetailActivity.this,
+
+                                error,
+
+                                Toast.LENGTH_LONG
+
+                        ).show();
+                    }
                 }
         );
-
-        // ✅ retry policy
-        request.setRetryPolicy(new DefaultRetryPolicy(
-                30000,
-                1,
-                DefaultRetryPolicy.DEFAULT_BACKOFF_MULT
-        ));
-
-        queue.add(request);
     }
     private void disableActionButtons(){
 
@@ -909,21 +961,131 @@ public class ReturnDetailActivity extends AppCompatActivity {
         for(RentalBooking.ItemStatus item : items){
 
             View row = getLayoutInflater()
-                    .inflate(R.layout.item_timeline_row,null);
+                    .inflate(
+                            R.layout.item_return_timeline,
+                            layoutItemTimeline,
+                            false
+                    );
 
-            TextView tvItem = row.findViewById(R.id.tvTimelineItem);
-            TextView tvTime = row.findViewById(R.id.tvTimelineTime);
 
-            tvItem.setText(
-                    item.getItemNo() + " - " + item.getItemName()
+
+            TextView tvItemNo =
+                    row.findViewById(R.id.tvItemNo);
+
+            TextView tvItemName =
+                    row.findViewById(R.id.tvItemName);
+
+            TextView tvItemStatus =
+                    row.findViewById(R.id.tvItemStatus);
+
+            TextView tvPickup =
+                    row.findViewById(R.id.tvPickup);
+
+            TextView tvReturn =
+                    row.findViewById(R.id.tvReturn);
+
+            TextView tvWash =
+                    row.findViewById(R.id.tvWash);
+
+            TextView tvBalance =
+                    row.findViewById(R.id.tvBalance);
+
+            TextView tvDeposit =
+                    row.findViewById(R.id.tvDeposit);
+
+            tvItemNo.setText(
+                    item.getItemNo()
             );
 
-            String timeline =
-                    format.format(new Date(pickupMs))
-                            + " → "
-                            + format.format(new Date(returnMs));
+            tvItemName.setText(
+                    item.getItemName()
+            );
 
-            tvTime.setText(timeline);
+            tvPickup.setText(
+                    format.format(
+                            new Date(item.getPickupMs())
+                    )
+            );
+
+            tvReturn.setText(
+                    format.format(
+                            new Date(item.getReturnMs())
+                    )
+            );
+
+            tvWash.setText(
+                    format.format(
+                            new Date(item.getWashMs())
+                    )
+            );
+
+            tvBalance.setText(
+                    "₹ " + String.format(
+                            "%.0f",
+                            item.getBalance()
+                    )
+            );
+
+            tvDeposit.setText(
+                    "₹ " + String.format(
+                            "%.0f",
+                            item.getDeposit()
+                    )
+            );
+
+            String status = item.getStatus();
+
+            GradientDrawable bg =
+                    (GradientDrawable)
+
+                            tvItemStatus
+                                    .getBackground()
+                                    .mutate();
+
+            int color;
+
+            if(status.equalsIgnoreCase("Booked")){
+
+                color = Color.parseColor("#FB8C00");
+
+                tvItemStatus.setText(
+                        "BOOKED"
+                );
+            }
+            else if(status.equalsIgnoreCase("PickedUp")){
+
+                color = Color.parseColor("#1976D2");
+
+                tvItemStatus.setText(
+                        "PICKED UP"
+                );
+            }
+            else if(status.equalsIgnoreCase("Returned")){
+
+                color = Color.parseColor("#2E7D32");
+
+                tvItemStatus.setText(
+                        "RETURNED"
+                );
+            }
+            else if(status.equalsIgnoreCase("Cancelled")){
+
+                color = Color.parseColor("#D32F2F");
+
+                tvItemStatus.setText(
+                        "CANCELLED"
+                );
+            }
+            else{
+
+                color = Color.parseColor("#9E9E9E");
+
+                tvItemStatus.setText(
+                        status.toUpperCase()
+                );
+            }
+
+            bg.setColor(color);
 
             layoutItemTimeline.addView(row);
         }

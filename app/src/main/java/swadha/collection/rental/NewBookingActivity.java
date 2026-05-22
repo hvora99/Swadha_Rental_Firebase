@@ -41,7 +41,7 @@ import java.util.Locale;
 
 public class NewBookingActivity extends AppCompatActivity {
 
-    private EditText  etCustomerName, etPhone, etTotalRent,etdeposit,SuggestedDeposit,RentPaidNow;
+    private EditText  etCustomerName, etPhone, etTotalRent,SuggestedDeposit,RentPaidNow;
     private Button btnSaveBooking, btnPickDate, btnReturnDate, btnPickTime, btnReturnTime,btnWashDate,btnWashTime;
     private String selectedPickupDate = "";
     private String selectedReturnDate = "";
@@ -80,7 +80,6 @@ public class NewBookingActivity extends AppCompatActivity {
         etCustomerName = findViewById(R.id.etCustomerName);
         etPhone = findViewById(R.id.etPhone);
         etTotalRent = findViewById(R.id.etTotalRent);
-        etdeposit = findViewById(R.id.etDepositCollected);
         btnPickDate = findViewById(R.id.btnPickDate);
         btnReturnDate = findViewById(R.id.btnReturnDate);
         btnPickTime = findViewById(R.id.btnPickTime); // New
@@ -97,7 +96,6 @@ public class NewBookingActivity extends AppCompatActivity {
                 new FirebaseOrderRepository();
 
         setupCurrencyFormatter(etTotalRent);
-        setupCurrencyFormatter(etdeposit);
         setupCurrencyFormatter(RentPaidNow);
 
 
@@ -1013,7 +1011,22 @@ public class NewBookingActivity extends AppCompatActivity {
                 c.get(Calendar.DAY_OF_MONTH)
         );
 
-        datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis());
+        if(type == TYPE_WASH){
+
+            datePickerDialog
+                    .getDatePicker()
+                    .setMinDate(
+                            returnCalendar.getTimeInMillis()
+                    );
+
+        }else{
+
+            datePickerDialog
+                    .getDatePicker()
+                    .setMinDate(
+                            System.currentTimeMillis()
+                    );
+        }
         datePickerDialog.show();
     }
     private void showTimePicker(int type) {
@@ -1060,7 +1073,13 @@ public class NewBookingActivity extends AppCompatActivity {
 
                         washCalendar.set(Calendar.HOUR_OF_DAY, hour);
                         washCalendar.set(Calendar.MINUTE, minute);
+                        if(washCalendar.getTimeInMillis()
+                                < returnCalendar.getTimeInMillis()){
 
+                            washCalendar.setTimeInMillis(
+                                    returnCalendar.getTimeInMillis()
+                            );
+                        }
                         updateWashButtonText();
                     }
                 },
@@ -1115,7 +1134,6 @@ public class NewBookingActivity extends AppCompatActivity {
 
         // Get deposit collected
 
-        double depositValue = getCurrencyValue(etdeposit);
 
 
         // 2. Final Client-Side Validation

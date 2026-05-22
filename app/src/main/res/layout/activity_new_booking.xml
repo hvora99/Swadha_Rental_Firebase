@@ -233,7 +233,7 @@
                             android:paddingHorizontal="20dp"/>
                     </LinearLayout>
 
-                    <!-- SUGGESTED DEPOSIT COLUMN -->
+                    <!-- Take Deposit -->
                     <LinearLayout
                         android:layout_width="0dp"
                         android:layout_weight="1"
@@ -264,25 +264,7 @@
                 </LinearLayout>
 
 
-                <!-- PAYMENT COLLECTED NOW -->
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Diposit Collected Now"
-                    android:textStyle="bold"
-                    android:textColor="#8E8E93"
-                    android:textSize="11sp"
-                    android:layout_marginTop="20dp"/>
 
-                <EditText
-                    android:id="@+id/etDepositCollected"
-                    android:layout_width="match_parent"
-                    android:layout_height="55dp"
-                    android:background="@drawable/bg_minimal_line"
-                    android:hint="Deposit Collected ?"
-                    android:inputType="number"
-                    android:paddingHorizontal="20dp"
-                    android:layout_marginTop="8dp"/>
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"

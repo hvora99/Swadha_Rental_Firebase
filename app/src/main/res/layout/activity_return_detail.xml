@@ -6,42 +6,121 @@
     android:layout_height="match_parent"
     android:background="#F4F7FA">
 
-    <View
+    <!-- HEADER BACKGROUND -->
+
+    <com.google.android.material.card.MaterialCardView
         android:id="@+id/headerBg"
-        android:layout_width="match_parent"
-        android:layout_height="180dp"
-        android:background="#121417"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/tvStatus"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:background="@drawable/bg_status_glass"
-        android:paddingHorizontal="14dp"
-        android:paddingVertical="6dp"
-        android:text="BOOKED"
-        android:textColor="#FFFFFF"
-        android:textSize="10sp"
-        android:textStyle="bold"
-        android:letterSpacing="0.15"
+        android:layout_width="0dp"
+        android:layout_height="220dp"
+        app:cardCornerRadius="28dp"
+        app:cardElevation="0dp"
+        app:cardBackgroundColor="#121417"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
 
-    <TextView
-        android:id="@+id/detItemNo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:fontFamily="sans-serif-medium"
-        android:text="CH01"
-        android:textColor="#FFFFFF"
-        android:textSize="32sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvStatus" />
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="24dp">
+
+            <!-- subtle accent -->
+
+            <View
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:alpha="0.12"
+                android:background="@drawable/bg_balance_badge"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"/>
+
+            <!-- STATUS -->
+
+            <TextView
+                android:id="@+id/tvStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_status_glass"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="6dp"
+                android:text="BOOKED"
+                android:textColor="#FFFFFF"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:letterSpacing="0.15"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- CUSTOMER -->
+
+            <TextView
+                android:id="@+id/tvCustomerHeader"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="26dp"
+                android:text="Hardik Vora"
+                android:textColor="#FFFFFF"
+                android:textSize="30sp"
+                android:textStyle="bold"
+                android:fontFamily="sans-serif-medium"
+                app:layout_constraintEnd_toStartOf="@id/btnCallCustomer"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvStatus"/>
+
+            <!-- PHONE -->
+
+            <TextView
+                android:id="@+id/tvPhoneHeader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:text="+91 9876543210"
+                android:textColor="#B0BEC5"
+                android:textSize="15sp"
+                android:letterSpacing="0.03"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tvCustomerHeader"/>
+
+            <!-- CALL BUTTON -->
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCallCustomer"
+                style="@style/Widget.Material3.Button.IconButton.Filled"
+                android:layout_width="58dp"
+                android:layout_height="58dp"
+                android:layout_marginTop="18dp"
+                app:backgroundTint="#FFFFFF"
+                app:icon="@android:drawable/ic_menu_call"
+                app:iconSize="26dp"
+                app:iconTint="#121417"
+                app:layout_constraintBottom_toBottomOf="@id/tvPhoneHeader"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/tvCustomerHeader"/>
+
+            <!-- ORDER META -->
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="6dp"
+                android:orientation="vertical"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent">
+
+                <TextView
+                    android:id="@+id/tvOrderId"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="ORD2026-001"
+                    android:textColor="#FFFFFF"
+                    android:textSize="16sp"
+                    android:textStyle="bold"/>
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </com.google.android.material.card.MaterialCardView>
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -58,59 +137,7 @@
             android:orientation="vertical"
             android:padding="24dp">
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp">
 
-                <TextView
-                    android:id="@+id/detName"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="sans-serif-bold"
-                    android:text="Hardik"
-                    android:textColor="#1A1C1E"
-                    android:textSize="22sp"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-
-                <TextView
-                    android:id="@+id/detPhone"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
-                    android:text="9876543210"
-                    android:textColor="#667085"
-                    android:textSize="14sp"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/detName" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnCallCustomer"
-                    style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
-                    android:layout_width="56dp"
-                    android:layout_height="56dp"
-                    app:backgroundTint="#E8F5E9"
-                    app:icon="@android:drawable/ic_menu_call"
-                    app:iconSize="24dp"
-                    app:iconTint="#2E7D32"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toTopOf="parent" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <TextView
-                android:id="@+id/tvOrderId"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
-                android:background="#F2F4F7"
-                android:paddingHorizontal="10dp"
-                android:paddingVertical="4dp"
-                android:text="Order ID"
-                android:textColor="#475467"
-                android:textSize="11sp"
-                android:textStyle="bold" />
 
             <LinearLayout
                 android:id="@+id/layoutItemTimeline"
@@ -118,115 +145,6 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical" />
 
-            <GridLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:columnCount="2"
-                android:layout_marginTop="16dp">
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_columnWeight="1"
-                    android:orientation="vertical"
-                    android:layout_marginBottom="20dp">
-
-                    <TextView
-                        android:text="PICKUP"
-                        android:textSize="10sp"
-                        android:textColor="#98A2B3"
-                        android:textStyle="bold"
-                        android:letterSpacing="0.1"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
-
-                    <TextView
-                        android:id="@+id/detPickup"
-                        android:text="27 Feb 2026"
-                        android:textSize="15sp"
-                        android:textStyle="bold"
-                        android:textColor="#1D2939"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_columnWeight="1"
-                    android:orientation="vertical"
-                    android:gravity="end">
-
-                    <TextView
-                        android:text="RETURN"
-                        android:textSize="10sp"
-                        android:textColor="#FDA29B"
-                        android:textStyle="bold"
-                        android:letterSpacing="0.1"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
-
-                    <TextView
-                        android:id="@+id/detReturn"
-                        android:text="28 Feb 2026"
-                        android:textSize="15sp"
-                        android:textStyle="bold"
-                        android:textColor="#D32F2F"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_columnWeight="1"
-                    android:orientation="vertical">
-
-                    <TextView
-                        android:text="ACTUAL PICK UP"
-                        android:textSize="10sp"
-                        android:textColor="#98A2B3"
-                        android:textStyle="bold"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
-
-                    <TextView
-                        android:id="@+id/detActualPickup"
-                        android:text="27 Feb 2026"
-                        android:textSize="15sp"
-                        android:textColor="#475467"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp" />
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_columnWeight="1"
-                    android:orientation="vertical"
-                    android:gravity="end">
-
-                    <TextView
-                        android:text="WASH TIME"
-                        android:textSize="10sp"
-                        android:textColor="#98A2B3"
-                        android:textStyle="bold"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content" />
-
-                    <TextView
-                        android:id="@+id/detWash"
-                        android:text="28 Feb 2026"
-                        android:textSize="15sp"
-                        android:textColor="#475467"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp" />
-                </LinearLayout>
-            </GridLayout>
 
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
