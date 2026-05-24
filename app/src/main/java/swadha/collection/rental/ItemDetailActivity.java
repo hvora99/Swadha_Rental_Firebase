@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -20,6 +21,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 
+import com.google.android.material.card.MaterialCardView;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +54,7 @@ public class ItemDetailActivity extends AppCompatActivity {
         etDeposit = findViewById(R.id.etDetailDeposit);
 
 
-        Button btnToggleLock = findViewById(R.id.btnToggleLock);
+        MaterialCardView btnToggleLock = findViewById(R.id.btnToggleLock);
        // btnToggleLock.setText(isLocked ? "Unlock Item" : "Lock Item");
         updateLockButtonUI(btnToggleLock);
 
@@ -203,15 +207,14 @@ public class ItemDetailActivity extends AppCompatActivity {
 
                     requiresWash = item.requiresWash;
 
-                    Button btnToggleLock =
+                    MaterialCardView btnToggleLock =
                             findViewById(
                                     R.id.btnToggleLock
                             );
 
                     updateLockButtonUI(btnToggleLock);
 
-                    updateBookingUI(item);
-                })
+                    loadActiveBookings(item);                })
 
                 .addOnFailureListener(e -> {
 
@@ -257,22 +260,68 @@ public class ItemDetailActivity extends AppCompatActivity {
             progressDialog.dismiss();
         }
     }
-    private void updateLockButtonUI(Button button) {
+    private void updateLockButtonUI(
+            MaterialCardView button
+    ){
 
-        if (isLocked) {
-            button.setText("Unlock Item");
-            button.setBackgroundTintList(
-                    android.content.res.ColorStateList.valueOf(Color.RED)
+        TextView tvLockText =
+                button.findViewById(
+                        R.id.tvLockText
+                );
+
+        ImageView ivLockIcon =
+                button.findViewById(
+                        R.id.ivLockIcon
+                );
+
+        if(isLocked){
+
+            tvLockText.setText(
+                    "Unlock Item"
             );
-        } else {
-            button.setText("Lock Item");
-            button.setBackgroundTintList(
-                    android.content.res.ColorStateList.valueOf(Color.parseColor("#FF9800"))
+
+            tvLockText.setTextColor(
+                    Color.parseColor("#2E7D32")
+            );
+
+            ivLockIcon.setColorFilter(
+                    Color.parseColor("#2E7D32")
+            );
+
+            button.setCardBackgroundColor(
+                    Color.parseColor("#EEF8F1")
+            );
+
+            button.setStrokeColor(
+                    Color.parseColor("#B7DFC3")
+            );
+
+        }
+        else{
+
+            tvLockText.setText(
+                    "Lock Item"
+            );
+
+            tvLockText.setTextColor(
+                    Color.parseColor("#F57C00")
+            );
+
+            ivLockIcon.setColorFilter(
+                    Color.parseColor("#F57C00")
+            );
+
+            button.setCardBackgroundColor(
+                    Color.parseColor("#FFF8E8")
+            );
+
+            button.setStrokeColor(
+                    Color.parseColor("#FFD89B")
             );
         }
     }
 
-    private void updateBookingUI(
+    private void loadActiveBookings(
             FirebaseItemModel item
     ){
 
@@ -286,60 +335,171 @@ public class ItemDetailActivity extends AppCompatActivity {
                         R.id.tvNoBooking
                 );
 
-        rv.setLayoutManager(
-                new LinearLayoutManager(this)
+        FirebaseFirestore.getInstance()
+
+                .collection("orders")
+
+                .get()
+
+                .addOnSuccessListener(query -> {
+
+                    List<CurrentBookingModel> list =
+                            new ArrayList<>();
+
+                    int totalOrders =
+                            query.size();
+
+                    if(totalOrders == 0){
+
+                        tvNoBooking.setVisibility(
+                                View.VISIBLE
+                        );
+
+                        rv.setVisibility(
+                                View.GONE
+                        );
+
+                        return;
+                    }
+
+                    final int[] processed =
+                            {0};
+
+                    for(DocumentSnapshot orderDoc
+                            : query){
+
+                        FirebaseOrderModel order =
+
+                                orderDoc.toObject(
+                                        FirebaseOrderModel.class
+                                );
+
+                        if(order == null){
+
+                            processed[0]++;
+
+                            continue;
+                        }
+
+                        // SKIP FINISHED ORDERS
+
+                        if(order.status.equalsIgnoreCase(
+                                "Returned"
+                        )
+                                ||
+                                order.status.equalsIgnoreCase(
+                                        "Cancelled"
+                                )){
+
+                            processed[0]++;
+
+                            continue;
+                        }
+
+                        FirebaseFirestore.getInstance()
+
+                                .collection("orders")
+
+                                .document(order.orderId)
+
+                                .collection("items")
+
+                                .document(item.itemNo)
+
+                                .get()
+
+                                .addOnSuccessListener(itemDoc -> {
+
+                                    if(itemDoc.exists()){
+
+                                        list.add(
+
+                                                new CurrentBookingModel(
+
+                                                        order.orderId,
+
+                                                        item.itemNo,
+
+                                                        order.status,
+
+                                                        order.customerName,
+
+                                                        order.phone,
+
+                                                        formatDate(
+                                                                order.pickupMs
+                                                        ),
+
+                                                        formatDate(
+                                                                order.returnMs
+                                                        ),
+
+                                                        "₹"
+                                                                + order.totalRent,
+
+                                                        "₹"
+                                                                + order.totalRentPaid,
+
+                                                        "₹"
+                                                                + order.balanceRent
+                                                )
+                                        );
+                                    }
+
+                                    processed[0]++;
+
+                                    if(processed[0]
+                                            >= totalOrders){
+
+                                        if(list.isEmpty()){
+
+                                            tvNoBooking
+                                                    .setVisibility(
+                                                            View.VISIBLE
+                                                    );
+
+                                            rv.setVisibility(
+                                                    View.GONE
+                                            );
+
+                                        }else{
+
+                                            tvNoBooking
+                                                    .setVisibility(
+                                                            View.GONE
+                                                    );
+
+                                            rv.setVisibility(
+                                                    View.VISIBLE
+                                            );
+
+                                            rv.setAdapter(
+
+                                                    new CurrentBookingAdapter(
+                                                            list
+                                                    )
+                                            );
+                                        }
+                                    }
+                                });
+                    }
+                });
+    }
+
+    private String formatDate(long ms){
+
+        java.text.SimpleDateFormat sdf =
+
+                new java.text.SimpleDateFormat(
+
+                        "dd MMM yyyy hh:mm a",
+
+                        java.util.Locale.getDefault()
+                );
+
+        return sdf.format(
+                new java.util.Date(ms)
         );
-
-        if(item.currentOrderId == null ||
-                item.currentOrderId.isEmpty()){
-
-            rv.setVisibility(View.GONE);
-
-            tvNoBooking.setVisibility(View.VISIBLE);
-
-            btnRemove.setEnabled(true);
-
-            btnRemove.setAlpha(1f);
-
-            return;
-        }
-
-        tvNoBooking.setVisibility(View.GONE);
-
-        rv.setVisibility(View.VISIBLE);
-
-        btnRemove.setEnabled(false);
-
-        btnRemove.setAlpha(0.4f);
-
-        List<CurrentBookingModel> list =
-                new ArrayList<>();
-
-        list.add(
-
-                new CurrentBookingModel(
-
-                        "Order: " + item.currentOrderId,
-
-                        "",
-
-                        item.currentStatus,
-
-                        "",
-
-                        "",
-
-                        "",
-
-                        ""
-                )
-        );
-
-        rv.setAdapter(
-                new CurrentBookingAdapter(list)
-        );
-
-        expandRecyclerView(rv);
     }
     private void updateItemOnServer(
 
@@ -460,31 +620,5 @@ public class ItemDetailActivity extends AppCompatActivity {
                 }
         );
     }
-    private void expandRecyclerView(RecyclerView recyclerView){
 
-        RecyclerView.Adapter adapter = recyclerView.getAdapter();
-        if(adapter == null) return;
-
-        int totalHeight = 0;
-
-        for(int i=0;i<adapter.getItemCount();i++){
-
-            RecyclerView.ViewHolder holder =
-                    adapter.createViewHolder(recyclerView, adapter.getItemViewType(i));
-
-            adapter.onBindViewHolder(holder,i);
-
-            holder.itemView.measure(
-                    View.MeasureSpec.makeMeasureSpec(recyclerView.getWidth(), View.MeasureSpec.EXACTLY),
-                    View.MeasureSpec.UNSPECIFIED
-            );
-
-            totalHeight += holder.itemView.getMeasuredHeight();
-        }
-
-        ViewGroup.LayoutParams params = recyclerView.getLayoutParams();
-        params.height = totalHeight + (adapter.getItemCount() * 20);
-
-        recyclerView.setLayoutParams(params);
-    }
 }

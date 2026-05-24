@@ -1,17 +1,20 @@
 package swadha.collection.rental;
 
-import android.content.res.ColorStateList;
+import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.material.card.MaterialCardView;
 import com.google.gson.Gson;
 
 import java.text.SimpleDateFormat;
@@ -21,11 +24,13 @@ import java.util.Locale;
 
 public class HistoryDetailActivity extends AppCompatActivity {
 
-    TextView tvOrderId, tvItemNo, tvCustomer, tvPhone,
-            tvPickupScheduled, tvReturnScheduled,
-            tvTotalRent, tvRentPaid, tvDeposit, tvFinalSettlement,tvActualPickup, tvActualReturn;
+    TextView tvOrderId, tvItemNo, tvCustomer, tvPhone,tvTotalRent, tvRentPaid, tvDeposit;
 
     LinearLayout layoutItemsTimeline;
+    private RelativeLayout layoutPendingBalance;
+    MaterialCardView btnSendWhatsapp;
+
+    private TextView tvPendingBalance;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,6 +46,16 @@ public class HistoryDetailActivity extends AppCompatActivity {
 
         addTimelineItems(m.items);
 
+        layoutPendingBalance =
+                findViewById(
+                        R.id.layoutPendingBalance
+                );
+
+        tvPendingBalance =
+                findViewById(
+                        R.id.tvPendingBalance
+                );
+
         Log.d("TEST123", new Gson().toJson(m));
 
         // Bind views
@@ -49,17 +64,12 @@ public class HistoryDetailActivity extends AppCompatActivity {
         tvItemNo = findViewById(R.id.tvItemNo);
         tvCustomer = findViewById(R.id.tvCustomer);
         tvPhone = findViewById(R.id.tvPhone);
-
-        tvPickupScheduled = findViewById(R.id.tvPickupScheduled);
-        tvReturnScheduled = findViewById(R.id.tvReturnScheduled);
+        btnSendWhatsapp = findViewById(R.id.btnSendWhatsapp);
 
         tvTotalRent = findViewById(R.id.tvTotalRent);
         tvRentPaid = findViewById(R.id.tvRentPaid);
         tvDeposit = findViewById(R.id.tvDeposit);
-        tvFinalSettlement = findViewById(R.id.tvFinalSettlement);
 
-        tvActualPickup = findViewById(R.id.tvActualPickup);
-        tvActualReturn = findViewById(R.id.tvActualReturn);
         // Set values
         tvOrderId.setText(m.orderId);
 
@@ -73,31 +83,154 @@ public class HistoryDetailActivity extends AppCompatActivity {
         tvItemNo.setText(
                 TextUtils.join(", ", itemNos)
         );
-        tvCustomer.setText(m.name);
+        tvCustomer.setText(m.customerName);
         tvPhone.setText(m.phone);
 
-        tvPickupScheduled.setText(
-                formatDateTime(m.pickupDateTime)
-        );
 
-        tvReturnScheduled.setText(
-                formatDateTime(m.returnDateTime)
-        );
-        tvActualPickup.setText(
-                formatDateTime(m.actualPickup)
-        );
-
-        tvActualReturn.setText(
-                formatDateTime(m.actualReturn)
-        );
 
         tvTotalRent.setText("₹ " + m.totalRent);
-        tvRentPaid.setText("₹ " + m.rentPaid);
-        tvDeposit.setText("₹ " + m.deposit);
+        tvRentPaid.setText(
+                "₹ " + m.totalRentPaid
+        );
 
-        double finalSettlement = m.rentPaid - m.deposit;
+        tvDeposit.setText(
+                "₹ " + m.totalDeposit
+        );
 
-        tvFinalSettlement.setText("₹ " + finalSettlement);
+        if(m.balanceRent > 0){
+
+            layoutPendingBalance.setVisibility(
+                    View.VISIBLE
+            );
+
+            tvPendingBalance.setText(
+
+                    "₹ " + m.balanceRent
+            );
+
+        }else{
+
+            layoutPendingBalance.setVisibility(
+                    View.GONE
+            );
+        }
+
+        btnSendWhatsapp.setOnClickListener(v -> {
+
+            StringBuilder itemsText =
+                    new StringBuilder();
+
+            for(OrderHistoryModel.HistoryItem item
+                    : m.items){
+
+                String icon = "•";
+
+                if(item.status.equalsIgnoreCase(
+                        "Returned"
+                )){
+
+                    icon = "✅";
+                }
+
+                else if(item.status.equalsIgnoreCase(
+                        "Cancelled"
+                )){
+
+                    icon = "❌";
+                }
+
+                itemsText
+
+                        .append(icon)
+
+                        .append(" ")
+
+                        .append(item.itemNo);
+
+                if(item.itemName != null
+                        &&
+                        !item.itemName.isEmpty()){
+
+                    itemsText
+
+                            .append(" - ")
+
+                            .append(item.itemName);
+                }
+
+                itemsText
+
+                        .append(" (")
+
+                        .append(item.status)
+
+                        .append(")");
+
+                itemsText.append("\n");
+            }
+
+            String message =
+
+                    "✨ *Svadha Collection*\n\n"
+
+                            + "Hello "
+                            + m.customerName
+                            + ",\n\n"
+
+                            + "Your rental booking has been updated successfully.\n\n"
+
+                            + "*Order ID:* "
+                            + m.orderId
+                            + "\n\n"
+
+                            + "*Items:*\n"
+                            + itemsText
+                            + "\n"
+
+                            + "*Total Rental:* ₹"
+                            + m.totalRent
+                            + "\n"
+
+                            + "*Collected:* ₹"
+                            + m.totalRentPaid
+                            + "\n"
+
+                            + "*Deposit Refunded:* ₹"
+                            + m.refundAmount
+                            + "\n";
+
+            if(m.balanceRent > 0){
+
+                message +=
+
+                        "\n*Pending Balance:* ₹"
+                                + m.balanceRent
+                                + "\n";
+            }
+
+            message +=
+
+                    "\nThank you for choosing *Svadha Collection* 💛"
+
+                            + "\nWe look forward to serving you again.";
+
+            Intent intent = new Intent(
+                    Intent.ACTION_VIEW
+            );
+
+            intent.setData(
+
+                    Uri.parse(
+
+                            "https://wa.me/91"
+                                    + m.phone
+                                    + "?text="
+                                    + Uri.encode(message)
+                    )
+            );
+
+            startActivity(intent);
+        });
     }
 
     private void addTimelineItems(
@@ -122,77 +255,82 @@ public class HistoryDetailActivity extends AppCompatActivity {
 
             TextView tvTimeline =
                     v.findViewById(R.id.tvTimeline);
+            TextView tvItemStatus =
+                    v.findViewById(R.id.tvItemStatus);
+
+            tvItemStatus.setText(item.status);
 
             tvItemCode.setText(item.itemNo);
 
-            String pickup =
-                    formatDateTime(item.actualPickup);
+            if(item.status.equalsIgnoreCase("Returned")){
 
-            String returned =
-                    formatDateTime(item.actualReturn);
+                tvItemStatus.setTextColor(
+                        Color.parseColor("#2E7D32")
+                );
 
-            tvTimeline.setText(
-                    "Pickup : " + pickup +
-                            "\nReturn : " + returned
-            );
+            }else if(item.status.equalsIgnoreCase("Cancelled")){
 
+                tvItemStatus.setTextColor(
+                        Color.parseColor("#9E9E9E")
+                );
+
+            }else{
+
+                tvItemStatus.setTextColor(
+                        Color.parseColor("#EF6C00")
+                );
+            }
+
+            if(item.status.equalsIgnoreCase(
+                    "Cancelled"
+            )){
+
+                tvTimeline.setText(
+                        "❌ Cancelled Before Pickup"
+                );
+            }
+            else if(item.status.equalsIgnoreCase(
+                    "Returned"
+            )){
+
+                String pickup =
+                        formatDateTime(item.pickupMs);
+
+                String returned =
+                        formatDateTime(item.returnMs);
+
+                tvTimeline.setText(
+
+                        "Pickup : " + pickup +
+
+                                "\nReturn : " + returned
+                );
+            }
+            else{
+
+                tvTimeline.setText(
+                        item.status
+                );
+            }
             layoutItemsTimeline.addView(v);
         }
     }
-    private String formatDateTime(String input) {
 
-        if(input == null || input.trim().isEmpty()){
+    private String formatDateTime(long ms){
+
+        if(ms <= 0){
             return "-";
         }
 
-        try {
+        SimpleDateFormat sdf =
 
-            // ISO FORMAT
-            java.text.SimpleDateFormat isoFormat =
-                    new java.text.SimpleDateFormat(
-                            "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
-                            java.util.Locale.ENGLISH
-                    );
+                new SimpleDateFormat(
 
-            isoFormat.setTimeZone(
-                    java.util.TimeZone.getTimeZone("UTC")
-            );
+                        "dd MMM yyyy, hh:mm a",
 
-            java.text.SimpleDateFormat output =
-                    new java.text.SimpleDateFormat(
-                            "dd MMM yyyy, hh:mm a",
-                            java.util.Locale.getDefault()
-                    );
-
-            return output.format(
-                    isoFormat.parse(input)
-            );
-
-        } catch (Exception e) {
-
-            try {
-
-                // OLD FORMAT SUPPORT
-                java.text.SimpleDateFormat oldFormat =
-                        new java.text.SimpleDateFormat(
-                                "EEE MMM dd yyyy HH:mm:ss 'GMT'Z",
-                                java.util.Locale.ENGLISH
-                        );
-
-                java.text.SimpleDateFormat output =
-                        new java.text.SimpleDateFormat(
-                                "dd MMM yyyy, hh:mm a",
-                                java.util.Locale.getDefault()
-                        );
-
-                return output.format(
-                        oldFormat.parse(input)
+                        Locale.getDefault()
                 );
 
-            } catch (Exception ex) {
-
-                return input;
-            }
-        }
+        return sdf.format(ms);
     }
 }

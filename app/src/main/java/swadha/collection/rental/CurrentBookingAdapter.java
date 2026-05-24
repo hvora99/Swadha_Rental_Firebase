@@ -1,79 +1,79 @@
-package swadha.collection.rental;
+    package swadha.collection.rental;
 
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
+    import android.view.LayoutInflater;
+    import android.view.View;
+    import android.view.ViewGroup;
+    import android.widget.TextView;
 
-import androidx.recyclerview.widget.RecyclerView;
+    import androidx.recyclerview.widget.RecyclerView;
 
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
+    import android.view.LayoutInflater;
+    import android.view.View;
+    import android.view.ViewGroup;
+    import android.widget.TextView;
 
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
+    import androidx.annotation.NonNull;
+    import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.List;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
+    import java.util.List;
+    import android.view.LayoutInflater;
+    import android.view.View;
+    import android.view.ViewGroup;
+    import android.widget.TextView;
 
-import androidx.annotation.NonNull;
-import androidx.recyclerview.widget.RecyclerView;
+    import androidx.annotation.NonNull;
+    import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.List;
+    import java.util.List;
 
-public class CurrentBookingAdapter
-        extends RecyclerView.Adapter<CurrentBookingAdapter.ViewHolder> {
+    public class CurrentBookingAdapter
+            extends RecyclerView.Adapter<CurrentBookingAdapter.ViewHolder> {
 
-    private List<CurrentBookingModel> bookingList;
+        private List<CurrentBookingModel> bookingList;
 
-    public CurrentBookingAdapter(List<CurrentBookingModel> bookingList) {
-        this.bookingList = bookingList;
-    }
+        public CurrentBookingAdapter(List<CurrentBookingModel> bookingList) {
+            this.bookingList = bookingList;
+        }
 
-    @NonNull
-    @Override
-    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        @NonNull
+        @Override
+        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.row_current_booking, parent, false);
+            View view = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.row_current_booking, parent, false);
 
-        return new ViewHolder(view);
-    }
+            return new ViewHolder(view);
+        }
 
-    @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        @Override
+        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
 
-        CurrentBookingModel model = bookingList.get(position);
+            CurrentBookingModel model = bookingList.get(position);
 
-        holder.tvName.setText(model.getName());
-        holder.tvPhone.setText(model.getPhone());
-        holder.tvPickup.setText("Pickup: " + model.getPickup());
-        holder.tvReturn.setText("Return: " + model.getReturn());
-        holder.tvBalance.setText("Balance: ₹" + model.getBalance());
-    }
+            holder.tvName.setText(model.getName());
+            holder.tvPhone.setText(model.getPhone());
+            holder.tvPickup.setText("Pickup: " + model.getPickup());
+            holder.tvReturn.setText("Return: " + model.getReturn());
+            holder.tvBalance.setText("Balance: ₹" + model.getBalance());
+        }
 
-    @Override
-    public int getItemCount() {
-        return bookingList.size();
-    }
+        @Override
+        public int getItemCount() {
+            return bookingList.size();
+        }
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
+        static class ViewHolder extends RecyclerView.ViewHolder {
 
-        TextView tvName, tvPhone, tvPickup, tvReturn, tvBalance;
+            TextView tvName, tvPhone, tvPickup, tvReturn, tvBalance;
 
-        public ViewHolder(@NonNull View itemView) {
-            super(itemView);
+            public ViewHolder(@NonNull View itemView) {
+                super(itemView);
 
-            tvName = itemView.findViewById(R.id.tvBookingName);
-            tvPhone = itemView.findViewById(R.id.tvBookingPhone);
-            tvPickup = itemView.findViewById(R.id.tvBookingPickup);
-            tvReturn = itemView.findViewById(R.id.tvBookingReturn);
-            tvBalance = itemView.findViewById(R.id.tvBookingBalance);
+                tvName = itemView.findViewById(R.id.tvBookingName);
+                tvPhone = itemView.findViewById(R.id.tvBookingPhone);
+                tvPickup = itemView.findViewById(R.id.tvBookingPickup);
+                tvReturn = itemView.findViewById(R.id.tvBookingReturn);
+                tvBalance = itemView.findViewById(R.id.tvBookingBalance);
+            }
         }
     }
-}

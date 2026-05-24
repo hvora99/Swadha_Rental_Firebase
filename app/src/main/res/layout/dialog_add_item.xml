@@ -1,132 +1,279 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<ScrollView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="#FFFFFF"
-    android:paddingBottom="32dp">
-
-    <View
-        android:layout_width="4dp"
-        android:layout_height="60dp"
-        android:layout_marginTop="32dp"
-        android:background="#800020"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/lblHeader"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="32dp"
-        android:fontFamily="serif"
-        android:text="New Item"
-        android:textColor="#1A1C1E"
-        android:textSize="28sp"
-        android:textStyle="italic|bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:letterSpacing="0.2"
-        android:text="SWADHA ARCHIVE"
-        android:textColor="#BDBDBD"
-        android:textSize="10sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="@id/lblHeader"
-        app:layout_constraintTop_toBottomOf="@id/lblHeader" />
+    android:fillViewport="true"
+    android:background="#FCFAF7">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
         android:orientation="vertical"
-        android:paddingHorizontal="24dp"
-        app:layout_constraintTop_toBottomOf="@id/lblHeader">
+        android:padding="24dp">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:weightSum="3">
+        <!-- HEADER -->
 
-            <EditText
-                android:id="@+id/etDialogItemNo"
-                android:layout_width="0dp"
-                android:layout_height="55dp"
-                android:layout_weight="1"
-                android:background="@drawable/bg_minimal_line"
-                android:gravity="center"
-                android:hint="CODE"
-                android:inputType="textCapCharacters"
-                android:layout_marginEnd="8dp"/>
-
-            <EditText
-                android:id="@+id/etDialogItemName"
-                android:layout_width="0dp"
-                android:layout_height="55dp"
-                android:layout_weight="2"
-                android:background="@drawable/bg_minimal_line"
-                android:hint="Cloth Name"
-                android:paddingHorizontal="16dp" />
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:orientation="horizontal"
-            android:weightSum="2">
-
-            <EditText
-                android:id="@+id/etDialogRent"
-                android:layout_width="0dp"
-                android:layout_height="55dp"
-                android:layout_weight="1"
-                android:layout_marginEnd="6dp"
-                android:background="@drawable/bg_minimal_line"
-                android:hint="Rent (₹)"
-                android:inputType="numberDecimal"
-                android:paddingHorizontal="16dp" />
-
-            <EditText
-                android:id="@+id/etDialogDeposit"
-                android:layout_width="0dp"
-                android:layout_height="55dp"
-                android:layout_weight="1"
-                android:layout_marginStart="6dp"
-                android:background="@drawable/bg_minimal_line"
-                android:hint="Deposit (₹)"
-                android:inputType="numberDecimal"
-                android:paddingHorizontal="16dp" />
-        </LinearLayout>
-
-        <CheckBox
-            android:id="@+id/cbDialogRequiresWash"
+        <TextView
+            android:id="@+id/lblHeader"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="Requires Washing"
+            android:text="New Inventory Item"
             android:textColor="#1A1C1E"
+            android:textSize="30sp"
             android:textStyle="bold"
-            android:checked="true"/>
+            android:fontFamily="sans-serif-medium"/>
 
-        <Button
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="Add item to Svadha Collection wardrobe"
+            android:textColor="#7A7A7A"
+            android:textSize="13sp"/>
+
+        <!-- ITEM DETAILS CARD -->
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28dp"
+            app:cardBackgroundColor="#FFFFFF"
+            app:cardCornerRadius="26dp"
+            app:cardElevation="0dp"
+            app:strokeColor="#EFE7DC"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Item Information"
+                    android:textColor="#1A1C1E"
+                    android:textSize="16sp"
+                    android:textStyle="bold"/>
+
+                <!-- CODE -->
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    app:boxBackgroundColor="#FAFAFA"
+                    app:boxCornerRadiusBottomEnd="18dp"
+                    app:boxCornerRadiusBottomStart="18dp"
+                    app:boxCornerRadiusTopEnd="18dp"
+                    app:boxCornerRadiusTopStart="18dp"
+                    app:boxStrokeColor="#E7DDD0"
+                    app:hintEnabled="false">
+
+                    <EditText
+                        android:id="@+id/etDialogItemNo"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@null"
+                        android:fontFamily="sans-serif-medium"
+                        android:hint="Item Code"
+                        android:inputType="textCapCharacters"
+                        android:padding="18dp"
+                        android:textColor="#1A1C1E"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- ITEM NAME -->
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    app:boxBackgroundColor="#FAFAFA"
+                    app:boxCornerRadiusBottomEnd="18dp"
+                    app:boxCornerRadiusBottomStart="18dp"
+                    app:boxCornerRadiusTopEnd="18dp"
+                    app:boxCornerRadiusTopStart="18dp"
+                    app:boxStrokeColor="#E7DDD0"
+                    app:hintEnabled="false">
+
+                    <EditText
+                        android:id="@+id/etDialogItemName"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@null"
+                        android:hint="Item Name"
+                        android:padding="18dp"
+                        android:textColor="#1A1C1E"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- PRICING CARD -->
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            app:cardBackgroundColor="#FFFFFF"
+            app:cardCornerRadius="26dp"
+            app:cardElevation="0dp"
+            app:strokeColor="#EFE7DC"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Pricing"
+                    android:textColor="#1A1C1E"
+                    android:textSize="16sp"
+                    android:textStyle="bold"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    android:orientation="horizontal"
+                    android:weightSum="2">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="8dp"
+                        app:boxBackgroundColor="#FAFAFA"
+                        app:boxCornerRadiusBottomEnd="18dp"
+                        app:boxCornerRadiusBottomStart="18dp"
+                        app:boxCornerRadiusTopEnd="18dp"
+                        app:boxCornerRadiusTopStart="18dp"
+                        app:boxStrokeColor="#E7DDD0"
+                        app:hintEnabled="false"
+                        app:prefixText="₹ ">
+
+                        <EditText
+                            android:id="@+id/etDialogRent"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            android:hint="Rent"
+                            android:inputType="numberDecimal"
+                            android:padding="18dp"/>
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="8dp"
+                        app:boxBackgroundColor="#FAFAFA"
+                        app:boxCornerRadiusBottomEnd="18dp"
+                        app:boxCornerRadiusBottomStart="18dp"
+                        app:boxCornerRadiusTopEnd="18dp"
+                        app:boxCornerRadiusTopStart="18dp"
+                        app:boxStrokeColor="#E7DDD0"
+                        app:hintEnabled="false"
+                        app:prefixText="₹ ">
+
+                        <EditText
+                            android:id="@+id/etDialogDeposit"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            android:hint="Deposit"
+                            android:inputType="numberDecimal"
+                            android:padding="18dp"/>
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- WASH OPTION -->
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            app:cardBackgroundColor="#FFF8F3"
+            app:cardCornerRadius="22dp"
+            app:cardElevation="0dp"
+            app:strokeColor="#F1DDC7"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="18dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Requires Washing"
+                        android:textColor="#1A1C1E"
+                        android:textSize="15sp"
+                        android:textStyle="bold"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="Item will enter washing period after return"
+                        android:textColor="#8A6B52"
+                        android:textSize="12sp"/>
+                </LinearLayout>
+
+                <CheckBox
+                    android:id="@+id/cbDialogRequiresWash"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:scaleX="1.1"
+                    android:scaleY="1.1"/>
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- SAVE BUTTON -->
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSaveItem"
             android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:layout_marginTop="32dp"
-            android:backgroundTint="#0A0A0A"
-            android:letterSpacing="0.1"
-            android:text="Add Item"
+            android:layout_height="62dp"
+            android:layout_marginTop="30dp"
+            android:text="Add Item to Collection"
+            android:textAllCaps="false"
             android:textColor="#FFFFFF"
+            android:textSize="15sp"
             android:textStyle="bold"
-            app:cornerRadius="12dp" />
+            app:backgroundTint="#1A1C1E"
+            app:cornerRadius="22dp"/>
 
     </LinearLayout>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>

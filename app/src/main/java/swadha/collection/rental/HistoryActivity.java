@@ -16,15 +16,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.android.volley.DefaultRetryPolicy;
-import com.android.volley.Request;
-import com.android.volley.toolbox.JsonArrayRequest;
+
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -32,7 +28,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import com.google.firebase.firestore.FirebaseFirestore;
 
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 public class HistoryActivity extends AppCompatActivity {
 
     private RecyclerView rvHistory;
@@ -43,13 +41,16 @@ public class HistoryActivity extends AppCompatActivity {
 
     private List<OrderHistoryModel> fullList = new ArrayList<>();
     private List<OrderHistoryModel> filteredList = new ArrayList<>();
-
-    private String BASE_URL = "https://script.google.com/macros/s/AKfycby9Bfc8ohJDS6bvWDu1I8E21yxzRg_GQBhpRXkzY9hLfcKrDlqzxYe2LyMl4Vmb6CXj/exec"; // 🔥 change this
+    private FirebaseFirestore db =
+            FirebaseFirestore.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_history);
+
+
+
         rvHistory = findViewById(R.id.rvHistory);
         spinnerYear = findViewById(R.id.spinnerYear);
         tvTotalEarnings = findViewById(R.id.tvTotalEarnings);
@@ -66,112 +67,42 @@ public class HistoryActivity extends AppCompatActivity {
 
     private void loadHistory() {
 
-        String url = BASE_URL + "?mode=history";
+        db.collection("order_history")
 
-        StringRequest request = new StringRequest(Request.Method.GET, url,
-                response -> {
+                .get()
 
-                    try {
+                .addOnSuccessListener(query -> {
 
-                        JSONArray arr = new JSONArray(response);
+                    fullList.clear();
 
-                        fullList.clear();
+                    for(QueryDocumentSnapshot doc
+                            : query){
 
-                        for (int i = 0; i < arr.length(); i++) {
+                        OrderHistoryModel model =
 
-                            JSONObject obj = arr.getJSONObject(i);
+                                doc.toObject(
+                                        OrderHistoryModel.class
+                                );
 
-                            OrderHistoryModel m = new OrderHistoryModel();
-
-                            m.timestamp = obj.optLong("timestamp");
-                            m.orderId = obj.optString("orderId");
-                            m.name = obj.optString("name");
-                            m.phone = obj.optString("phone");
-
-                            m.pickupDateTime = obj.optString("pickupDateTime");
-                            m.returnDateTime = obj.optString("returnDateTime");
-
-                            m.actualPickup = obj.optString("actualPickup");
-                            m.actualReturn = obj.optString("actualReturn");
-
-                            m.totalRent = obj.optDouble("totalRent");
-                            m.deposit = obj.optDouble("deposit");
-                            m.rentPaid = obj.optDouble("rentPaid");
-                            m.balance = obj.optDouble("balance");
-
-                            m.status = obj.optString("status");
-
-                            // 🔥 SAFE items parsing
-                            JSONArray itemsArr = obj.optJSONArray("items");
-
-                            List<OrderHistoryModel.HistoryItem> itemList =
-                                    new ArrayList<>();
-
-                            if (itemsArr != null) {
-
-                                for (int j = 0; j < itemsArr.length(); j++) {
-
-                                    JSONObject itemObj =
-                                            itemsArr.getJSONObject(j);
-
-                                    OrderHistoryModel.HistoryItem item =
-                                            new OrderHistoryModel.HistoryItem();
-
-                                    item.itemNo =
-                                            itemObj.optString("itemNo");
-
-                                    item.pickupScheduled =
-                                            itemObj.optString("pickupScheduled");
-
-                                    item.returnScheduled =
-                                            itemObj.optString("returnScheduled");
-
-                                    item.actualPickup =
-                                            itemObj.optString("actualPickup");
-
-                                    item.actualReturn =
-                                            itemObj.optString("actualReturn");
-
-                                    item.status =
-                                            itemObj.optString("status");
-
-                                    item.rent =
-                                            itemObj.optDouble("rent");
-
-                                    item.deposit =
-                                            itemObj.optDouble("deposit");
-
-                                    itemList.add(item);
-                                }
-                            }
-
-                            m.items = itemList;
-
-                            fullList.add(m);
-                        }
-
-                        Log.d("PARSED_SIZE", "FullList size = " + fullList.size());
-
-                        setupYearSpinner();
-                        applyFilter("All");
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                        fullList.add(model);
                     }
 
-                    Log.d("API_RESPONSE", response);
+                    setupYearSpinner();
 
-                }, error -> {
+                    applyFilter("All");
 
-        Log.e("API_ERROR", error.toString());
+                }).addOnFailureListener(e -> {
 
-        Toast.makeText(this,
-                "Failed to load history",
-                Toast.LENGTH_LONG).show();
-        });
+                    Toast.makeText(
 
+                            this,
 
-        Volley.newRequestQueue(this).add(request);
+                            "Failed to load history",
+
+                            Toast.LENGTH_LONG
+
+                    ).show();
+                });
     }
 
     // ================= YEAR SPINNER =================
@@ -181,8 +112,7 @@ public class HistoryActivity extends AppCompatActivity {
         Set<Integer> yearSet = new HashSet<>();
 
         for (OrderHistoryModel m : fullList) {
-            yearSet.add(getYear(m.timestamp));
-        }
+            yearSet.add(getYear(m.archivedAt));        }
 
         List<String> years = new ArrayList<>();
         years.add("All");
@@ -222,16 +152,18 @@ public class HistoryActivity extends AppCompatActivity {
         for (OrderHistoryModel m : fullList) {
 
             if (yearStr.equals("All") ||
-                    getYear(m.timestamp) == Integer.parseInt(yearStr)) {
+
+                    getYear(m.archivedAt)
+                            == Integer.parseInt(yearStr)) {
 
                 filteredList.add(m);
 
-                total += m.rentPaid;
+                total += m.totalRentPaid;
             }
         }
 
         tvTotalEarnings.setText("₹ " + total);
-        Log.d("c", "Filtered size = " + filteredList.size());
+
         adapter.notifyDataSetChanged();
     }
 

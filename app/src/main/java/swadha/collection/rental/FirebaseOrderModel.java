@@ -27,6 +27,11 @@ public class FirebaseOrderModel {
     public long createdAt;
 
     public long updatedAt;
+    public double refundAmount;
+
+    public long actualPickupMs;
+
+    public long actualReturnMs;
 
     public FirebaseOrderModel() {
     }

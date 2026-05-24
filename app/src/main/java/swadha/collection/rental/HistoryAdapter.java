@@ -30,28 +30,53 @@ public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.VH> {
     }
 
     @Override
-    public void onBindViewHolder(@NonNull VH h, int position) {
+    public void onBindViewHolder(
 
-        OrderHistoryModel m = list.get(position);
+            @NonNull VH h,
+
+            int position
+    ) {
+
+        OrderHistoryModel m =
+                list.get(position);
 
         h.tvItemNo.setText(m.orderId);
-        h.tvCustomer.setText(m.name);
-        h.tvStatus.setText(m.status);
 
-        double settlement = m.rentPaid - m.deposit;
+        h.tvCustomer.setText(
+                m.customerName
+        );
+
+        h.tvStatus.setText(
+                m.status
+        );
+
+        int count = 0;
+
+        if(m.items != null){
+            count = m.items.size();
+        }
 
         h.tvBalance.setText(
-                m.items.size() + " items | ₹" + m.totalRent
+
+                count
+                        + " items | ₹"
+                        + m.totalRent
         );
 
         h.itemView.setOnClickListener(v -> {
 
-            Intent i = new Intent(context, HistoryDetailActivity.class);
-            i.putExtra("data", new Gson().toJson(m));
-            android.util.Log.d(
-                    "ADAPTER_TEST",
+            Intent i = new Intent(
+
+                    context,
+
+                    HistoryDetailActivity.class
+            );
+
+            i.putExtra(
+                    "data",
                     new Gson().toJson(m)
             );
+
             context.startActivity(i);
         });
     }

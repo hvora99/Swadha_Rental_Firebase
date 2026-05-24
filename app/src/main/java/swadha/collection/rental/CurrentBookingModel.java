@@ -10,14 +10,32 @@ public class CurrentBookingModel {
     private String total;
     private String advance;
     private String balance;
+    private String orderId;
 
-    public CurrentBookingModel(String name,
-                               String phone,
-                               String pickup,
-                               String returnDate,
-                               String total,
-                               String advance,
-                               String balance) {
+    private String status;
+
+    private String itemNo;
+
+    CurrentBookingModel(
+
+            String orderId,
+            String itemNo,
+            String status,
+
+            String name,
+            String phone,
+
+            String pickup,
+            String returnDate,
+
+            String total,
+            String advance,
+            String balance
+    ) {
+
+        this.orderId = orderId;
+        this.itemNo = itemNo;
+        this.status = status;
 
         this.name = name;
         this.phone = phone;

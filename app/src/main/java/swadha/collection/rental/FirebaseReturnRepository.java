@@ -7,6 +7,7 @@ import com.google.firebase.firestore.Transaction;
 import java.util.List;
 
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.WriteBatch;
 
 import java.util.ArrayList;
 public class FirebaseReturnRepository {
@@ -30,7 +31,7 @@ public class FirebaseReturnRepository {
             double paidNow,
 
             ActionCallback callback
-    ){
+    ) {
 
         db.runTransaction(
 
@@ -55,7 +56,7 @@ public class FirebaseReturnRepository {
                                             FirebaseOrderModel.class
                                     );
 
-                    if(order == null){
+                    if (order == null) {
 
                         throw new RuntimeException(
                                 "Order not found"
@@ -74,7 +75,7 @@ public class FirebaseReturnRepository {
                             orderItemRefs =
                             new ArrayList<>();
 
-                    for(String itemNo : itemNos){
+                    for (String itemNo : itemNos) {
 
                         DocumentReference orderItemRef =
 
@@ -94,16 +95,16 @@ public class FirebaseReturnRepository {
                                                 FirebaseOrderItemModel.class
                                         );
 
-                        if(item == null){
+                        if (item == null) {
 
                             throw new RuntimeException(
                                     "Item not found : " + itemNo
                             );
                         }
 
-                        if(!item.status.equalsIgnoreCase(
+                        if (!item.status.equalsIgnoreCase(
                                 "Booked"
-                        )){
+                        )) {
 
                             throw new RuntimeException(
                                     itemNo + " already processed"
@@ -119,7 +120,7 @@ public class FirebaseReturnRepository {
                     // NOW START WRITES
                     // =========================
 
-                    for(int i=0;i<loadedItems.size();i++){
+                    for (int i = 0; i < loadedItems.size(); i++) {
 
                         FirebaseOrderItemModel item =
                                 loadedItems.get(i);
@@ -200,6 +201,7 @@ public class FirebaseReturnRepository {
             );
         });
     }
+
     public void markItemsReturned(
 
             String orderId,
@@ -209,7 +211,7 @@ public class FirebaseReturnRepository {
             double refundAmount,
 
             ActionCallback callback
-    ){
+    ) {
 
         db.runTransaction(
 
@@ -234,7 +236,7 @@ public class FirebaseReturnRepository {
 
                     boolean allReturned = true;
 
-                    for(String itemNo : itemNos){
+                    for (String itemNo : itemNos) {
 
                         DocumentReference orderItemRef =
 
@@ -254,7 +256,7 @@ public class FirebaseReturnRepository {
                                                 FirebaseOrderItemModel.class
                                         );
 
-                        if(item == null){
+                        if (item == null) {
 
                             throw new RuntimeException(
 
@@ -262,9 +264,9 @@ public class FirebaseReturnRepository {
                             );
                         }
 
-                        if(!item.status.equalsIgnoreCase(
+                        if (!item.status.equalsIgnoreCase(
                                 "PickedUp"
-                        )){
+                        )) {
 
                             throw new RuntimeException(
 
@@ -282,12 +284,12 @@ public class FirebaseReturnRepository {
                     // CHECK IF ALL ITEMS RETURNED
                     // =========================
 
-                    for(FirebaseOrderItemModel item
-                            : loadedItems){
+                    for (FirebaseOrderItemModel item
+                            : loadedItems) {
 
-                        if(!item.status.equalsIgnoreCase(
+                        if (!item.status.equalsIgnoreCase(
                                 "PickedUp"
-                        )){
+                        )) {
 
                             allReturned = false;
 
@@ -299,7 +301,7 @@ public class FirebaseReturnRepository {
                     // START WRITES
                     // =========================
 
-                    for(int i=0;i<loadedItems.size();i++){
+                    for (int i = 0; i < loadedItems.size(); i++) {
 
                         FirebaseOrderItemModel item =
                                 loadedItems.get(i);
@@ -327,13 +329,13 @@ public class FirebaseReturnRepository {
 
                         long nextAvailableMs;
 
-                        if(item.requiresWash){
+                        if (item.requiresWash) {
 
                             inventoryStatus = "Washing";
 
                             nextAvailableMs = item.washMs;
 
-                        }else{
+                        } else {
 
                             inventoryStatus = "Available";
 
@@ -384,7 +386,7 @@ public class FirebaseReturnRepository {
                             System.currentTimeMillis()
                     );
 
-                    if(allReturned){
+                    if (allReturned) {
 
                         transaction.update(
 
@@ -401,6 +403,8 @@ public class FirebaseReturnRepository {
 
             callback.onSuccess();
 
+            maybeArchiveOrder(orderId);
+
         }).addOnFailureListener(e -> {
 
             callback.onError(
@@ -409,7 +413,7 @@ public class FirebaseReturnRepository {
         });
     }
 
-    public interface OnItemsLoaded{
+    public interface OnItemsLoaded {
 
         void onLoaded(
                 List<FirebaseOrderItemModel> items
@@ -423,7 +427,7 @@ public class FirebaseReturnRepository {
             String orderId,
 
             OnItemsLoaded callback
-    ){
+    ) {
 
         db.collection("orders")
 
@@ -439,8 +443,8 @@ public class FirebaseReturnRepository {
                             itemList =
                             new ArrayList<>();
 
-                    for(DocumentSnapshot doc
-                            : query){
+                    for (DocumentSnapshot doc
+                            : query) {
 
                         FirebaseOrderItemModel item =
 
@@ -448,7 +452,7 @@ public class FirebaseReturnRepository {
                                         FirebaseOrderItemModel.class
                                 );
 
-                        if(item != null){
+                        if (item != null) {
 
                             itemList.add(item);
                         }
@@ -467,177 +471,434 @@ public class FirebaseReturnRepository {
 
     }
 
-        public void cancelBooking(
+    public void cancelBooking(
 
-                String orderId,
+            String orderId,
 
-                List<String> itemNos,
+            List<String> itemNos,
 
-        double refundAmount,
+            double refundAmount,
 
-        ActionCallback callback
-        ){
+            ActionCallback callback
+    ) {
 
-            db.runTransaction(
+        db.runTransaction(
 
-                    (Transaction.Function<Void>) transaction -> {
+                (Transaction.Function<Void>) transaction -> {
 
-                        DocumentReference orderRef =
+                    DocumentReference orderRef =
 
-                                db.collection("orders")
-                                        .document(orderId);
+                            db.collection("orders")
+                                    .document(orderId);
 
-                        // =========================
-                        // READ ALL ITEMS FIRST
-                        // =========================
+                    // =========================
+                    // READ ALL ITEMS FIRST
+                    // =========================
 
-                        List<FirebaseOrderItemModel>
-                                loadedItems =
-                                new ArrayList<>();
+                    List<FirebaseOrderItemModel>
+                            loadedItems =
+                            new ArrayList<>();
 
-                        List<DocumentReference>
-                                orderItemRefs =
-                                new ArrayList<>();
+                    List<DocumentReference>
+                            orderItemRefs =
+                            new ArrayList<>();
 
-                        boolean allCancelled = true;
+                    boolean allCancelled = true;
 
-                        for(String itemNo : itemNos){
+                    for (String itemNo : itemNos) {
 
-                            DocumentReference orderItemRef =
+                        DocumentReference orderItemRef =
 
-                                    orderRef
+                                orderRef
 
-                                            .collection("items")
+                                        .collection("items")
 
-                                            .document(itemNo);
+                                        .document(itemNo);
 
-                            FirebaseOrderItemModel item =
+                        FirebaseOrderItemModel item =
 
-                                    transaction
+                                transaction
 
-                                            .get(orderItemRef)
+                                        .get(orderItemRef)
 
-                                            .toObject(
-                                                    FirebaseOrderItemModel.class
-                                            );
+                                        .toObject(
+                                                FirebaseOrderItemModel.class
+                                        );
 
-                            if(item == null){
+                        if (item == null) {
 
-                                throw new RuntimeException(
+                            throw new RuntimeException(
 
-                                        "Item not found : " + itemNo
-                                );
-                            }
-
-                            // =====================
-                            // VALIDATION
-                            // =====================
-
-                            if(!item.status.equalsIgnoreCase(
-                                    "Booked"
-                            )){
-
-                                throw new RuntimeException(
-
-                                        itemNo
-                                                + " cannot cancel"
-                                );
-                            }
-
-                            loadedItems.add(item);
-
-                            orderItemRefs.add(orderItemRef);
-                        }
-
-                        // =========================
-                        // START WRITES
-                        // =========================
-
-                        for(int i=0;i<loadedItems.size();i++){
-
-                            FirebaseOrderItemModel item =
-                                    loadedItems.get(i);
-
-                            DocumentReference orderItemRef =
-                                    orderItemRefs.get(i);
-
-                            // =====================
-                            // ORDER ITEM
-                            // =====================
-
-                            transaction.update(
-
-                                    orderItemRef,
-
-                                    "status",
-                                    "Cancelled"
-                            );
-
-                            // =====================
-                            // INVENTORY
-                            // =====================
-
-                            DocumentReference inventoryRef =
-
-                                    db.collection("items")
-
-                                            .document(item.itemNo);
-
-                            transaction.update(
-
-                                    inventoryRef,
-
-                                    "currentStatus",
-                                    "Available",
-
-                                    "currentOrderId",
-                                    "",
-
-                                    "nextAvailableMs",
-                                    System.currentTimeMillis(),
-
-                                    "updatedAt",
-                                    System.currentTimeMillis()
+                                    "Item not found : " + itemNo
                             );
                         }
 
-                        // =========================
-                        // UPDATE ORDER
-                        // =========================
+                        // =====================
+                        // VALIDATION
+                        // =====================
+
+                        if (!item.status.equalsIgnoreCase(
+                                "Booked"
+                        )) {
+
+                            throw new RuntimeException(
+
+                                    itemNo
+                                            + " cannot cancel"
+                            );
+                        }
+
+                        loadedItems.add(item);
+
+                        orderItemRefs.add(orderItemRef);
+                    }
+
+                    // =========================
+                    // START WRITES
+                    // =========================
+
+                    for (int i = 0; i < loadedItems.size(); i++) {
+
+                        FirebaseOrderItemModel item =
+                                loadedItems.get(i);
+
+                        DocumentReference orderItemRef =
+                                orderItemRefs.get(i);
+
+                        // =====================
+                        // ORDER ITEM
+                        // =====================
+
+                        transaction.update(
+
+                                orderItemRef,
+
+                                "status",
+                                "Cancelled"
+                        );
+
+                        // =====================
+                        // INVENTORY
+                        // =====================
+
+                        DocumentReference inventoryRef =
+
+                                db.collection("items")
+
+                                        .document(item.itemNo);
+
+                        transaction.update(
+
+                                inventoryRef,
+
+                                "currentStatus",
+                                "Available",
+
+                                "currentOrderId",
+                                "",
+
+                                "nextAvailableMs",
+                                System.currentTimeMillis(),
+
+                                "updatedAt",
+                                System.currentTimeMillis()
+                        );
+                    }
+
+                    // =========================
+                    // UPDATE ORDER
+                    // =========================
+
+                    transaction.update(
+
+                            orderRef,
+
+                            "refundAmount",
+                            refundAmount,
+
+                            "updatedAt",
+                            System.currentTimeMillis()
+                    );
+
+                    if (allCancelled) {
 
                         transaction.update(
 
                                 orderRef,
 
-                                "refundAmount",
-                                refundAmount,
+                                "status",
+                                "Cancelled"
+                        );
+                    }
 
-                                "updatedAt",
-                                System.currentTimeMillis()
+                    return null;
+
+                }).addOnSuccessListener(unused -> {
+
+            callback.onSuccess();
+
+            maybeArchiveOrder(orderId);
+
+        }).addOnFailureListener(e -> {
+
+            callback.onError(
+                    e.getMessage()
+            );
+        });
+    }
+
+    public interface ArchiveCallback {
+
+        void onSuccess();
+
+        void onError(String error);
+    }
+
+    public void archiveOrder(
+
+            String orderId,
+
+            ArchiveCallback callback
+    ) {
+        DocumentReference orderRef =
+
+                db.collection("orders")
+                        .document(orderId);
+
+        orderRef.get()
+
+                .addOnSuccessListener(orderDoc -> {
+
+                    if (!orderDoc.exists()) {
+
+                        callback.onError(
+                                "Order not found"
                         );
 
-                        if(allCancelled){
+                        return;
+                    }
+                    FirebaseOrderModel activeOrder =
 
-                            transaction.update(
-
-                                    orderRef,
-
-                                    "status",
-                                    "Cancelled"
+                            orderDoc.toObject(
+                                    FirebaseOrderModel.class
                             );
-                        }
 
-                        return null;
+                    if (activeOrder == null) {
 
-                    }).addOnSuccessListener(unused -> {
+                        callback.onError(
+                                "Invalid order"
+                        );
 
-                callback.onSuccess();
+                        return;
+                    }
+                    orderRef.collection("items")
 
-            }).addOnFailureListener(e -> {
+                            .get()
 
-                callback.onError(
-                        e.getMessage()
-                );
-            });
-        }
+                            .addOnSuccessListener(itemQuery -> {
+                                OrderHistoryModel history =
+                                        new OrderHistoryModel();
+
+                                history.orderId =
+                                        activeOrder.orderId;
+
+                                history.customerName =
+                                        activeOrder.customerName;
+
+                                history.phone =
+                                        activeOrder.phone;
+
+                                history.totalRent =
+                                        activeOrder.totalRent;
+
+                                history.totalDeposit =
+                                        activeOrder.totalDeposit;
+
+                                history.totalRentPaid =
+                                        activeOrder.totalRentPaid;
+
+                                history.balanceRent =
+                                        activeOrder.balanceRent;
+
+                                history.refundAmount =
+                                        activeOrder.refundAmount;
+
+                                history.pickupMs =
+                                        activeOrder.pickupMs;
+
+                                history.returnMs =
+                                        activeOrder.returnMs;
+
+                                history.actualPickupMs =
+                                        activeOrder.actualPickupMs;
+
+                                history.actualReturnMs =
+                                        activeOrder.actualReturnMs;
+
+                                history.archivedAt =
+                                        System.currentTimeMillis();
+
+                                history.status =
+                                        activeOrder.status;
+                                List<OrderHistoryModel.HistoryItem>
+                                        historyItems =
+                                        new ArrayList<>();
+
+                                for (DocumentSnapshot itemDoc
+                                        : itemQuery) {
+
+                                    FirebaseOrderItemModel activeItem =
+
+                                            itemDoc.toObject(
+                                                    FirebaseOrderItemModel.class
+                                            );
+
+                                    if (activeItem == null)
+                                        continue;
+
+                                    OrderHistoryModel.HistoryItem item =
+                                            new OrderHistoryModel.HistoryItem();
+
+                                    item.itemNo =
+                                            activeItem.itemNo;
+
+                                    item.itemName =
+                                            activeItem.itemName;
+
+                                    item.status =
+                                            activeItem.status;
+
+                                    item.customRent =
+                                            activeItem.customRent;
+
+                                    item.customDeposit =
+                                            activeItem.customDeposit;
+
+                                    item.rentPaid =
+                                            activeItem.rentPaid;
+
+                                    item.pickupMs =
+                                            activeItem.pickupMs;
+
+                                    item.returnMs =
+                                            activeItem.returnMs;
+
+                                    item.washMs =
+                                            activeItem.washMs;
+
+                                    historyItems.add(item);
+                                }
+
+                                history.items = historyItems;
+                                db.collection("order_history").document(orderId).set(history)
+                                        .addOnSuccessListener(unused -> {
+                                            WriteBatch batch = db.batch();
+                                            for (DocumentSnapshot itemDoc : itemQuery) {
+                                                batch.delete(itemDoc.getReference());
+                                            }
+                                            batch.delete(orderRef);
+
+                                            // 4. Execute Deletion Batch
+                                            batch.commit().addOnSuccessListener(unused2 -> {
+                                                callback.onSuccess();
+                                            }).addOnFailureListener(e -> {
+                                                callback.onError(e.getMessage());
+                                            });
+
+                                        }).addOnFailureListener(e -> {
+                                            callback.onError(e.getMessage());
+                                        });
+
+                            }).addOnFailureListener(e -> {
+                                callback.onError(e.getMessage());
+                            });
+
+                }).addOnFailureListener(e -> {
+                    callback.onError(e.getMessage());
+                });
     }
+
+    public void maybeArchiveOrder(
+
+            String orderId
+    ){    db.collection("orders")
+
+            .document(orderId)
+
+            .collection("items")
+
+            .get()
+
+            .addOnSuccessListener(query -> {        boolean shouldArchive = true;
+
+                for(DocumentSnapshot doc
+                        : query){
+
+                    FirebaseOrderItemModel item =
+
+                            doc.toObject(
+                                    FirebaseOrderItemModel.class
+                            );
+
+                    if(item == null)
+                        continue;
+
+                    String status = item.status;
+
+                    boolean terminal =
+
+                            status.equalsIgnoreCase(
+                                    "Returned"
+                            )
+
+                                    ||
+
+                                    status.equalsIgnoreCase(
+                                            "Cancelled"
+                                    );
+
+                    if(!terminal){
+
+                        shouldArchive = false;
+
+                        break;
+                    }
+                }        if(shouldArchive){
+
+                    archiveOrder(
+
+                            orderId,
+
+                            new ArchiveCallback() {
+
+                                @Override
+                                public void onSuccess() {
+
+                                    android.util.Log.d(
+
+                                            "ARCHIVE",
+
+                                            orderId
+                                                    + " archived"
+                                    );
+                                }
+
+                                @Override
+                                public void onError(
+                                        String error
+                                ) {
+
+                                    android.util.Log.e(
+
+                                            "ARCHIVE",
+
+                                            error
+                                    );
+                                }
+                            }
+                    );
+                }
+
+            });
+    }
+}

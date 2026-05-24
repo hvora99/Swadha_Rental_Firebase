@@ -612,7 +612,7 @@ public class ReturnDetailActivity extends AppCompatActivity {
                 break;
 
             case ACTION_CANCEL:
-                cancelBookingWithRefund(orderId, items, amount);
+                cancelBookingWithRefund(items,orderId,amount);
                 break;
         }
     }
@@ -714,9 +714,9 @@ public class ReturnDetailActivity extends AppCompatActivity {
     }
     private void cancelBookingWithRefund(
 
-            String orderId,
-
             List<String> items,
+
+            String orderId,
 
             double refundAmount
     ){
@@ -749,7 +749,7 @@ public class ReturnDetailActivity extends AppCompatActivity {
 
                                 ReturnDetailActivity.this,
 
-                                "Booking cancelled",
+                                "Booking updated",
 
                                 Toast.LENGTH_SHORT
 
@@ -852,6 +852,8 @@ public class ReturnDetailActivity extends AppCompatActivity {
                 }
         );
     }
+
+
     private void disableActionButtons(){
 
         btnPickedUp.setEnabled(false);

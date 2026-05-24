@@ -1,29 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="#FFFFFF"
+    android:background="#FCFAF7"
     android:orientation="vertical"
     android:padding="24dp">
+
+    <!-- HEADER -->
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:letterSpacing="0.01"
-        android:text="Select Returned Items"
+        android:text="Return Items"
         android:textColor="#1A1C1E"
-        android:textSize="20sp"
-        android:textStyle="bold" />
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:fontFamily="sans-serif-medium"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:text="Select the items received from customer"
+        android:textColor="#7A7A7A"
+        android:textSize="13sp"/>
+
+    <!-- ITEMS CONTAINER -->
 
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
-        android:layout_height="220dp"
-        android:layout_marginTop="16dp"
-        app:cardBackgroundColor="#F8F9FA"
-        app:cardCornerRadius="16dp"
+        android:layout_height="240dp"
+        android:layout_marginTop="22dp"
+        app:cardBackgroundColor="#FFFFFF"
+        app:cardCornerRadius="26dp"
         app:cardElevation="0dp"
-        app:strokeColor="#ECEEF1"
+        app:strokeColor="#EFE7DC"
         app:strokeWidth="1dp">
 
         <ListView
@@ -32,51 +45,68 @@
             android:layout_height="match_parent"
             android:choiceMode="multipleChoice"
             android:clipToPadding="false"
-            android:divider="#ECEEF1"
-            android:dividerHeight="1dp"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="0dp"
             android:listSelector="@android:color/transparent"
-            android:padding="8dp" />
+            android:padding="10dp"/>
     </com.google.android.material.card.MaterialCardView>
 
-    <TextView
-        android:id="@+id/textviewtitle_dialoue"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="28dp"
-        android:letterSpacing="0.1"
-        android:text="REFUND DEPOSIT"
-        android:textAllCaps="true"
-        android:textColor="#667085"
-        android:textSize="11sp"
-        android:textStyle="bold" />
+    <!-- REFUND SECTION -->
 
-    <com.google.android.material.textfield.TextInputLayout
-        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        app:boxCornerRadiusBottomEnd="14dp"
-        app:boxCornerRadiusBottomStart="14dp"
-        app:boxCornerRadiusTopEnd="14dp"
-        app:boxCornerRadiusTopStart="14dp"
-        app:boxStrokeColor="#1E88E5"
-        app:hintEnabled="false"
-        app:prefixText="₹ "
-        app:prefixTextColor="#1E88E5"
-        app:startIconDrawable="@android:drawable/ic_menu_edit"
-        app:startIconTint="#667085">
+        android:layout_marginTop="28dp"
+        android:orientation="vertical">
 
-        <EditText
-            android:id="@+id/etRefund"
+        <TextView
+            android:id="@+id/textviewtitle_dialoue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Deposit Refund"
+            android:textColor="#1A1C1E"
+            android:textSize="16sp"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Enter amount returned to customer"
+            android:textColor="#7A7A7A"
+            android:textSize="12sp"/>
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@null"
-            android:hint="0.00"
-            android:inputType="numberDecimal"
-            android:padding="16dp"
-            android:textColor="#1A1C1E"
-            android:textSize="16sp" />
+            android:layout_marginTop="14dp"
+            app:boxBackgroundColor="#FFFFFF"
+            app:boxCornerRadiusBottomEnd="20dp"
+            app:boxCornerRadiusBottomStart="20dp"
+            app:boxCornerRadiusTopEnd="20dp"
+            app:boxCornerRadiusTopStart="20dp"
+            app:boxStrokeColor="#D6C7B2"
+            app:boxStrokeWidth="1dp"
+            app:hintEnabled="false"
+            app:prefixText="₹ "
+            app:prefixTextColor="#1A1C1E"
+            app:startIconDrawable="@android:drawable/ic_menu_edit"
+            app:startIconTint="#9E8D7A">
 
-    </com.google.android.material.textfield.TextInputLayout>
+            <EditText
+                android:id="@+id/etRefund"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@null"
+                android:fontFamily="sans-serif-medium"
+                android:hint="0.00"
+                android:inputType="numberDecimal"
+                android:padding="18dp"
+                android:textColor="#1A1C1E"
+                android:textSize="18sp"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+    </LinearLayout>
 
 </LinearLayout>
