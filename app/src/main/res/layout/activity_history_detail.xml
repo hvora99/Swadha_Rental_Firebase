@@ -105,6 +105,14 @@
                         android:text="9876543210"
                         android:textColor="#9E9E9E"
                         android:textSize="14sp" />
+                    <TextView
+                        android:id="@+id/tvAlternatePhone"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="9876543210"
+                        android:textColor="#667085"
+                        android:textSize="13sp"/>
                 </LinearLayout>
 
                 <com.google.android.material.button.MaterialButton
@@ -166,24 +174,86 @@
                     android:orientation="vertical"
                     android:padding="20dp">
 
-                    <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content">
-                        <TextView android:text="Total Rent" android:textColor="#757575" android:layout_width="wrap_content" android:layout_height="wrap_content" />
-                        <TextView android:id="@+id/tvTotalRent" android:layout_alignParentEnd="true" android:text="₹ 3,000" android:textColor="#1A1C1E" android:textStyle="bold" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:text="Total Rent"
+                            android:textColor="#757575"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+
+                        <TextView
+                            android:id="@+id/tvTotalRent"
+                            android:layout_alignParentEnd="true"
+                            android:text="₹ 3,000"
+                            android:textColor="#1A1C1E"
+                            android:textStyle="bold"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
                     </RelativeLayout>
 
-                    <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp">
-                        <TextView android:text="Rent Paid" android:textColor="#757575" android:layout_width="wrap_content" android:layout_height="wrap_content" />
-                        <TextView android:id="@+id/tvRentPaid" android:layout_alignParentEnd="true" android:text="₹ 2,000" android:textColor="#2E7D32" android:textStyle="bold" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp">
+
+                        <TextView
+                            android:text="Rent Paid"
+                            android:textColor="#757575"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+
+                        <TextView
+                            android:id="@+id/tvOrderRentPaid"
+                            android:layout_alignParentEnd="true"
+                            android:text="₹ 2,000"
+                            android:textColor="#2E7D32"
+                            android:textStyle="bold"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
                     </RelativeLayout>
 
-                    <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp">
-                        <TextView android:text="Security Deposit" android:textColor="#757575" android:layout_width="wrap_content" android:layout_height="wrap_content" />
-                        <TextView android:id="@+id/tvDeposit" android:layout_alignParentEnd="true" android:text="₹ 500" android:textColor="#1A1C1E" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp">
+
+                        <TextView
+                            android:text="Security Deposit"
+                            android:textColor="#757575"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+
+                        <TextView
+                            android:id="@+id/tvOrderDeposit"
+                            android:layout_alignParentEnd="true"
+                            android:text="₹ 500"
+                            android:textColor="#1A1C1E"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
                     </RelativeLayout>
 
-                    <RelativeLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp">
-                        <TextView android:text="Refunded to Client" android:textColor="#757575" android:layout_width="wrap_content" android:layout_height="wrap_content" />
-                        <TextView android:id="@+id/tvRefundAmount" android:layout_alignParentEnd="true" android:text="₹ 500" android:textColor="#F4511E" android:textStyle="bold" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp">
+
+                        <TextView
+                            android:text="Refunded to Client"
+                            android:textColor="#757575"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+
+                        <TextView
+                            android:id="@+id/tvRefundAmount"
+                            android:layout_alignParentEnd="true"
+                            android:text="₹ 500"
+                            android:textColor="#F4511E"
+                            android:textStyle="bold"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
                     </RelativeLayout>
 
                     <RelativeLayout

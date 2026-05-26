@@ -14,6 +14,8 @@
     import androidx.annotation.NonNull;
     import androidx.recyclerview.widget.RecyclerView;
 
+    import com.google.gson.Gson;
+
     import java.text.SimpleDateFormat;
     import java.util.ArrayList;
     import java.util.Calendar;
@@ -267,38 +269,27 @@
             // 2. Handle Regular Click (Open Detail Activity)
             holder.itemView.setOnClickListener(v -> {
 
-                Intent intent = new Intent(v.getContext(), ReturnDetailActivity.class);
+                Intent intent = new Intent(
 
-                intent.putExtra("orderId", booking.getOrderId());
-                intent.putExtra("items", booking.getItemsString());
-                intent.putExtra("itemNo", booking.getFirstItem());
+                        v.getContext(),
 
-                intent.putExtra("name", booking.getName());
-                intent.putExtra("phone", booking.getPhone());
-
-                intent.putExtra("pickupDateTime", booking.getPickupMs());
-                intent.putExtra("returnDateTime", booking.getReturnMs());
-                intent.putExtra("washDateTime", booking.getWashMs());
-                intent.putExtra("actualPickupDateTime", booking.getActualPickupMs());
-
-                intent.putExtra("totalRent", booking.getTotalRent());
-                intent.putExtra("deposit", booking.getDeposit());
-                intent.putExtra("rentPaid", booking.getRentPaid());
-                intent.putExtra("balance", booking.getBalance());
-
-                intent.putExtra("status", booking.getStatus());
-                intent.putExtra("timestamp", booking.getTimestamp());
-
-                // ✅ send ItemStatus objects directly
-                intent.putExtra(
-                        "itemsList",
-                        new ArrayList<>(booking.getItems())
+                        ReturnDetailActivity.class
                 );
 
-                ((Activity) v.getContext()).startActivityForResult(intent, 100);
+                intent.putExtra(
 
+                        "booking",
+
+                        new Gson().toJson(booking)
+                );
+
+                ((Activity) v.getContext())
+
+                        .startActivityForResult(
+                                intent,
+                                100
+                        );
             });
-
             double totalRent = booking.getTotalRent();
             double rentPaid = booking.getRentPaid();
             double deposit = booking.getDeposit();

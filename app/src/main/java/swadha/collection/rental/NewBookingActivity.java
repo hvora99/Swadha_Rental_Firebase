@@ -28,10 +28,14 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.android.material.button.MaterialButton;
 
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -41,7 +45,7 @@ import java.util.Locale;
 
 public class NewBookingActivity extends AppCompatActivity {
 
-    private EditText  etCustomerName, etPhone, etTotalRent,SuggestedDeposit,RentPaidNow;
+    private EditText  etCustomerName, etPhone, etTotalRent,SuggestedDeposit,RentPaidNow,etAlternatePhone;;
     private Button btnSaveBooking, btnPickDate, btnReturnDate, btnPickTime, btnReturnTime,btnWashDate,btnWashTime;
     private String selectedPickupDate = "";
     private String selectedReturnDate = "";
@@ -71,6 +75,7 @@ public class NewBookingActivity extends AppCompatActivity {
     private List<SelectedBookingItemModel>
             selectedItems = new ArrayList<>();
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -91,9 +96,9 @@ public class NewBookingActivity extends AppCompatActivity {
         btnWashTime = findViewById(R.id.btnWashTime);
         btnSearchItems = findViewById(R.id.btnSearchItems);
         layoutSelectedItems = findViewById(R.id.layoutSelectedItems);
+        etAlternatePhone =findViewById(R.id.etAlternatePhone);
 
-        orderRepository =
-                new FirebaseOrderRepository();
+        orderRepository = new FirebaseOrderRepository();
 
         setupCurrencyFormatter(etTotalRent);
         setupCurrencyFormatter(RentPaidNow);
@@ -252,23 +257,21 @@ public class NewBookingActivity extends AppCompatActivity {
 
                             item.setStatus("locked");
 
-                        }else if(
-
-                                firebaseItem
-                                        .nextAvailableMs
-
-                                        > pickupMs
-                        ){
-
-                            item.setStatus("booked");
-
                         }else{
 
                             item.setStatus("available");
                         }
 
                         availableItems.add(item);
+
+
+
                     }
+
+                    checkBookingOverlaps(
+                            pickupCalendar.getTimeInMillis(),
+                            returnCalendar.getTimeInMillis()
+                    );
 
                     if(availableItems.isEmpty()){
 
@@ -281,16 +284,212 @@ public class NewBookingActivity extends AppCompatActivity {
                                 Toast.LENGTH_SHORT
 
                         ).show();
-
-                        return;
                     }
 
-                    showSearchableDialog();
                 })
 
                 .addOnFailureListener(e -> {
 
                     hideLoading();
+
+                    Toast.makeText(
+
+                            this,
+
+                            e.getMessage(),
+
+                            Toast.LENGTH_LONG
+
+                    ).show();
+                });
+
+
+    }
+
+    private void checkBookingOverlaps(
+
+            long searchPickup,
+
+            long searchReturn
+    ){
+
+        FirebaseFirestore
+                .getInstance()
+
+
+                .collection("orders")
+
+                .whereGreaterThan(
+                        "returnMs",
+                        searchPickup
+                )
+
+                .whereLessThan(
+                        "pickupMs",
+                        searchReturn
+                )
+
+                .get()
+
+                .addOnSuccessListener(orderQuery -> {
+
+                    List<Task<QuerySnapshot>>
+                            itemTasks =
+                            new ArrayList<>();
+
+                    // =========================
+                    // LOAD ALL ORDER ITEMS
+                    // =========================
+
+                    for(DocumentSnapshot orderDoc
+                            : orderQuery.getDocuments()){
+
+                        Task<QuerySnapshot> task =
+
+                                orderDoc
+
+                                        .getReference()
+
+                                        .collection("items")
+
+                                        .get();
+
+                        itemTasks.add(task);
+                    }
+
+                    // =========================
+                    // WAIT FOR ALL ITEM QUERIES
+                    // =========================
+
+                    Tasks.whenAllSuccess(itemTasks)
+
+                            .addOnSuccessListener(results -> {
+
+                                // reset all to available first
+                                for(ItemModel item
+                                        : availableItems){
+
+                                    if(!"locked".equalsIgnoreCase(
+                                            item.getStatus()
+                                    )){
+
+                                        item.setStatus(
+                                                "available"
+                                        );
+                                    }
+                                }
+
+                                // =====================
+                                // PROCESS ALL ITEMS
+                                // =====================
+
+                                for(Object obj : results){
+
+                                    QuerySnapshot itemQuery =
+                                            (QuerySnapshot) obj;
+
+                                    for(DocumentSnapshot doc
+                                            : itemQuery.getDocuments()){
+
+                                        FirebaseOrderItemModel bookedItem =
+
+                                                doc.toObject(
+                                                        FirebaseOrderItemModel.class
+                                                );
+
+                                        if(bookedItem == null)
+                                            continue;
+
+                                        // =====================
+                                        // IGNORE COMPLETED
+                                        // =====================
+
+                                        if("Returned".equalsIgnoreCase(
+                                                bookedItem.status
+                                        )
+                                                ||
+                                                "Cancelled".equalsIgnoreCase(
+                                                        bookedItem.status
+                                                )){
+
+                                            continue;
+                                        }
+
+                                        // =====================
+                                        // INVALID DATES
+                                        // =====================
+
+                                        if(bookedItem.pickupMs == 0
+                                                ||
+                                                bookedItem.washMs == 0){
+
+                                            continue;
+                                        }
+
+                                        // =====================
+                                        // OVERLAP CHECK
+                                        // =====================
+
+                                        boolean overlaps =
+
+                                                searchPickup
+                                                        < bookedItem.washMs
+
+                                                        &&
+
+                                                        searchReturn
+                                                                > bookedItem.pickupMs;
+
+                                        if(!overlaps)
+                                            continue;
+
+                                        // =====================
+                                        // MARK BOOKED
+                                        // =====================
+
+                                        for(ItemModel item
+                                                : availableItems){
+
+                                            if(item.getItemNo().equals(
+                                                    bookedItem.itemNo
+                                            )){
+
+                                                item.setStatus(
+                                                        "booked"
+                                                );
+
+                                                item.setNextAvailableMs(
+                                                        bookedItem.washMs
+                                                );
+                                            }
+                                        }
+                                    }
+                                }
+
+                                // =====================
+                                // FINAL DIALOG
+                                // =====================
+
+                                showSearchableDialog();
+
+                            })
+
+                            .addOnFailureListener(e -> {
+
+                                Toast.makeText(
+
+                                        this,
+
+                                        e.getMessage(),
+
+                                        Toast.LENGTH_LONG
+
+                                ).show();
+                            });
+
+                })
+
+                .addOnFailureListener(e -> {
 
                     Toast.makeText(
 
@@ -309,7 +508,10 @@ public class NewBookingActivity extends AppCompatActivity {
                 new SimpleDateFormat("dd/MM", Locale.getDefault());
 
         SimpleDateFormat timeFormat =
-                new SimpleDateFormat("HH:mm", Locale.getDefault());
+                new SimpleDateFormat(
+                        "hh:mm a",
+                        Locale.getDefault()
+                );
 
         btnWashDate.setText("Wash: " + dateFormat.format(washCalendar.getTime()));
         btnWashTime.setText("Time: " + timeFormat.format(washCalendar.getTime()));
@@ -356,14 +558,7 @@ public class NewBookingActivity extends AppCompatActivity {
 
                         title.setText(item.getItemNo() + " - " + item.getItemName());
 
-                        if(item.getNextAvailableMs() > System.currentTimeMillis()){
-                            status.setText("Booked till " +
-                                    new SimpleDateFormat("dd MMM HH:mm", Locale.getDefault())
-                                            .format(new Date(item.getNextAvailableMs())));
-                            status.setTextColor(Color.RED);
-                            check.setChecked(false);
-                            check.setEnabled(false);
-                        }
+
                         // 🔒 LOCKED
                         String statusValue = item.getStatus();
 
@@ -561,7 +756,7 @@ public class NewBookingActivity extends AppCompatActivity {
 
         View view = getLayoutInflater()
                 .inflate(
-                        R.layout.dialog_rent_deposit,
+                            R.layout.dialog_rent_deposit,
                         null
                 );
 
@@ -757,15 +952,6 @@ public class NewBookingActivity extends AppCompatActivity {
                             + format.format(new Date(item.returnMs));
             tvTime.setText(timeline);
 
-            int index = i;
-
-            card.setOnClickListener(v -> {
-
-                showTimelineEditor(
-                        selectedItems.get(index)
-                );
-            });
-
             layoutSelectedItems.addView(card);
 
         }
@@ -775,154 +961,6 @@ public class NewBookingActivity extends AppCompatActivity {
     }
 
 
-
-    private void showTimelineEditor(
-            SelectedBookingItemModel item
-    ){
-
-        View view = getLayoutInflater().inflate(
-                R.layout.dialog_edit_timeline,null);
-
-        TextView tvItem = view.findViewById(R.id.tvItemTitle);
-
-        Button btnPickupDate = view.findViewById(R.id.btnPickupDate);
-        Button btnPickupTime = view.findViewById(R.id.btnPickupTime);
-        Button btnReturnDate = view.findViewById(R.id.btnReturnDate);
-        Button btnReturnTime = view.findViewById(R.id.btnReturnTime);
-
-        tvItem.setText(
-                "Item : " +
-                        item.item.getItemNo()
-        );
-        Calendar pickupCal = Calendar.getInstance();
-        pickupCal.setTimeInMillis(item.pickupMs);
-
-        Calendar returnCal = Calendar.getInstance();
-        returnCal.setTimeInMillis(item.returnMs);
-
-        SimpleDateFormat dateFormat =
-                new SimpleDateFormat("dd MMM yyyy", Locale.getDefault());
-
-        SimpleDateFormat timeFormat =
-                new SimpleDateFormat("HH:mm", Locale.getDefault());
-
-        btnPickupDate.setText("Pickup : " + dateFormat.format(pickupCal.getTime()));
-        btnPickupTime.setText("Time : " + timeFormat.format(pickupCal.getTime()));
-
-        btnReturnDate.setText("Return : " + dateFormat.format(returnCal.getTime()));
-        btnReturnTime.setText("Time : " + timeFormat.format(returnCal.getTime()));
-
-        btnPickupDate.setOnClickListener(v -> {
-
-            DatePickerDialog dp = new DatePickerDialog(
-                    this,
-                    (view1,y,m,d)->{
-
-                        pickupCal.set(y,m,d);
-
-                        btnPickupDate.setText(
-                                "Pickup : " +
-                                        dateFormat.format(pickupCal.getTime())
-                        );
-
-                    },
-                    pickupCal.get(Calendar.YEAR),
-                    pickupCal.get(Calendar.MONTH),
-                    pickupCal.get(Calendar.DAY_OF_MONTH)
-            );
-
-// ⭐ restrict date range
-            dp.getDatePicker().setMinDate(pickupCalendar.getTimeInMillis());
-            dp.getDatePicker().setMaxDate(returnCalendar.getTimeInMillis());
-
-            dp.show();
-        });
-
-        btnPickupTime.setOnClickListener(v -> {
-
-            TimePickerDialog tp = new TimePickerDialog(
-                    this,
-                    (view12,h,min)->{
-
-                        pickupCal.set(Calendar.HOUR_OF_DAY,h);
-                        pickupCal.set(Calendar.MINUTE,min);
-
-                        btnPickupTime.setText(
-                                "Time : " +
-                                        timeFormat.format(pickupCal.getTime())
-                        );
-
-                    },
-                    pickupCal.get(Calendar.HOUR_OF_DAY),
-                    pickupCal.get(Calendar.MINUTE),
-                    true
-            );
-
-            tp.show();
-        });
-
-        btnReturnDate.setOnClickListener(v -> {
-
-            DatePickerDialog dp = new DatePickerDialog(
-                    this,
-                    (view13,y,m,d)->{
-
-                        returnCal.set(y,m,d);
-
-                        btnReturnDate.setText(
-                                "Return : " +
-                                        dateFormat.format(returnCal.getTime())
-                        );
-
-                    },
-                    returnCal.get(Calendar.YEAR),
-                    returnCal.get(Calendar.MONTH),
-                    returnCal.get(Calendar.DAY_OF_MONTH)
-            );
-
-// restrict range
-            dp.getDatePicker().setMinDate(pickupCalendar.getTimeInMillis());
-            dp.getDatePicker().setMaxDate(returnCalendar.getTimeInMillis());
-
-            dp.show();
-        });
-
-        btnReturnTime.setOnClickListener(v -> {
-
-            TimePickerDialog tp = new TimePickerDialog(
-                    this,
-                    (view14,h,min)->{
-
-                        returnCal.set(Calendar.HOUR_OF_DAY,h);
-                        returnCal.set(Calendar.MINUTE,min);
-
-                        btnReturnTime.setText(
-                                "Time : " +
-                                        timeFormat.format(returnCal.getTime())
-                        );
-
-                    },
-                    returnCal.get(Calendar.HOUR_OF_DAY),
-                    returnCal.get(Calendar.MINUTE),
-                    true
-            );
-
-            tp.show();
-        });
-
-        new AlertDialog.Builder(this)
-                .setTitle("Edit Timeline")
-                .setView(view)
-                .setPositiveButton("Save",(d,w)->{
-
-                    item.pickupMs = pickupCal.getTimeInMillis();
-                    item.returnMs = returnCal.getTimeInMillis();
-                    updateSelectedItemsUI();
-
-                })
-                .setNegativeButton("Cancel",null)
-                .show();
-    }
 
     private void showLoading() {
         // Create a layout programmatically
@@ -1042,12 +1080,20 @@ public class NewBookingActivity extends AppCompatActivity {
                 this,
                 (view, hour, minute) -> {
 
-                    String formattedTime = String.format(
-                            Locale.getDefault(),
-                            "%02d:%02d",
-                            hour,
-                            minute
-                    );
+                    String formattedTime =
+
+                            String.format(
+
+                                    Locale.getDefault(),
+
+                                    "%02d:%02d %s",
+
+                                    (hour % 12 == 0 ? 12 : hour % 12),
+
+                                    minute,
+
+                                    (hour < 12 ? "AM" : "PM")
+                            );
 
                     if (type == TYPE_PICKUP) {
 
@@ -1085,7 +1131,7 @@ public class NewBookingActivity extends AppCompatActivity {
                 },
                 c.get(Calendar.HOUR_OF_DAY),
                 c.get(Calendar.MINUTE),
-                true
+                false
         );
 
         timePickerDialog.show();
@@ -1128,6 +1174,7 @@ public class NewBookingActivity extends AppCompatActivity {
         String name = etCustomerName.getText().toString().trim();
         String phone = etPhone.getText().toString().trim();
         String totalStr = etTotalRent.getText().toString().trim();
+        String Alternatephon = etAlternatePhone.getText().toString().trim();
 
         // Get rent paid now
         double rentPaidValue = getCurrencyValue(RentPaidNow);
@@ -1170,12 +1217,12 @@ public class NewBookingActivity extends AppCompatActivity {
         FirebaseOrderModel order =
                 new FirebaseOrderModel();
 
-        order.orderId =
-                "SVD-" + now;
 
         order.customerName = name;
 
         order.phone = phone;
+
+        order.alternatePhone = Alternatephon;
 
         order.totalRent =
                 getCurrencyValue(etTotalRent);
@@ -1239,9 +1286,7 @@ public class NewBookingActivity extends AppCompatActivity {
 
         showLoading();
 
-        orderRepository.createBooking(
-
-                order,
+        orderRepository.validateFinalAvailability(
 
                 selectedItems,
 
@@ -1251,19 +1296,87 @@ public class NewBookingActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess() {
 
-                        hideLoading();
+                        orderRepository.generateOrderId(
 
-                        Toast.makeText(
+                                new FirebaseOrderRepository
+                                        .OrderIdCallback() {
 
-                                NewBookingActivity.this,
+                                    @Override
+                                    public void onGenerated(
+                                            String orderId
+                                    ) {
 
-                                "Booking Confirmed",
+                                        order.orderId = orderId;
 
-                                Toast.LENGTH_LONG
+                                        orderRepository.createBooking(
 
-                        ).show();
+                                                order,
 
-                        finish();
+                                                selectedItems,
+
+                                                new FirebaseOrderRepository
+                                                        .OrderCallback() {
+
+                                                    @Override
+                                                    public void onSuccess() {
+
+                                                        hideLoading();
+
+                                                        Toast.makeText(
+
+                                                                NewBookingActivity.this,
+
+                                                                "Booking Confirmed",
+
+                                                                Toast.LENGTH_LONG
+
+                                                        ).show();
+
+                                                        finish();
+                                                    }
+
+                                                    @Override
+                                                    public void onError(
+                                                            String error
+                                                    ) {
+
+                                                        hideLoading();
+
+                                                        btnSaveBooking.setEnabled(true);
+
+                                                        Toast.makeText(
+
+                                                                NewBookingActivity.this,
+
+                                                                error,
+
+                                                                Toast.LENGTH_LONG
+
+                                                        ).show();
+                                                    }
+                                                }
+                                        );
+                                    }
+
+                                    @Override
+                                    public void onError(
+                                            String error
+                                    ) {
+
+                                        hideLoading();
+
+                                        Toast.makeText(
+
+                                                NewBookingActivity.this,
+
+                                                error,
+
+                                                Toast.LENGTH_LONG
+
+                                        ).show();
+                                    }
+                                }
+                        );
                     }
 
                     @Override

@@ -36,6 +36,12 @@ public class ItemModel {
     public long getNextAvailableMs() {
         return nextAvailableMs;
     }
+
+    public void setNextAvailableMs(long nextAvailableMs){
+
+        this.nextAvailableMs =
+                nextAvailableMs;
+    }
     public boolean isRequiresWash() { return requiresWash; }
     public boolean isLocked() { return isLocked; }
     public String getStatus() {

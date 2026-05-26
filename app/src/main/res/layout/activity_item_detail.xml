@@ -1,159 +1,251 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FBFBFE">
+    android:background="#F8F7F4"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:padding="18dp">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:layout_marginBottom="30dp">
-
-            <TextView
-                android:id="@+id/tvDetailItemCode"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="CH01"
-                android:textColor="#1A1C1E"
-                android:textSize="48sp"
-                android:fontFamily="sans-serif-condensed-light"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="IDENTIFICATION CODE"
-                android:textColor="#9E9E9E"
-                android:textSize="10sp"
-                android:letterSpacing="0.2"
-                android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="@id/tvDetailItemCode"
-                app:layout_constraintTop_toBottomOf="@id/tvDetailItemCode" />
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="0dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="#F2F4F7"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@id/tvDetailItemCode"
-                app:layout_constraintBottom_toBottomOf="@id/tvDetailItemCode">
-
-                <ImageView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:padding="12dp"
-                    android:src="@drawable/ic_inventory"
-                    app:tint="#800020"/>
-            </com.google.android.material.card.MaterialCardView>
-
-        </androidx.constraintlayout.widget.ConstraintLayout>
+        <!-- HERO SECTION -->
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="24dp"
-            app:cardElevation="2dp"
-            app:cardBackgroundColor="#FFFFFF"
-            app:strokeWidth="0dp">
+            app:cardBackgroundColor="#17181C"
+            app:cardCornerRadius="30dp"
+            app:cardElevation="0dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="20dp">
+                android:padding="24dp">
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="ITEM SPECIFICATIONS"
-                    android:textColor="#800020"
-                    android:textSize="11sp"
-                    android:letterSpacing="0.1"
-                    android:textStyle="bold"/>
-
-                <EditText
-                    android:id="@+id/etDetailItemName"
-                    android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:layout_marginTop="16dp"
-                    android:background="@drawable/bg_minimal_line"
-                    android:hint="Item Name"
-                    android:paddingHorizontal="16dp"
-                    android:textColor="#1A1C1E"
-                    android:textSize="16sp" />
+                <!-- TOP -->
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:orientation="horizontal"
-                    android:weightSum="2">
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
 
-                    <EditText
-                        android:id="@+id/etDetailRent"
+                    <LinearLayout
                         android:layout_width="0dp"
-                        android:layout_height="56dp"
+                        android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:layout_marginEnd="6dp"
-                        android:background="@drawable/bg_minimal_line"
-                        android:hint="Rent (₹)"
-                        android:inputType="number"
-                        android:paddingHorizontal="16dp" />
+                        android:orientation="vertical">
 
-                    <EditText
-                        android:id="@+id/etDetailDeposit"
-                        android:layout_width="0dp"
-                        android:layout_height="56dp"
-                        android:layout_weight="1"
-                        android:layout_marginStart="6dp"
-                        android:background="@drawable/bg_minimal_line"
-                        android:hint="Deposit (₹)"
-                        android:inputType="number"
-                        android:paddingHorizontal="16dp" />
+                        <TextView
+                            android:id="@+id/tvDetailItemCode"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="CH01"
+                            android:textColor="#FFFFFF"
+                            android:textSize="30sp"
+                            android:textStyle="bold"
+                            android:fontFamily="sans-serif-medium"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="Svadha Collection Inventory"
+                            android:textColor="#B0B3B8"
+                            android:textSize="13sp"/>
+                    </LinearLayout>
+
+
                 </LinearLayout>
+
+                <!-- STATUS -->
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:background="#243B2A"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="7dp">
+
+                    <View
+                        android:layout_width="8dp"
+                        android:layout_height="8dp"
+                        android:background="#4CAF50"/>
+
+                    <TextView
+                        android:id="@+id/tvItemLiveStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:text="AVAILABLE"
+                        android:textColor="#FFFFFF"
+                        android:textSize="11sp"
+                        android:textStyle="bold"/>
+                </LinearLayout>
+
+            </LinearLayout>
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- ITEM INFORMATION -->
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            app:cardBackgroundColor="#FFFFFF"
+            app:cardCornerRadius="28dp"
+            app:cardElevation="0dp"
+            app:strokeColor="#ECE7DD"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="22dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Item Information"
+                    android:textColor="#1A1C1E"
+                    android:textSize="18sp"
+                    android:textStyle="bold"/>
+
+                <!-- NAME -->
+
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    app:boxBackgroundColor="#FAFAFA"
+                    app:boxCornerRadiusBottomEnd="20dp"
+                    app:boxCornerRadiusBottomStart="20dp"
+                    app:boxCornerRadiusTopEnd="20dp"
+                    app:boxCornerRadiusTopStart="20dp"
+                    app:boxStrokeColor="#E5DED2"
+                    app:hintEnabled="false">
+
+                    <EditText
+                        android:id="@+id/etDetailItemName"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@null"
+                        android:hint="Item Name"
+                        android:padding="18dp"
+                        android:textColor="#1A1C1E"
+                        android:textSize="15sp"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- PRICE ROW -->
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="7dp"
+                        app:boxBackgroundColor="#FAFAFA"
+                        app:boxCornerRadiusBottomEnd="20dp"
+                        app:boxCornerRadiusBottomStart="20dp"
+                        app:boxCornerRadiusTopEnd="20dp"
+                        app:boxCornerRadiusTopStart="20dp"
+                        app:boxStrokeColor="#E5DED2"
+                        app:hintEnabled="false"
+                        app:prefixText="₹ ">
+
+                        <EditText
+                            android:id="@+id/etDetailRent"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            android:hint="Rent"
+                            android:inputType="numberDecimal"
+                            android:padding="18dp"/>
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="7dp"
+                        app:boxBackgroundColor="#FAFAFA"
+                        app:boxCornerRadiusBottomEnd="20dp"
+                        app:boxCornerRadiusBottomStart="20dp"
+                        app:boxCornerRadiusTopEnd="20dp"
+                        app:boxCornerRadiusTopStart="20dp"
+                        app:boxStrokeColor="#E5DED2"
+                        app:hintEnabled="false"
+                        app:prefixText="₹ ">
+
+                        <EditText
+                            android:id="@+id/etDetailDeposit"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            android:hint="Deposit"
+                            android:inputType="numberDecimal"
+                            android:padding="18dp"/>
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                </LinearLayout>
+
+                <!-- SAVE -->
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnUpdateItem"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
+                    android:layout_height="60dp"
                     android:layout_marginTop="24dp"
-                    android:text="Save Specifications"
+                    android:text="Save Changes"
                     android:textAllCaps="false"
-                    android:fontFamily="sans-serif-medium"
+                    android:textColor="#FFFFFF"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
                     app:backgroundTint="#1A1C1E"
-                    app:cornerRadius="16dp" />
+                    app:cornerRadius="22dp"/>
 
             </LinearLayout>
+
         </com.google.android.material.card.MaterialCardView>
+
+        <!-- ACTIONS -->
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:orientation="horizontal"
-            android:weightSum="2">
+            android:orientation="horizontal">
+
+            <!-- LOCK -->
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/btnToggleLock"
                 android:layout_width="0dp"
-                android:layout_height="56dp"
-                android:layout_weight="1.2"
-                android:layout_marginEnd="6dp"
-                app:cardCornerRadius="18dp"
-                app:cardElevation="0dp"
+                android:layout_height="58dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
                 app:cardBackgroundColor="#FFF8E8"
+                app:cardCornerRadius="22dp"
+                app:cardElevation="0dp"
                 app:strokeColor="#FFD89B"
                 app:strokeWidth="1dp">
 
@@ -183,45 +275,131 @@
 
             </com.google.android.material.card.MaterialCardView>
 
-            <com.google.android.material.button.MaterialButton
+            <!-- REMOVE -->
+
+            <com.google.android.material.card.MaterialCardView
                 android:id="@+id/btnRemoveItem"
-                style="@style/Widget.MaterialComponents.Button.TextButton"
-                android:layout_width="0dp"
-                android:layout_height="56dp"
-                android:layout_weight="0.8"
-                android:text="Remove"
-                android:textColor="#D32F2F"
-                android:textAllCaps="false" />
+                android:layout_width="120dp"
+                android:layout_height="58dp"
+                app:cardBackgroundColor="#FFF1F0"
+                app:cardCornerRadius="22dp"
+                app:cardElevation="0dp"
+                app:strokeColor="#FAD7D2"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Remove"
+                        android:textColor="#D32F2F"
+                        android:textSize="14sp"
+                        android:textStyle="bold"/>
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
         </LinearLayout>
+
+        <!-- AVAILABILITY CALENDAR -->
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:text="Active Rental History"
+            android:layout_marginTop="34dp"
+            android:text="Availability Calendar"
             android:textColor="#1A1C1E"
-            android:textSize="18sp"
-            android:textStyle="bold" />
+            android:textSize="20sp"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Next 90 days availability"
+            android:textColor="#7A7A7A"
+            android:textSize="13sp"/>
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/layoutAvailability"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"/>
+
+        </HorizontalScrollView>
+        <!-- BOOKING SECTION -->
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="34dp"
+            android:text="Current Active Bookings"
+            android:textColor="#1A1C1E"
+            android:textSize="20sp"
+            android:textStyle="bold"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Orders currently using this inventory"
+            android:textColor="#7A7A7A"
+            android:textSize="13sp"/>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvCurrentBooking"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:minHeight="100dp"
+            android:layout_marginTop="16dp"
             android:nestedScrollingEnabled="false"/>
 
-        <TextView
+        <!-- EMPTY -->
+
+        <LinearLayout
             android:id="@+id/tvNoBooking"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:background="@drawable/bg_minimal_line"
+            android:layout_marginTop="16dp"
+            android:background="#FFFFFF"
             android:gravity="center"
-            android:padding="32dp"
-            android:text="No active bookings found"
-            android:textColor="#9E9E9E"
-            android:textSize="14sp" />
+            android:orientation="vertical"
+            android:padding="28dp">
+
+            <ImageView
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:src="@drawable/ic_inventory"
+                app:tint="#C5C5C5"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:text="No Active Bookings"
+                android:textColor="#8E8E93"
+                android:textSize="15sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="This item is currently available"
+                android:textColor="#B0B3B8"
+                android:textSize="12sp"/>
+
+        </LinearLayout>
 
     </LinearLayout>
+
 </androidx.core.widget.NestedScrollView>

@@ -76,6 +76,7 @@ public class FirebaseDashboardRepository {
                                                         order.customerName,
 
                                                         order.phone,
+                                                        order.alternatePhone,
 
                                                         order.pickupMs,
 

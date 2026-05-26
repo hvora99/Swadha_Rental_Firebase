@@ -5,6 +5,11 @@ public class FirebaseOrderItemModel {
     public String itemNo;
 
     public String itemName;
+    public double refundedDeposit;
+
+    public double refundedRent;
+
+    public double totalRefund;
 
     public double originalRent;
 

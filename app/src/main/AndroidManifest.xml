@@ -13,16 +13,19 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
+        android:name=".MainApplication"
         android:theme="@style/Theme.Swadha"
         android:usesCleartextTraffic="true"
         tools:targetApi="31">
+        <activity
+            android:name=".BackupActivity"
+            android:exported="false" />
         <activity
             android:name=".HistoryDetailActivity"
             android:exported="false" />
         <activity
             android:name=".ItemDetailActivity"
             android:exported="false" />
-        <activity android:name=".FirebaseTestActivity"/>
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -48,15 +51,12 @@
             android:exported="false" />
         <activity
             android:name=".DashboardActivity"
-            android:exported="false" />
-        <activity
-            android:name=".MainActivity"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+            android:exported="true" >
+        <intent-filter>
+            <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent-filter>
         </activity>
     </application>
 

@@ -2,6 +2,7 @@ package swadha.collection.rental;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -30,7 +31,7 @@ public class HistoryDetailActivity extends AppCompatActivity {
     private RelativeLayout layoutPendingBalance;
     MaterialCardView btnSendWhatsapp;
 
-    private TextView tvPendingBalance;
+    private TextView tvPendingBalance,tvAlternatePhone;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,6 +41,11 @@ public class HistoryDetailActivity extends AppCompatActivity {
 
         OrderHistoryModel m =
                 new Gson().fromJson(json, OrderHistoryModel.class);
+
+        TextView tvAlternatePhone =
+                findViewById(
+                        R.id.tvAlternatePhone
+                );
 
         layoutItemsTimeline =
                 findViewById(R.id.layoutItemsTimeline);
@@ -56,6 +62,8 @@ public class HistoryDetailActivity extends AppCompatActivity {
                         R.id.tvPendingBalance
                 );
 
+
+
         Log.d("TEST123", new Gson().toJson(m));
 
         // Bind views
@@ -67,8 +75,14 @@ public class HistoryDetailActivity extends AppCompatActivity {
         btnSendWhatsapp = findViewById(R.id.btnSendWhatsapp);
 
         tvTotalRent = findViewById(R.id.tvTotalRent);
-        tvRentPaid = findViewById(R.id.tvRentPaid);
-        tvDeposit = findViewById(R.id.tvDeposit);
+
+        tvRentPaid = findViewById(
+                R.id.tvOrderRentPaid
+        );
+
+        tvDeposit = findViewById(
+                R.id.tvOrderDeposit
+        );
 
         // Set values
         tvOrderId.setText(m.orderId);
@@ -86,7 +100,26 @@ public class HistoryDetailActivity extends AppCompatActivity {
         tvCustomer.setText(m.customerName);
         tvPhone.setText(m.phone);
 
+        if(m.alternatePhone != null
+                &&
+                !m.alternatePhone.isEmpty()){
 
+            tvAlternatePhone.setVisibility(
+                    View.VISIBLE
+            );
+
+            tvAlternatePhone.setText(
+
+                    "Alternate : "
+                            + m.alternatePhone
+            );
+
+        }else{
+
+            tvAlternatePhone.setVisibility(
+                    View.GONE
+            );
+        }
 
         tvTotalRent.setText("₹ " + m.totalRent);
         tvRentPaid.setText(
@@ -208,6 +241,17 @@ public class HistoryDetailActivity extends AppCompatActivity {
                                 + "\n";
             }
 
+            if(m.alternatePhone != null
+                    &&
+                    !m.alternatePhone.isEmpty()){
+
+                message +=
+
+                        "📞 Alternate : "
+                                + m.alternatePhone
+                                + "\n";
+            }
+
             message +=
 
                     "\nThank you for choosing *Svadha Collection* 💛"
@@ -231,6 +275,8 @@ public class HistoryDetailActivity extends AppCompatActivity {
 
             startActivity(intent);
         });
+
+
     }
 
     private void addTimelineItems(
@@ -245,16 +291,35 @@ public class HistoryDetailActivity extends AppCompatActivity {
         for (OrderHistoryModel.HistoryItem item : items) {
 
             View v = inflater.inflate(
-                    R.layout.item_timeline_chip,
+                    R.layout.item_return_timeline,
                     layoutItemsTimeline,
                     false
             );
 
             TextView tvItemCode =
-                    v.findViewById(R.id.tvItemCode);
+                    v.findViewById(R.id.tvItemNo);
 
-            TextView tvTimeline =
-                    v.findViewById(R.id.tvTimeline);
+            TextView tvPickup =
+                    v.findViewById(R.id.tvPickup);
+
+            TextView tvReturn =
+                    v.findViewById(R.id.tvReturn);
+
+            TextView tvWash =
+                    v.findViewById(R.id.tvWash);
+
+            TextView tvBalance =
+                    v.findViewById(R.id.tvBalance);
+
+            TextView tvRentPaid =
+                    v.findViewById(R.id.tvRentPaid);
+
+            TextView tvDeposit =
+                    v.findViewById(R.id.tvDeposit);
+
+            TextView tvItemName =
+                    v.findViewById(R.id.tvItemName);
+
             TextView tvItemStatus =
                     v.findViewById(R.id.tvItemStatus);
 
@@ -262,55 +327,114 @@ public class HistoryDetailActivity extends AppCompatActivity {
 
             tvItemCode.setText(item.itemNo);
 
+            tvItemName.setText(item.itemName);
+
+            tvPickup.setText(
+                    formatDateTime(item.pickupMs)
+            );
+
+            tvReturn.setText(
+                    formatDateTime(item.returnMs)
+            );
+
+            tvWash.setText(
+                    formatDateTime(item.washMs)
+            );
+
+            double balancePerItem =
+
+                    item.customRent
+                            - item.rentPaid;
+            double pendingRent =
+
+                    item.customRent
+                            - item.rentPaid;
+
+            boolean refunded =
+
+                    item.status.equalsIgnoreCase(
+                            "Returned"
+                    )
+
+                            ||
+
+                            item.status.equalsIgnoreCase(
+                                    "Cancelled"
+                            );
+
+
+            if(refunded){
+
+                tvBalance.setText(
+
+                        "Refunded ₹ "
+                                + item.totalRefund
+                );
+
+                tvDeposit.setText(
+
+                        "Deposit Refunded ₹ "
+                                + item.refundedDeposit
+                );
+            }
+            else{
+
+                tvBalance.setText(
+
+                        "Pending ₹ "
+                                + pendingRent
+                );
+
+                tvDeposit.setText(
+
+                        "Deposit ₹ "
+                                + item.customDeposit
+                );
+            }
+
+            tvRentPaid.setText(
+
+                    "Rent Paid ₹ "
+                            + item.rentPaid
+            );
+
+            GradientDrawable bg =
+                    (GradientDrawable)
+
+                            tvItemStatus
+                                    .getBackground();
+
+
             if(item.status.equalsIgnoreCase("Returned")){
 
                 tvItemStatus.setTextColor(
                         Color.parseColor("#2E7D32")
                 );
 
+                bg.setColor(
+                        Color.parseColor("#E8F5E9")
+                );
+
+
             }else if(item.status.equalsIgnoreCase("Cancelled")){
 
                 tvItemStatus.setTextColor(
-                        Color.parseColor("#9E9E9E")
+                        Color.parseColor("#757575")
                 );
 
-            }else{
-
-                tvItemStatus.setTextColor(
-                        Color.parseColor("#EF6C00")
+                bg.setColor(
+                        Color.parseColor("#EEEEEE")
                 );
-            }
 
-            if(item.status.equalsIgnoreCase(
-                    "Cancelled"
-            )){
-
-                tvTimeline.setText(
-                        "❌ Cancelled Before Pickup"
+                tvReturn.setText(
+                        "Cancelled"
                 );
-            }
-            else if(item.status.equalsIgnoreCase(
-                    "Returned"
-            )){
 
-                String pickup =
-                        formatDateTime(item.pickupMs);
-
-                String returned =
-                        formatDateTime(item.returnMs);
-
-                tvTimeline.setText(
-
-                        "Pickup : " + pickup +
-
-                                "\nReturn : " + returned
+                tvWash.setText(
+                        "-"
                 );
-            }
-            else{
 
-                tvTimeline.setText(
-                        item.status
-                );
+
             }
             layoutItemsTimeline.addView(v);
         }

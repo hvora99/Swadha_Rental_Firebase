@@ -11,7 +11,7 @@
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/headerBg"
         android:layout_width="0dp"
-        android:layout_height="220dp"
+        android:layout_height="190dp"
         app:cardCornerRadius="28dp"
         app:cardElevation="0dp"
         app:cardBackgroundColor="#121417"
@@ -22,7 +22,7 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:padding="24dp">
+            android:padding="15dp">
 
             <!-- subtle accent -->
 
@@ -35,67 +35,145 @@
                 app:layout_constraintTop_toTopOf="parent"/>
 
             <!-- STATUS -->
-
-            <TextView
-                android:id="@+id/tvStatus"
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/bg_status_glass"
-                android:paddingHorizontal="14dp"
-                android:paddingVertical="6dp"
-                android:text="BOOKED"
-                android:textColor="#FFFFFF"
-                android:textSize="10sp"
-                android:textStyle="bold"
-                android:letterSpacing="0.15"
+                app:cardCornerRadius="50dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="#22FFFFFF"
+                app:strokeColor="#33FFFFFF"
+                app:strokeWidth="1dp"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
+                app:layout_constraintTop_toTopOf="parent">
 
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="18dp"
+                    android:paddingVertical="8dp">
+
+                    <View
+                        android:id="@+id/viewStatusDot"
+                        android:layout_width="8dp"
+                        android:layout_height="8dp"
+                        android:background="@drawable/bg_status_dot"/>
+
+                    <TextView
+                        android:id="@+id/tvStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:gravity="center"
+                        android:letterSpacing="0.08"
+                        android:text="BOOKED"
+                        android:textAllCaps="true"
+                        android:textColor="#FFFFFF"
+                        android:textSize="12sp"
+                        android:textStyle="bold"/>
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
             <!-- CUSTOMER -->
+            <!-- CUSTOMER INFO CARD -->
 
-            <TextView
-                android:id="@+id/tvCustomerHeader"
+
+            <!-- CUSTOMER SECTION -->
+
+            <LinearLayout
+                android:id="@+id/layoutCustomerCompact"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="26dp"
-                android:text="Hardik Vora"
-                android:textColor="#FFFFFF"
-                android:textSize="30sp"
-                android:textStyle="bold"
-                android:fontFamily="sans-serif-medium"
-                app:layout_constraintEnd_toStartOf="@id/btnCallCustomer"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tvStatus"/>
-
-            <!-- PHONE -->
-
-            <TextView
-                android:id="@+id/tvPhoneHeader"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:text="+91 9876543210"
-                android:textColor="#B0BEC5"
-                android:textSize="15sp"
-                android:letterSpacing="0.03"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tvCustomerHeader"/>
-
-            <!-- CALL BUTTON -->
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnCallCustomer"
-                style="@style/Widget.Material3.Button.IconButton.Filled"
-                android:layout_width="58dp"
-                android:layout_height="58dp"
-                android:layout_marginTop="18dp"
-                app:backgroundTint="#FFFFFF"
-                app:icon="@android:drawable/ic_menu_call"
-                app:iconSize="26dp"
-                app:iconTint="#121417"
-                app:layout_constraintBottom_toBottomOf="@id/tvPhoneHeader"
+                android:layout_marginTop="08dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@id/tvCustomerHeader"/>
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/cardStatus">
+
+                <!-- LEFT INFO -->
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <!-- NAME -->
+
+                    <TextView
+                        android:id="@+id/tvCustomerHeader"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:maxLines="1"
+                        android:ellipsize="end"
+                        android:text="Hardik Vora"
+                        android:textColor="#FFFFFF"
+                        android:textSize="20sp"
+                        android:textStyle="bold"/>
+
+                    <!-- PRIMARY -->
+
+                    <TextView
+                        android:id="@+id/tvPhoneHeader"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="+91 9876543210"
+                        android:textColor="#B0BEC5"
+                        android:textSize="14sp"/>
+
+                    <!-- ALTERNATE -->
+
+                    <TextView
+                        android:id="@+id/tvAlternatePhone"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="+91 9999999999"
+                        android:textColor="#90A4AE"
+                        android:textSize="13sp"
+                        android:visibility="visible"/>
+
+                </LinearLayout>
+
+                <!-- ACTIONS -->
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnCallCustomer"
+                        style="@style/Widget.MaterialComponents.Button"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        app:backgroundTint="#FFFFFF"
+                        app:cornerRadius="14dp"
+                        app:icon="@android:drawable/ic_menu_call"
+                        app:iconTint="#121417"/>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnSendWhatsapp"
+                        style="@style/Widget.MaterialComponents.Button"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginStart="10dp"
+                        android:minWidth="0dp"
+                        android:minHeight="0dp"
+                        app:backgroundTint="#1FAA59"
+                        app:cornerRadius="14dp"
+                        app:icon="@drawable/ic_whatsapp"
+                        app:iconTint="#FFFFFF"/>
+                </LinearLayout>
+
+            </LinearLayout>
 
             <!-- ORDER META -->
 
@@ -104,7 +182,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="6dp"
                 android:orientation="vertical"
-                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/layoutCustomerCompact"
+                android:layout_marginTop="06dp"
                 app:layout_constraintStart_toStartOf="parent">
 
                 <TextView
@@ -162,18 +241,74 @@
                     android:orientation="vertical"
                     android:padding="20dp">
 
-                    <androidx.constraintlayout.widget.ConstraintLayout android:layout_width="match_parent" android:layout_height="wrap_content">
-                        <TextView android:text="Total Rent" android:textColor="#667085" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toTopOf="parent" android:layout_width="wrap_content" android:layout_height="wrap_content" />
-                        <TextView android:id="@+id/detTotal" android:text="₹ 3000" android:textStyle="bold" android:textColor="#1D2939" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="parent" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
 
-                        <TextView android:id="@+id/lblDep" android:layout_marginTop="12dp" android:text="Deposit" android:textColor="#667085" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toBottomOf="@id/detTotal" android:layout_width="wrap_content" android:layout_height="wrap_content" />
-                        <TextView android:id="@+id/detDeposit" android:text="₹ 500" android:textColor="#3949AB" android:textStyle="bold" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="@id/lblDep" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                        <TextView
+                            android:text="Total Rent"
+                            android:textColor="#667085"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
 
-                        <TextView android:id="@+id/lblPaid" android:layout_marginTop="12dp" android:text="Rent Paid ₹" android:textColor="#667085" app:layout_constraintStart_toStartOf="parent" app:layout_constraintTop_toBottomOf="@id/detDeposit" android:layout_width="wrap_content" android:layout_height="wrap_content" />
-                        <TextView android:id="@+id/detAdvance" android:text="₹ 2000" android:textColor="#2E7D32" android:textStyle="bold" app:layout_constraintEnd_toEndOf="parent" app:layout_constraintTop_toTopOf="@id/lblPaid" android:layout_width="wrap_content" android:layout_height="wrap_content" />
+                        <TextView
+                            android:id="@+id/detTotal"
+                            android:text="₹ 3000"
+                            android:textStyle="bold"
+                            android:textColor="#1D2939"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+
+                        <TextView
+                            android:id="@+id/lblDep"
+                            android:layout_marginTop="12dp"
+                            android:text="Deposit"
+                            android:textColor="#667085"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/detTotal"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+
+                        <TextView
+                            android:id="@+id/detDeposit"
+                            android:text="₹ 500"
+                            android:textColor="#3949AB"
+                            android:textStyle="bold"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="@id/lblDep"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+
+                        <TextView
+                            android:id="@+id/lblPaid"
+                            android:layout_marginTop="12dp"
+                            android:text="Rent Paid ₹"
+                            android:textColor="#667085"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/detDeposit"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+
+                        <TextView
+                            android:id="@+id/detAdvance"
+                            android:text="₹ 2000"
+                            android:textColor="#2E7D32"
+                            android:textStyle="bold"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="@id/lblPaid"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
                     </androidx.constraintlayout.widget.ConstraintLayout>
 
-                    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F2F4F7" android:layout_marginVertical="20dp" />
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="#F2F4F7"
+                        android:layout_marginVertical="20dp" />
 
                     <TextView
                         android:layout_width="wrap_content"
@@ -198,17 +333,6 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSendWhatsapp"
-                style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginTop="32dp"
-                android:text="SHARE DETAILS"
-                android:textColor="#3949AB"
-                app:cornerRadius="16dp"
-                app:icon="@android:drawable/ic_menu_share"
-                app:iconTint="#3949AB" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnPickedUp"

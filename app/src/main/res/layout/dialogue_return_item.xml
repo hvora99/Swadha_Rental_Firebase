@@ -60,21 +60,13 @@
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/textviewtitle_dialoue"
+            android:id="@+id/layoutRefundRent"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Deposit Refund"
+            android:text="Refund Rent"
             android:textColor="#1A1C1E"
             android:textSize="16sp"
             android:textStyle="bold"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
-            android:text="Enter amount returned to customer"
-            android:textColor="#7A7A7A"
-            android:textSize="12sp"/>
 
         <com.google.android.material.textfield.TextInputLayout
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -91,11 +83,10 @@
             app:hintEnabled="false"
             app:prefixText="₹ "
             app:prefixTextColor="#1A1C1E"
-            app:startIconDrawable="@android:drawable/ic_menu_edit"
             app:startIconTint="#9E8D7A">
 
             <EditText
-                android:id="@+id/etRefund"
+                android:id="@+id/etRefundRent"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@null"
@@ -107,6 +98,45 @@
                 android:textSize="18sp"/>
         </com.google.android.material.textfield.TextInputLayout>
 
+        <TextView
+            android:id="@+id/layoutRefundDeposit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Deposit Refund"
+            android:textColor="#1A1C1E"
+            android:textSize="16sp"
+            android:textStyle="bold"/>
+
+
+        <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            app:boxBackgroundColor="#FFFFFF"
+            app:boxCornerRadiusBottomEnd="20dp"
+            app:boxCornerRadiusBottomStart="20dp"
+            app:boxCornerRadiusTopEnd="20dp"
+            app:boxCornerRadiusTopStart="20dp"
+            app:boxStrokeColor="#D6C7B2"
+            app:boxStrokeWidth="1dp"
+            app:hintEnabled="false"
+            app:prefixText="₹ "
+            app:prefixTextColor="#1A1C1E"
+            app:startIconTint="#9E8D7A">
+
+            <EditText
+                android:id="@+id/etRefundDeposit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@null"
+                android:fontFamily="sans-serif-medium"
+                android:hint="0.00"
+                android:inputType="numberDecimal"
+                android:padding="18dp"
+                android:textColor="#1A1C1E"
+                android:textSize="18sp"/>
+        </com.google.android.material.textfield.TextInputLayout>
     </LinearLayout>
 
 </LinearLayout>

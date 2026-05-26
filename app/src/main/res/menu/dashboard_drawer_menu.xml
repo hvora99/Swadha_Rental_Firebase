@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <group android:checkableBehavior="single">
+
+        <item
+            android:id="@+id/menuDashboard"
+            android:title="Dashboard"
+            android:icon="@drawable/ic_dashboard"/>
+
+        <item
+            android:id="@+id/menuItems"
+            android:title="Inventory"
+            android:icon="@drawable/ic_inventory"/>
+
+        <item
+            android:id="@+id/menuHistory"
+            android:title="Booking History"
+            android:icon="@drawable/ic_history"/>
+
+        <item
+            android:id="@+id/menuBackup"
+            android:title="Backup Restore"
+            android:icon="@drawable/ic_backup"/>
+
+    </group>
+
+</menu>

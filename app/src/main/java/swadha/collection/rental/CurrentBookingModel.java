@@ -46,6 +46,10 @@ public class CurrentBookingModel {
         this.balance = balance;
     }
 
+    public String getItemNo() {
+        return itemNo;
+    }
+
     public String getName() { return name; }
     public String getPhone() { return phone; }
     public String getPickup() { return pickup; }

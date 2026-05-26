@@ -12,6 +12,7 @@ public class RentalBooking {
     private String itemName;
     private String name;
     private String phone;
+    private String alternatePhone;;
     private long washMs;
     private long actualPickupMs;
      private double refundAmount;
@@ -24,6 +25,7 @@ public class RentalBooking {
     private long pickupMs;
     private long returnMs;
     private String orderId;
+
     private List<ItemStatus> items = new ArrayList<>();
 
     private double rent;
@@ -32,6 +34,7 @@ public class RentalBooking {
                          String orderId,
                          String name,
                          String phone,
+                         String alternatePhone,
                          long pickupMs,
                          long returnMs,
                          long washMs,
@@ -46,7 +49,7 @@ public class RentalBooking {
         this.orderId = orderId;
         this.name = name;
         this.phone = phone;
-
+        this.alternatePhone = alternatePhone;
         this.pickupMs = pickupMs;
         this.returnMs = returnMs;
         this.washMs = washMs;
@@ -59,6 +62,7 @@ public class RentalBooking {
 
         this.status = status;
     }
+
 
 
 
@@ -120,6 +124,10 @@ public class RentalBooking {
 
     public String getPhone() { return phone; }
 
+    public String getAlternatePhone() {
+        return alternatePhone;
+    }
+
     public String getFirstItem(){
         if(items.size() > 0){
             return items.get(0).getItemNo();
@@ -153,7 +161,9 @@ public class RentalBooking {
                 rentPaid,
                 pickupMs,
                 returnMs,
-                washMs
+                washMs,
+                0,
+                0
         ));
     }
 
@@ -181,6 +191,15 @@ public class RentalBooking {
         private long pickupMs;
         private long returnMs;
         private long washMs;
+        private double customRent;
+
+        private double customDeposit;
+
+        private double refundedDeposit;
+
+        private double refundedRent;
+
+        private double totalRefund;
 
         public ItemStatus(
 
@@ -190,9 +209,9 @@ public class RentalBooking {
 
                 String status,
 
-                double rent,
+                double customRent,
 
-                double deposit,
+                double customDeposit,
 
                 double rentPaid,
 
@@ -200,17 +219,22 @@ public class RentalBooking {
 
                 long returnMs,
 
-                long washMs
+                long washMs,
+
+                double refundedRent,
+
+                double refundedDeposit
         ){
+
             this.itemNo = itemNo;
 
             this.itemName = itemName;
 
             this.status = status;
 
-            this.rent = rent;
+            this.customRent = customRent;
 
-            this.deposit = deposit;
+            this.customDeposit = customDeposit;
 
             this.rentPaid = rentPaid;
 
@@ -219,6 +243,34 @@ public class RentalBooking {
             this.returnMs = returnMs;
 
             this.washMs = washMs;
+
+            this.refundedRent = refundedRent;
+
+            this.refundedDeposit = refundedDeposit;
+
+            this.totalRefund =
+                    refundedRent
+                            + refundedDeposit;
+        }
+
+        public double getCustomRent() {
+            return customRent;
+        }
+
+        public double getCustomDeposit() {
+            return customDeposit;
+        }
+
+        public double getRefundedDeposit() {
+            return refundedDeposit;
+        }
+
+        public double getRefundedRent() {
+            return refundedRent;
+        }
+
+        public double getTotalRefund() {
+            return totalRefund;
         }
 
         public double getRentPaid(){
@@ -226,9 +278,8 @@ public class RentalBooking {
         }
 
         public double getBalance(){
-            return rent - rentPaid;
+            return customRent - rentPaid;
         }
-
         public String getItemNo(){
             return itemNo;
         }
@@ -236,13 +287,12 @@ public class RentalBooking {
         public String getStatus(){
             return status;
         }
-
         public double getRent(){
-            return rent;
+            return customRent;
         }
 
         public double getDeposit(){
-            return deposit;
+            return customDeposit;
         }
 
         public String getItemName(){

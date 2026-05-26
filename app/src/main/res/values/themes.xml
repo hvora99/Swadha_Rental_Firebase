@@ -1,14 +1,20 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.Swadha" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+
+    <style name="Base.Theme.Swadha"
+        parent="Theme.Material3.Light.NoActionBar">
+
     </style>
 
-    <style name="Theme.Swadha" parent="Base.Theme.Swadha" />
+    <style name="Theme.Swadha"
+        parent="Base.Theme.Swadha" />
 
-    <style name="ShapeAppearance.Fab.Round" parent="">
+    <style name="ShapeAppearance.Fab.Round"
+        parent="">
+
         <item name="cornerFamily">rounded</item>
+
         <item name="cornerSize">18dp</item>
+
     </style>
+
 </resources>

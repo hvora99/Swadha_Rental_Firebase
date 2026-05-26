@@ -7,6 +7,7 @@ public class FirebaseOrderModel {
     public String customerName;
 
     public String phone;
+    public String alternatePhone;
 
     public double totalRent;
 

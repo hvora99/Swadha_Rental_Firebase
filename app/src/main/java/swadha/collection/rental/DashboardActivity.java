@@ -8,7 +8,10 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 
+import com.google.android.material.navigation.NavigationView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
@@ -32,6 +35,7 @@ public class DashboardActivity extends AppCompatActivity {
     private FirebaseDashboardRepository
             dashboardRepository;
 
+
     // Put your URL here once so you don't have to keep pasting it
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,25 +46,77 @@ public class DashboardActivity extends AppCompatActivity {
                 new FirebaseDashboardRepository();
 
 
+        DrawerLayout drawerLayout =
+                findViewById(
+                        R.id.drawerLayout
+                );
+
+        NavigationView navigationView =
+                findViewById(
+                        R.id.navigationView
+                );
+
+        ImageButton btnMenu =
+                findViewById(
+                        R.id.btnMenu
+                );
+
+        btnMenu.setOnClickListener(v -> {
+
+            drawerLayout.openDrawer(
+                    GravityCompat.START
+            );
+        });
+
+        navigationView.setNavigationItemSelectedListener(item -> {
+
+            int id = item.getItemId();
+
+            if(id == R.id.menuDashboard){
+
+                drawerLayout.closeDrawers();
+            }
+
+            else if(id == R.id.menuItems){
+
+                startActivity(
+
+                        new Intent(
+                                DashboardActivity.this,
+                                ItemActivity.class
+                        )
+                );
+            }
+
+            else if(id == R.id.menuHistory){
+
+                startActivity(
+
+                        new Intent(
+                                DashboardActivity.this,
+                                HistoryActivity.class
+                        )
+                );
+            }
+
+            else if(id == R.id.menuBackup){
+
+               startActivity(new Intent(DashboardActivity.this,BackupActivity.class));
 
 
+            }
 
-        ImageButton btnOpenInventory = findViewById(R.id.btnOpenInventory); // New Button
+            drawerLayout.closeDrawers();
+
+            return true;
+        });
+
+
         rvDailyReturns = findViewById(R.id.rvDailyReturns);
         tvReturnCount = findViewById(R.id.tvReturnCount);
         tvTotalBalance = findViewById(R.id.tvTotalBalance);
         fabNewBooking = findViewById(R.id.fabNewBooking);
         tvPickupTodayCount = findViewById(R.id.tvPickupTodayCount);
-
-        ImageButton btnOpenHistory = findViewById(R.id.btnOpenHistory);
-        btnOpenHistory.setOnClickListener(v -> {
-            Intent intent = new Intent(DashboardActivity.this, HistoryActivity.class);
-            startActivity(intent);
-        });
-        btnOpenInventory.setOnClickListener(v -> {
-            startActivity(new Intent(this, ItemActivity.class));
-        });
-
 
 
         rvDailyReturns.setLayoutManager(new LinearLayoutManager(this));

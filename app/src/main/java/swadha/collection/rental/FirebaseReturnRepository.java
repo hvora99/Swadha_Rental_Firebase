@@ -75,6 +75,9 @@ public class FirebaseReturnRepository {
                             orderItemRefs =
                             new ArrayList<>();
 
+                    double remainingPaid =
+                            paidNow;
+
                     for (String itemNo : itemNos) {
 
                         DocumentReference orderItemRef =
@@ -116,6 +119,9 @@ public class FirebaseReturnRepository {
                         orderItemRefs.add(orderItemRef);
                     }
 
+
+
+
                     // =========================
                     // NOW START WRITES
                     // =========================
@@ -128,12 +134,36 @@ public class FirebaseReturnRepository {
                         DocumentReference orderItemRef =
                                 orderItemRefs.get(i);
 
+                        double pendingRent =
+
+                                item.customRent
+                                        - item.rentPaid;
+
+
+
+
+                        double additionalPaid = Math.min(
+
+                                remainingPaid,
+
+                                pendingRent
+                        );
+
+                        remainingPaid -= additionalPaid;
+
+                        double updatedRentPaid =
+
+                                item.rentPaid
+                                        + additionalPaid;
                         transaction.update(
 
                                 orderItemRef,
 
                                 "status",
-                                "PickedUp"
+                                "PickedUp",
+
+                                "rentPaid",
+                                updatedRentPaid
                         );
 
                         DocumentReference inventoryRef =
@@ -208,10 +238,16 @@ public class FirebaseReturnRepository {
 
             List<String> itemNos,
 
-            double refundAmount,
+            double refundedRent,
+
+            double refundedDeposit,
 
             ActionCallback callback
-    ) {
+    ){
+
+        double totalRefund =
+                refundedRent
+                        + refundedDeposit;
 
         db.runTransaction(
 
@@ -300,11 +336,43 @@ public class FirebaseReturnRepository {
                     // =========================
                     // START WRITES
                     // =========================
+                    double remainingRentRefund =
+                            refundedRent;
+
+                    double remainingDepositRefund =
+                            refundedDeposit;
 
                     for (int i = 0; i < loadedItems.size(); i++) {
 
                         FirebaseOrderItemModel item =
                                 loadedItems.get(i);
+
+                        double itemRentRefund = Math.min(
+
+                                remainingRentRefund,
+
+                                item.rentPaid
+                        );
+
+                        remainingRentRefund -=
+                                itemRentRefund;
+
+
+                        double itemDepositRefund = Math.min(
+
+                                remainingDepositRefund,
+
+                                item.customDeposit
+                        );
+
+                        remainingDepositRefund -=
+                                itemDepositRefund;
+
+
+                        double itemTotalRefund =
+
+                                itemRentRefund
+                                        + itemDepositRefund;
 
                         DocumentReference orderItemRef =
                                 orderItemRefs.get(i);
@@ -318,7 +386,16 @@ public class FirebaseReturnRepository {
                                 orderItemRef,
 
                                 "status",
-                                "Returned"
+                                "Returned",
+
+                                "refundedRent",
+                                itemRentRefund,
+
+                                "refundedDeposit",
+                                itemDepositRefund,
+
+                                "totalRefund",
+                                itemTotalRefund
                         );
 
                         // =====================
@@ -380,7 +457,7 @@ public class FirebaseReturnRepository {
                             orderRef,
 
                             "refundAmount",
-                            refundAmount,
+                            totalRefund,
 
                             "updatedAt",
                             System.currentTimeMillis()
@@ -477,10 +554,16 @@ public class FirebaseReturnRepository {
 
             List<String> itemNos,
 
-            double refundAmount,
+            double refundedRent,
+
+            double refundedDeposit,
 
             ActionCallback callback
-    ) {
+    ){
+
+        double totalRefund =
+                refundedRent
+                        + refundedDeposit;
 
         db.runTransaction(
 
@@ -557,10 +640,43 @@ public class FirebaseReturnRepository {
                     // START WRITES
                     // =========================
 
+                    double remainingRentRefund =
+                            refundedRent;
+
+                    double remainingDepositRefund =
+                            refundedDeposit;
+
                     for (int i = 0; i < loadedItems.size(); i++) {
 
                         FirebaseOrderItemModel item =
                                 loadedItems.get(i);
+
+                        double itemRentRefund = Math.min(
+
+                                remainingRentRefund,
+
+                                item.rentPaid
+                        );
+
+                        remainingRentRefund -=
+                                itemRentRefund;
+
+
+                        double itemDepositRefund = Math.min(
+
+                                remainingDepositRefund,
+
+                                item.customDeposit
+                        );
+
+                        remainingDepositRefund -=
+                                itemDepositRefund;
+
+
+                        double itemTotalRefund =
+
+                                itemRentRefund
+                                        + itemDepositRefund;
 
                         DocumentReference orderItemRef =
                                 orderItemRefs.get(i);
@@ -574,7 +690,16 @@ public class FirebaseReturnRepository {
                                 orderItemRef,
 
                                 "status",
-                                "Cancelled"
+                                "Cancelled",
+
+                                "refundedRent",
+                                itemRentRefund,
+
+                                "refundedDeposit",
+                                itemDepositRefund,
+
+                                "totalRefund",
+                                itemTotalRefund
                         );
 
                         // =====================
@@ -614,7 +739,7 @@ public class FirebaseReturnRepository {
                             orderRef,
 
                             "refundAmount",
-                            refundAmount,
+                            totalRefund,
 
                             "updatedAt",
                             System.currentTimeMillis()
@@ -708,6 +833,9 @@ public class FirebaseReturnRepository {
                                 history.phone =
                                         activeOrder.phone;
 
+                                history.alternatePhone =
+                                        activeOrder.alternatePhone;
+
                                 history.totalRent =
                                         activeOrder.totalRent;
 
@@ -773,6 +901,14 @@ public class FirebaseReturnRepository {
 
                                     item.customDeposit =
                                             activeItem.customDeposit;
+                                    item.refundedRent =
+                                            activeItem.refundedRent;
+
+                                    item.refundedDeposit =
+                                            activeItem.refundedDeposit;
+
+                                    item.totalRefund =
+                                            activeItem.totalRefund;
 
                                     item.rentPaid =
                                             activeItem.rentPaid;

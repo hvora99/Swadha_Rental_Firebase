@@ -9,6 +9,7 @@ public class OrderHistoryModel {
     public String customerName;
 
     public String phone;
+    public String alternatePhone;
 
     public double totalRent;
 
@@ -57,6 +58,12 @@ public class OrderHistoryModel {
         public long returnMs;
 
         public long washMs;
+
+        public double refundedRent;
+
+        public double refundedDeposit;
+
+        public double totalRefund;
 
         public HistoryItem(){}
     }

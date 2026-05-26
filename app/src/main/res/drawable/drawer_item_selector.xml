@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- SELECTED -->
+
+    <item
+        android:drawable="@drawable/bg_drawer_selected"
+        android:state_checked="true"/>
+
+    <!-- DEFAULT -->
+
+    <item
+        android:drawable="@android:color/transparent"/>
+</selector>

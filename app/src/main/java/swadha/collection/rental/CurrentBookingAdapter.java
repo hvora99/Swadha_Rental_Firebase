@@ -54,7 +54,8 @@
             holder.tvPhone.setText(model.getPhone());
             holder.tvPickup.setText("Pickup: " + model.getPickup());
             holder.tvReturn.setText("Return: " + model.getReturn());
-            holder.tvBalance.setText("Balance: ₹" + model.getBalance());
+            holder.tvBalance.setText( model.getBalance());
+            holder.tvItemCircle.setText(model.getItemNo());
         }
 
         @Override
@@ -64,7 +65,7 @@
 
         static class ViewHolder extends RecyclerView.ViewHolder {
 
-            TextView tvName, tvPhone, tvPickup, tvReturn, tvBalance;
+            TextView tvName, tvPhone, tvPickup, tvReturn, tvBalance,tvItemCircle;
 
             public ViewHolder(@NonNull View itemView) {
                 super(itemView);
@@ -74,6 +75,7 @@
                 tvPickup = itemView.findViewById(R.id.tvBookingPickup);
                 tvReturn = itemView.findViewById(R.id.tvBookingReturn);
                 tvBalance = itemView.findViewById(R.id.tvBookingBalance);
+                tvItemCircle = itemView.findViewById(R.id.tvItemCircle);
             }
         }
     }

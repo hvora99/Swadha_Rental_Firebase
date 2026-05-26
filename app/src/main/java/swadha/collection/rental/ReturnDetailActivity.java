@@ -2,6 +2,7 @@ package swadha.collection.rental;
 
 import android.content.Intent;
 
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
@@ -21,6 +22,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.textfield.TextInputLayout;
+import com.google.gson.Gson;
 
 
 import java.text.SimpleDateFormat;
@@ -52,7 +56,7 @@ public class ReturnDetailActivity extends AppCompatActivity {
 
     private FirebaseReturnRepository
             returnRepository;
-
+    RentalBooking booking ;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,24 +66,38 @@ public class ReturnDetailActivity extends AppCompatActivity {
                 new FirebaseReturnRepository();
 
 
+        String json =
 
-        itemNo = getIntent().getStringExtra("itemNo");
-        String name = getIntent().getStringExtra("name");
-        String phone = getIntent().getStringExtra("phone");
-        long pickupMs = getIntent().getLongExtra("pickupDateTime", 0);
-        long returnMs = getIntent().getLongExtra("returnDateTime", 0);
+                getIntent().getStringExtra(
+                        "booking"
+                );
 
+        booking =
 
+                new Gson().fromJson(
 
-         totalRent = getIntent().getDoubleExtra("totalRent", 0.0);
-         deposit = getIntent().getDoubleExtra("deposit", 0.0);
-         rentPaid = getIntent().getDoubleExtra("rentPaid", 0.0);
-        double balance = getIntent().getDoubleExtra("balance", 0.0);
-        orderId = getIntent().getStringExtra("orderId");
-        String items = getIntent().getStringExtra("items");
+                        json,
 
-        long washMs = getIntent().getLongExtra("washDateTime",0);
-        long actualPickupMs = getIntent().getLongExtra("actualPickupDateTime",0);
+                        RentalBooking.class
+                );
+
+        if(booking == null){
+
+            Toast.makeText(
+
+                    this,
+
+                    "Invalid booking",
+
+                    Toast.LENGTH_SHORT
+
+            ).show();
+
+            finish();
+
+            return;
+        }
+
 
        TextView tvCustomerHeader =
                 findViewById(R.id.tvCustomerHeader);
@@ -88,20 +106,14 @@ public class ReturnDetailActivity extends AppCompatActivity {
                 findViewById(R.id.tvPhoneHeader);
 
 
-        tvCustomerHeader.setText(name);
 
-        tvPhoneHeader.setText(phone);
-
-        bookingTimestamp = getIntent().getStringExtra("timestamp");
-        if (bookingTimestamp == null) {
-            Toast.makeText(this, "Invalid booking data", Toast.LENGTH_SHORT).show();
-            setResult(RESULT_OK);
-            finish();
-            return;
-        }
+        TextView tvAlternatePhone =
+                findViewById(
+                        R.id.tvAlternatePhone
+                );
 
 
-        String status = getIntent().getStringExtra("status");
+
 
         Log.d("DETAIL_DEBUG", "Received timestamp: " + bookingTimestamp);
 
@@ -117,13 +129,57 @@ public class ReturnDetailActivity extends AppCompatActivity {
         btnCancel = findViewById(R.id.btnCancelBooking);
         BtnMarkReceived = findViewById(R.id.btnMarkReceived);
 
+        itemNo =
+                booking.getFirstItem();
 
-        itemsList = new ArrayList<>();
+        String name =
+                booking.getName();
 
-        tvOrder.setText(orderId != null ? "Order ID: " + orderId : "Order ID: N/A");
+        String phone =
+                booking.getPhone();
 
-        Date pickupDate = new Date(pickupMs);
-        Date returnDate = new Date(returnMs);
+        String alternatePhone =
+                booking.getAlternatePhone();
+
+        long pickupMs =
+                booking.getPickupMs();
+
+        long returnMs =
+                booking.getReturnMs();
+
+        totalRent =
+                booking.getTotalRent();
+
+        deposit =
+                booking.getDeposit();
+
+        rentPaid =
+                booking.getRentPaid();
+
+        double balance =
+                booking.getBalance();
+
+        orderId =
+                booking.getOrderId();
+
+        long washMs =
+                booking.getWashMs();
+
+        long actualPickupMs =
+                booking.getActualPickupMs();
+
+        String status =
+                booking.getStatus();
+
+        bookingTimestamp =
+                booking.getTimestamp();
+
+
+        itemsList = new ArrayList<>(
+                booking.getItems()
+        );
+        tvOrder.setText(orderId != null ? orderId : "Order ID: N/A");
+
 
         SimpleDateFormat format =
                 new SimpleDateFormat("dd MMM yyyy HH:mm", Locale.getDefault());
@@ -132,32 +188,127 @@ public class ReturnDetailActivity extends AppCompatActivity {
         tvTotal.setText("₹ " + String.format("%.2f", totalRent));
         tvAdvance.setText("₹ " + String.format("%.2f", rentPaid));
         tvDeposit.setText("₹ " + String.format("%.2f", deposit));
+        tvPhoneHeader.setText(phone);
+        tvCustomerHeader.setText(name);
 
         tvStatus.setText("Status: " + status);
         tvStatus.setText(status.toUpperCase());
-        GradientDrawable bg =
-                (GradientDrawable) tvStatus.getBackground().mutate();
 
-        int color;
+        View dot =
+                findViewById(
+                        R.id.viewStatusDot
+                );
+
+        MaterialCardView cardStatus =
+                findViewById(
+                        R.id.cardStatus
+                );
+
+        switch(status){
+
+            case "Booked":
+
+                dot.setBackgroundTintList(
+                        ColorStateList.valueOf(
+                                Color.parseColor("#42A5F5")
+                        )
+                );
+
+                break;
+
+            case "PickedUp":
+
+                dot.setBackgroundTintList(
+                        ColorStateList.valueOf(
+                                Color.parseColor("#FFA726")
+                        )
+                );
+
+                break;
+
+            case "Returned":
+
+                dot.setBackgroundTintList(
+                        ColorStateList.valueOf(
+                                Color.parseColor("#66BB6A")
+                        )
+                );
+
+                break;
+
+            case "Cancelled":
+
+                dot.setBackgroundTintList(
+                        ColorStateList.valueOf(
+                                Color.parseColor("#EF5350")
+                        )
+                );
+
+                break;
+        }
 
         if(status.equalsIgnoreCase("Booked")){
-            color = Color.parseColor("#FB8C00");
-            tvStatus.setText("📝 BOOKED");
-        }
-        else if(status.equalsIgnoreCase("PickedUp")){
-            color = Color.parseColor("#1976D2");
-            tvStatus.setText("🚚 PICKED UP");
-        }
-        else if(status.equalsIgnoreCase("Returned")){
-            color = Color.parseColor("#2E7D32");
-            tvStatus.setText("✔ RETURNED");
-        }
-        else{
-            color = Color.parseColor("#9E9E9E");
-            tvStatus.setText(status.toUpperCase());
+
+            tvStatus.setText(
+                    "📝 BOOKED"
+            );
+
+            dot.setBackgroundTintList(
+
+                    ColorStateList.valueOf(
+                            Color.parseColor("#42A5F5")
+                    )
+            );
         }
 
-        bg.setStroke(2, color);
+        else if(status.equalsIgnoreCase("PickedUp")){
+
+            tvStatus.setText(
+                    "🚚 PICKED UP"
+            );
+
+            dot.setBackgroundTintList(
+
+                    ColorStateList.valueOf(
+                            Color.parseColor("#FFA726")
+                    )
+            );
+        }
+
+        else if(status.equalsIgnoreCase("Returned")){
+
+            tvStatus.setText(
+                    "✅ RETURNED"
+            );
+
+            dot.setBackgroundTintList(
+
+                    ColorStateList.valueOf(
+                            Color.parseColor("#66BB6A")
+                    )
+            );
+        }
+
+        else if(status.equalsIgnoreCase("Cancelled")){
+
+            tvStatus.setText(
+                    "❌ CANCELLED"
+            );
+
+            dot.setBackgroundTintList(
+
+                    ColorStateList.valueOf(
+                            Color.parseColor("#EF5350")
+                    )
+            );
+        }
+
+        else{
+
+            tvStatus.setText(
+                    status.toUpperCase()
+            );
+        }
 
         double rentDue = totalRent - rentPaid;
 
@@ -231,18 +382,27 @@ public class ReturnDetailActivity extends AppCompatActivity {
         MaterialButton btnWhatsapp = findViewById(R.id.btnSendWhatsapp);
 
         btnWhatsapp.setOnClickListener(v -> {
-            sendToWhatsApp(
-                    phone,
-                    itemNo,
-                    name,
-                    pickupDate,
-                    returnDate,
-                    totalRent,
-                    rentPaid,
-                    deposit,
-                    balance
-            );
+            sendWhatsappMessage();
         });
+
+        if(alternatePhone != null
+                &&
+                !alternatePhone.isEmpty()){
+
+            tvAlternatePhone.setVisibility(
+                    View.VISIBLE
+            );
+
+            tvAlternatePhone.setText(
+                    alternatePhone
+            );
+
+        }else{
+
+            tvAlternatePhone.setVisibility(
+                    View.GONE
+            );
+        }
     }
 
     private void loadOrderItems(){
@@ -289,7 +449,12 @@ public class ReturnDetailActivity extends AppCompatActivity {
 
                                             item.returnMs,
 
-                                            item.washMs
+                                            item.washMs,
+
+                                            item.refundedRent,
+
+                                            item.refundedDeposit
+
                                     )
                             );
                         }
@@ -326,37 +491,6 @@ public class ReturnDetailActivity extends AppCompatActivity {
                 }
         );
     }
-
-    private double calculateAmount(String action, ArrayList<RentalBooking.ItemStatus> items, ListView listView){
-
-        double amount = 0;
-
-        for(int i=0;i<items.size();i++){
-
-            if(listView.isItemChecked(i)){
-
-                RentalBooking.ItemStatus item = items.get(i);
-
-                switch(action){
-
-                    case ACTION_PICKUP:
-                        amount += item.getBalance();
-                        break;
-
-                    case ACTION_RETURN:
-                        amount += item.getDeposit();
-                        break;
-
-                    case ACTION_CANCEL:
-                        amount += item.getDeposit() + item.getRentPaid();
-                        break;
-                }
-            }
-        }
-
-        return amount;
-    }
-
     private void updateButtonStates(){
 
         boolean hasBooked = false;
@@ -423,160 +557,421 @@ public class ReturnDetailActivity extends AppCompatActivity {
 
 
 
-
     private void showItemActionDialog(
+
             String title,
+
             String action,
+
             ArrayList<RentalBooking.ItemStatus> items,
+
             double suggestedAmount
     ){
 
-
-
         if(items.isEmpty()){
-            Toast.makeText(this,"No items available for this action",Toast.LENGTH_SHORT).show();
+
+            Toast.makeText(
+
+                    this,
+
+                    "No items available",
+
+                    Toast.LENGTH_SHORT
+
+            ).show();
+
             return;
         }
 
-        String[] itemNames = new String[items.size()];
-        boolean[] checked = new boolean[items.size()];
+        String[] itemNames =
+                new String[items.size()];
 
         for(int i=0;i<items.size();i++){
 
-            RentalBooking.ItemStatus item = items.get(i);
+            RentalBooking.ItemStatus item =
+                    items.get(i);
 
             itemNames[i] =
+
                     item.getItemNo()
+
                             + " - "
+
                             + item.getItemName()
-                            + "  |  "
-                            + "Rent ₹" + item.getRent()
-                            + "  |  "
+
+                            + "\n"
+
+                            + "Rent ₹"
+
+                            + (int)item.getRent()
+
+                            + "  •  "
+
                             + item.getStatus();
-
-            checked[i] = false;
         }
 
-        View view = getLayoutInflater().inflate(R.layout.dialogue_return_item,null);
-        TextView tvTitle = view.findViewById(R.id.textviewtitle_dialoue);
+        View view = getLayoutInflater()
 
-        if(action.equals("pickup")){
-            tvTitle.setText("Collect Rent");
+                .inflate(
+                        R.layout.dialogue_return_item,
+                        null
+                );
+
+        TextView tvRefundRent =
+                view.findViewById(
+                        R.id.layoutRefundRent
+                );
+
+        TextView tvRefundDeposit =
+                view.findViewById(
+                        R.id.layoutRefundDeposit
+                );
+
+        EditText etRefundRent =
+                view.findViewById(
+                        R.id.etRefundRent
+                );
+
+        EditText etRefundDeposit =
+                view.findViewById(
+                        R.id.etRefundDeposit
+                );
+
+        ListView listView =
+                view.findViewById(
+                        R.id.listItems
+                );
+
+        etRefundRent.setText("0");
+
+        etRefundDeposit.setText("0");
+
+        // =====================================
+        // ACTION CONFIG
+        // =====================================
+
+        if(action.equals(ACTION_PICKUP)){
+
+            tvRefundRent.setText(
+                    "Collect Rent"
+            );
+
+            tvRefundDeposit.setText(
+                    "Deposit Refund"
+            );
+
+            etRefundRent.setEnabled(false);
+
+            etRefundDeposit.setEnabled(false);
+
+            etRefundRent.setAlpha(0.7f);
+
+            etRefundDeposit.setAlpha(0.5f);
+
+            etRefundRent.setFocusable(false);
+
+            etRefundRent.setClickable(false);
+
+            etRefundRent.setCursorVisible(false);
+
+            etRefundRent.setKeyListener(null);
         }
-        else if(action.equals("cancel")){
-            tvTitle.setText("Cancel Booking");
+
+        else if(action.equals(ACTION_RETURN)){
+
+            tvRefundRent.setText(
+                    "Rent Refund"
+            );
+
+            tvRefundDeposit.setText(
+                    "Deposit Refund"
+            );
+
+            etRefundRent.setEnabled(false);
+
+            etRefundDeposit.setEnabled(true);
+
+            etRefundRent.setAlpha(0.5f);
         }
-        else if(action.equals("return")){
-            tvTitle.setText("Return Items");
+
+        else if(action.equals(ACTION_CANCEL)){
+
+            tvRefundRent.setText(
+                    "Rent Refund"
+            );
+
+            tvRefundDeposit.setText(
+                    "Deposit Refund"
+            );
+
+            etRefundRent.setEnabled(true);
+
+            etRefundDeposit.setEnabled(true);
+
+            etRefundRent.setAlpha(1f);
+
+            etRefundDeposit.setAlpha(1f);
         }
-
-        ListView listView = view.findViewById(R.id.listItems);
-        EditText amountInput = view.findViewById(R.id.etRefund);
-
-
-        amountInput.setText("0");
 
         ArrayAdapter<String> adapter =
-                new ArrayAdapter<>(this,
-                        android.R.layout.simple_list_item_multiple_choice,
-                        itemNames);
+
+                new ArrayAdapter<>(
+
+                        this,
+
+                        android.R.layout
+                                .simple_list_item_multiple_choice,
+
+                        itemNames
+                );
 
         listView.setAdapter(adapter);
-        listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+
+        listView.setChoiceMode(
+                ListView.CHOICE_MODE_MULTIPLE
+        );
 
         listView.post(() -> {
 
             for(int i=0;i<items.size();i++){
 
-                RentalBooking.ItemStatus item = items.get(i);
+                RentalBooking.ItemStatus item =
+                        items.get(i);
 
-                boolean selectable = isItemSelectable(action, item);
+                boolean selectable =
+                        isItemSelectable(
+                                action,
+                                item
+                        );
 
-                View itemView = listView.getChildAt(i);
+                View itemView =
+                        listView.getChildAt(i);
 
                 if(itemView != null){
 
                     itemView.setEnabled(selectable);
 
-                    if(!selectable){
-                        itemView.setAlpha(0.4f);
-                    }
+                    itemView.setAlpha(
+                            selectable ? 1f : 0.35f
+                    );
                 }
 
                 if(!selectable){
-                    listView.setItemChecked(i,false);
+
+                    listView.setItemChecked(
+                            i,
+                            false
+                    );
                 }
             }
         });
 
-        listView.setOnItemClickListener((parent, view1, position, id) -> {
+        // =====================================
+        // AUTO CALCULATE
+        // =====================================
 
-            RentalBooking.ItemStatus item = items.get(position);
+        listView.setOnItemClickListener(
 
-            if(!isItemSelectable(action, item)){
+                (parent, v, position, id) -> {
 
-                listView.setItemChecked(position,false);
+                    RentalBooking.ItemStatus item =
+                            items.get(position);
 
-                Toast.makeText(this,
-                        "Action not allowed for this item",
-                        Toast.LENGTH_SHORT).show();
+                    if(!isItemSelectable(action,item)){
 
-                return;
-            }
+                        listView.setItemChecked(
+                                position,
+                                false
+                        );
 
-            double amount = calculateAmount(action, items, listView);
+                        Toast.makeText(
 
-            amountInput.setText(String.valueOf((int)amount));
-            amountInput.setSelection(amountInput.getText().length());
-        });
+                                this,
 
-        AlertDialog dialog = new AlertDialog.Builder(this)
-                .setTitle(title)
-                .setView(view)
-                .setPositiveButton("Confirm",null)
-                .setNegativeButton("Cancel",null)
-                .create();
+                                "Action not allowed",
+
+                                Toast.LENGTH_SHORT
+
+                        ).show();
+
+                        return;
+                    }
+
+                    double rentAmount = 0;
+
+                    double depositAmount = 0;
+
+                    for(int i=0;i<items.size();i++){
+
+                        if(listView.isItemChecked(i)){
+
+                            RentalBooking.ItemStatus selected =
+                                    items.get(i);
+
+                            if(action.equals(ACTION_PICKUP)){
+
+                                rentAmount +=
+                                        selected.getBalance();
+                            }
+
+                            else if(action.equals(ACTION_RETURN)){
+
+                                depositAmount +=
+                                        selected.getDeposit();
+                            }
+
+                            else if(action.equals(ACTION_CANCEL)){
+
+                                rentAmount +=
+                                        selected.getRentPaid();
+
+                                depositAmount +=
+                                        selected.getDeposit();
+                            }
+                        }
+                    }
+
+                    etRefundRent.setText(
+                            String.valueOf(
+                                    (int)rentAmount
+                            )
+                    );
+
+                    etRefundDeposit.setText(
+                            String.valueOf(
+                                    (int)depositAmount
+                            )
+                    );
+                });
+
+        AlertDialog dialog =
+
+                new AlertDialog.Builder(this)
+
+                        .setTitle(title)
+
+                        .setView(view)
+
+                        .setPositiveButton(
+                                "Confirm",
+                                null
+                        )
+
+                        .setNegativeButton(
+                                "Cancel",
+                                null
+                        )
+
+                        .create();
 
         dialog.setOnShowListener(d -> {
 
-            Button confirm = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
+            Button confirm =
+
+                    dialog.getButton(
+                            AlertDialog.BUTTON_POSITIVE
+                    );
 
             confirm.setOnClickListener(v -> {
-                confirm.setEnabled(false);
-                ArrayList<String> selectedItems = getSelectedItems(listView, items);
+
+                ArrayList<String> selectedItems =
+
+                        getSelectedItems(
+                                listView,
+                                items
+                        );
 
                 if(selectedItems.isEmpty()){
-                    Toast.makeText(this,"Select at least one item",Toast.LENGTH_SHORT).show();
+
+                    Toast.makeText(
+
+                            this,
+
+                            "Select at least one item",
+
+                            Toast.LENGTH_SHORT
+
+                    ).show();
+
                     return;
                 }
 
-                double amount =
-                        amountInput.getText().toString().isEmpty()
-                                ? 0
-                                : Double.parseDouble(amountInput.getText().toString());
+                double refundedRent =
 
-                if(action.equals("pickup")){
+                        etRefundRent
+                                .getText()
+                                .toString()
+                                .trim()
+                                .isEmpty()
+
+                                ? 0
+
+                                : Double.parseDouble(
+
+                                etRefundRent
+                                        .getText()
+                                        .toString()
+                        );
+
+                double refundedDeposit =
+
+                        etRefundDeposit
+                                .getText()
+                                .toString()
+                                .trim()
+                                .isEmpty()
+
+                                ? 0
+
+                                : Double.parseDouble(
+
+                                etRefundDeposit
+                                        .getText()
+                                        .toString()
+                        );
+
+                if(action.equals(ACTION_PICKUP)){
 
                     double remaining = 0;
 
-                    for(RentalBooking.ItemStatus item : itemsList){
-                        remaining += item.getBalance();
-                    }
-                    if(amount > remaining){
+                    for(RentalBooking.ItemStatus item
+                            : itemsList){
 
-                        Toast.makeText(this,
-                                "Cannot collect more than remaining rent",
-                                Toast.LENGTH_SHORT).show();
+                        remaining +=
+                                item.getBalance();
+                    }
+
+                    if(refundedRent > remaining){
+
+                        Toast.makeText(
+
+                                this,
+
+                                "Cannot collect more than pending balance",
+
+                                Toast.LENGTH_SHORT
+
+                        ).show();
 
                         return;
                     }
                 }
 
-                executeAction(action, orderId, selectedItems, amount);
+                executeAction(
+
+                        action,
+
+                        orderId,
+
+                        selectedItems,
+
+                        refundedRent,
+
+                        refundedDeposit
+                );
 
                 dialog.dismiss();
             });
-
         });
 
         dialog.show();
@@ -599,24 +994,65 @@ public class ReturnDetailActivity extends AppCompatActivity {
                 return false;
         }
     }
-    private void executeAction(String action, String orderId, ArrayList<String> items, double amount){
+    private void executeAction(
+
+            String action,
+
+            String orderId,
+
+            ArrayList<String> items,
+
+            double refundedRent,
+
+            double refundedDeposit
+    ){
 
         switch(action){
 
             case ACTION_PICKUP:
-                markAsPickedUp(orderId, items, amount);
+
+                markAsPickedUp(
+
+                        orderId,
+
+                        items,
+
+                        refundedRent
+                );
+
                 break;
 
             case ACTION_RETURN:
-                markItemAsReturned(orderId, items, amount);
+
+                markItemAsReturned(
+
+                        orderId,
+
+                        items,
+
+                        refundedRent,
+
+                        refundedDeposit
+                );
+
                 break;
 
             case ACTION_CANCEL:
-                cancelBookingWithRefund(items,orderId,amount);
+
+                cancelBookingWithRefund(
+
+                        items,
+
+                        orderId,
+
+                        refundedRent,
+
+                        refundedDeposit
+                );
+
                 break;
         }
     }
-
     private void markAsPickedUp(
 
             String orderId,
@@ -712,13 +1148,16 @@ public class ReturnDetailActivity extends AppCompatActivity {
 
         return selected;
     }
+
     private void cancelBookingWithRefund(
 
             List<String> items,
 
             String orderId,
 
-            double refundAmount
+            double refundedRent,
+
+            double refundedDeposit
     ){
 
         if(isProcessing) return;
@@ -735,7 +1174,9 @@ public class ReturnDetailActivity extends AppCompatActivity {
 
                 items,
 
-                refundAmount,
+                refundedRent,
+
+                refundedDeposit,
 
                 new FirebaseReturnRepository
                         .ActionCallback() {
@@ -786,9 +1227,11 @@ public class ReturnDetailActivity extends AppCompatActivity {
 
             String orderId,
 
-            List<String> items,
+            ArrayList<String> items,
 
-            double refundAmount
+            double refundedRent,
+
+            double refundedDeposit
     ){
 
         if(isProcessing) return;
@@ -805,7 +1248,9 @@ public class ReturnDetailActivity extends AppCompatActivity {
 
                 items,
 
-                refundAmount,
+                refundedRent,
+
+                refundedDeposit,
 
                 new FirebaseReturnRepository
                         .ActionCallback() {
@@ -853,7 +1298,6 @@ public class ReturnDetailActivity extends AppCompatActivity {
         );
     }
 
-
     private void disableActionButtons(){
 
         btnPickedUp.setEnabled(false);
@@ -897,54 +1341,294 @@ public class ReturnDetailActivity extends AppCompatActivity {
         }
     }
 
+    private void sendWhatsappMessage(){
 
+        String phone =
+                booking.getPhone();
 
-    private void sendToWhatsApp(String phone,
-                                String item,
-                                String name,
-                                Date pickup,
-                                Date returnDate,
-                                double totalRent,
-                                double rentPaid,
-                                double deposit,
-                                double balance) {
+        if(phone == null
+                ||
+                phone.trim().isEmpty()){
 
-        if (phone == null || phone.trim().isEmpty()) {
-            Toast.makeText(this, "Phone number not available", Toast.LENGTH_SHORT).show();
+            Toast.makeText(
+
+                    this,
+
+                    "Phone number unavailable",
+
+                    Toast.LENGTH_SHORT
+
+            ).show();
+
             return;
         }
 
-        // Remove spaces if any
-        phone = phone.replace(" ", "");
+        StringBuilder itemsBuilder =
+                new StringBuilder();
+        for(RentalBooking.ItemStatus item
+                : itemsList){
 
-        String message =
-                "✨ *SVADHA COLLECTION* ✨\n" +
-                        "------------------------------\n\n" +
+            String status =
+                    item.getStatus();
 
-                        "👗 *Item:* " + item + "\n" +
-                        "👤 *Customer:* " + name + "\n\n" +
+            double pending =
 
-                        "📅 *Pickup:* " + pickup + "\n" +
-                        "📅 *Return:* " + returnDate + "\n\n" +
+                    item.getCustomRent()
 
-                        "💰 *Total Rent:* ₹" + totalRent + "\n" +
-                        "💳 *Rent Paid:* ₹" + rentPaid + "\n" +
-                        "🔐 *Deposit:* ₹" + deposit + "\n" +
-                        "📊 *Settlement:* ₹" + balance + "\n\n" +
+                            - item.getRentPaid();
 
-                        "Thank you for choosing Swadha Collection ❤️";
+            switch(status){
 
-        try {
-            String url = "https://wa.me/91" + phone + "?text=" + Uri.encode(message);
-            Intent intent = new Intent(Intent.ACTION_VIEW);
-            intent.setData(Uri.parse(url));
+                case "Returned":
+
+                    itemsBuilder
+
+                            .append("✅ ")
+
+                            .append(item.getItemName())
+
+                            .append(" (")
+
+                            .append(item.getItemNo())
+
+                            .append(")")
+
+                            .append(" - Returned\n")
+
+                            .append("↳ Deposit Refunded : ₹")
+
+                            .append(String.format(
+                                    Locale.getDefault(),
+                                    "%.0f",
+                                    item.getCustomDeposit()
+                            ))
+
+                            .append("\n\n");
+
+                    break;
+
+                case "Cancelled":
+
+                    itemsBuilder
+
+                            .append("❌ ")
+
+                            .append(item.getItemName())
+
+                            .append(" (")
+
+                            .append(item.getItemNo())
+
+                            .append(")")
+                            .append(" - Cancelled\n")
+
+                            .append("↳ Refund Amount : ₹")
+
+                            .append(String.format(
+                                    Locale.getDefault(),
+                                    "%.0f",
+                                    item.getRentPaid()
+                            ))
+
+                            .append("\n\n");
+
+                    break;
+
+                case "PickedUp":
+
+                    itemsBuilder
+
+                            .append("🚚 ")
+
+                            .append(item.getItemName())
+
+                            .append(" (")
+
+                            .append(item.getItemNo())
+
+                            .append(")")
+                            .append(" - Picked Up\n");
+
+                    if(pending > 0){
+
+                        itemsBuilder
+
+                                .append("↳ Pending Balance : ₹")
+
+                                .append(String.format(
+                                        Locale.getDefault(),
+                                        "%.0f",
+                                        pending
+                                ))
+
+                                .append("\n");
+                    }
+
+                    itemsBuilder.append("\n");
+
+                    break;
+
+                case "Booked":
+
+                    itemsBuilder
+
+                            .append("📝 ")
+
+                            .append(item.getItemName())
+
+                            .append(" (")
+
+                            .append(item.getItemNo())
+
+                            .append(")")
+                            .append(" - Booked\n\n");
+
+                    break;
+            }
+        }
+
+        String orderStatus =
+                booking.getStatus();
+
+        String title = "";
+
+        switch(orderStatus){
+
+            case "Booked":
+
+                title =
+                        "📝 BOOKING CONFIRMED";
+
+                break;
+
+            case "PickedUp":
+
+                title =
+                        "🚚 ITEMS PICKED UP";
+
+                break;
+
+            case "Returned":
+
+                title =
+                        "✅ ITEMS RETURNED";
+
+                break;
+
+            case "Cancelled":
+
+                title =
+                        "❌ BOOKING CANCELLED";
+
+                break;
+
+            default:
+
+                title =
+                        "📦 BOOKING UPDATE";
+        }
+
+        double pending =
+                booking.getTotalRent()
+                        - booking.getRentPaid();
+
+
+
+        StringBuilder message =
+                new StringBuilder();
+
+        message.append(
+                "✨ *SVADHA COLLECTION* ✨\n\n"
+        );
+
+        message.append(title)
+                .append("\n\n");
+
+        message.append("👤 Customer : ")
+                .append(booking.getName())
+                .append("\n");
+
+        message.append("🆔 Order ID : ")
+                .append(booking.getOrderId())
+                .append("\n\n");
+
+        message.append("📦 Items\n")
+                .append(itemsBuilder)
+                .append("\n");
+
+        message.append(
+                "━━━━━━━━━━━━━━\n\n"
+        );
+
+        message.append(
+                        "💰 Total Rent : ₹ "
+                )
+                .append(String.format(
+                        Locale.getDefault(),
+                        "%.0f",
+                        booking.getTotalRent()
+                ))
+                .append("\n");
+
+        message.append(
+                        "💳 Rent Paid : ₹ "
+                )
+                .append(String.format(
+                        Locale.getDefault(),
+                        "%.0f",
+                        booking.getRentPaid()
+                ))
+                .append("\n");
+
+        message.append(
+                        "🔐 Total Deposit : ₹ "
+                )
+                .append(String.format(
+                        Locale.getDefault(),
+                        "%.0f",
+                        booking.getDeposit()
+                ))
+                .append("\n\n");
+
+        message.append(
+                "\n\n🙏 Thank you for choosing Svadha Collection"
+        );
+
+        try{
+
+            String url =
+
+                    "https://wa.me/91"
+
+                            + phone
+
+                            + "?text="
+
+                            + Uri.encode(
+                            message.toString()
+                    );
+
+            Intent intent =
+                    new Intent(
+                            Intent.ACTION_VIEW,
+                            Uri.parse(url)
+                    );
+
             startActivity(intent);
-        } catch (Exception e) {
-            Toast.makeText(this, "WhatsApp not installed", Toast.LENGTH_SHORT).show();
+
+        }catch(Exception e){
+
+            Toast.makeText(
+
+                    this,
+
+                    "WhatsApp not installed",
+
+                    Toast.LENGTH_SHORT
+
+            ).show();
         }
     }
-
-
     private void renderItemTimeline(ArrayList<RentalBooking.ItemStatus> items,
                                     long pickupMs,
                                     long returnMs){
@@ -970,79 +1654,95 @@ public class ReturnDetailActivity extends AppCompatActivity {
                     );
 
 
+            TextView tvItemNo = row.findViewById(R.id.tvItemNo);
 
-            TextView tvItemNo =
-                    row.findViewById(R.id.tvItemNo);
+            TextView tvItemName = row.findViewById(R.id.tvItemName);
 
-            TextView tvItemName =
-                    row.findViewById(R.id.tvItemName);
+            TextView tvItemStatus = row.findViewById(R.id.tvItemStatus);
 
-            TextView tvItemStatus =
-                    row.findViewById(R.id.tvItemStatus);
+            TextView tvPickup = row.findViewById(R.id.tvPickup);
 
-            TextView tvPickup =
-                    row.findViewById(R.id.tvPickup);
+            TextView tvReturn = row.findViewById(R.id.tvReturn);
 
-            TextView tvReturn =
-                    row.findViewById(R.id.tvReturn);
+            TextView tvWash = row.findViewById(R.id.tvWash);
 
-            TextView tvWash =
-                    row.findViewById(R.id.tvWash);
+            TextView tvBalance = row.findViewById(R.id.tvBalance);
 
-            TextView tvBalance =
-                    row.findViewById(R.id.tvBalance);
+            TextView tvBalanceLabel = row.findViewById( R.id.tvBalanceLabel );
 
-            TextView tvDeposit =
-                    row.findViewById(R.id.tvDeposit);
+            TextView tvDeposit = row.findViewById(R.id.tvDeposit);
 
-            tvItemNo.setText(
-                    item.getItemNo()
-            );
+            TextView tvRentPaid = row.findViewById(R.id.tvRentPaid);
 
-            tvItemName.setText(
-                    item.getItemName()
-            );
+            tvItemNo.setText(item.getItemNo());
 
-            tvPickup.setText(
-                    format.format(
-                            new Date(item.getPickupMs())
-                    )
-            );
+            tvItemName.setText(item.getItemName());
 
-            tvReturn.setText(
-                    format.format(
-                            new Date(item.getReturnMs())
-                    )
-            );
+            tvPickup.setText(format.format(new Date(item.getPickupMs())));
 
-            tvWash.setText(
-                    format.format(
-                            new Date(item.getWashMs())
-                    )
-            );
+            tvReturn.setText(format.format(new Date(item.getReturnMs())));
 
-            tvBalance.setText(
-                    "₹ " + String.format(
-                            "%.0f",
-                            item.getBalance()
-                    )
-            );
+            tvWash.setText(format.format(new Date(item.getWashMs())));
 
-            tvDeposit.setText(
-                    "₹ " + String.format(
-                            "%.0f",
-                            item.getDeposit()
-                    )
-            );
+            if(item.getStatus().equalsIgnoreCase("Returned")
+                    ||
+                    item.getStatus().equalsIgnoreCase("Cancelled")){
+
+                double refund =
+
+                        item.getRefundedDeposit()
+
+                                + item.getRefundedRent();
+
+                tvBalance.setText(
+
+                        "₹ " +
+
+                                String.format(
+                                        "%.0f",
+                                        refund
+                                )
+                );
+
+                tvBalance.setTextColor(
+                        Color.parseColor("#2E7D32")
+                );
+
+                tvBalanceLabel.setText(
+                        "REFUND"
+                );
+            }
+
+            else{
+
+                tvBalance.setText(
+
+                        "₹ " +
+
+                                String.format(
+                                        "%.0f",
+                                        item.getBalance()
+                                )
+                );
+
+                tvBalanceLabel.setText(
+                        "PENDING"
+                );
+
+                tvBalance.setTextColor(
+                        Color.parseColor("#D32F2F")
+                );
+            }
+
+            tvRentPaid.setText("₹ " + String.format("%.0f", item.getRentPaid()));
+
+            tvDeposit.setText("₹ " + String.format("%.0f", item.getDeposit()));
 
             String status = item.getStatus();
 
-            GradientDrawable bg =
-                    (GradientDrawable)
+            GradientDrawable bg = (GradientDrawable)
 
-                            tvItemStatus
-                                    .getBackground()
-                                    .mutate();
+                    tvItemStatus.getBackground().mutate();
 
             int color;
 
