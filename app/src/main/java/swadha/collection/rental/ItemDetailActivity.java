@@ -134,8 +134,73 @@ public class ItemDetailActivity extends AppCompatActivity {
                 String newRent = etRent.getText().toString().trim();
                 String newDeposit = etDeposit.getText().toString().trim();
 
-                if (newName.isEmpty()) {
-                    Toast.makeText(this, "Item name required", Toast.LENGTH_SHORT).show();
+                if(newName.isEmpty()){
+
+                    etName.setError(
+                            "Required"
+                    );
+
+                    return;
+                }
+
+                if(newName.length() < 2){
+
+                    etName.setError(
+                            "Too short"
+                    );
+
+                    return;
+                }
+
+                double rentValue;
+
+                try{
+
+                    rentValue = Double.parseDouble(
+                            newRent
+                    );
+
+                }catch (Exception e){
+
+                    etRent.setError(
+                            "Invalid amount"
+                    );
+
+                    return;
+                }
+
+                if(rentValue <= 0){
+
+                    etRent.setError(
+                            "Must be greater than 0"
+                    );
+
+                    return;
+                }
+
+                double depositValue;
+
+                try{
+
+                    depositValue = Double.parseDouble(
+                            newDeposit
+                    );
+
+                }catch (Exception e){
+
+                    etDeposit.setError(
+                            "Invalid amount"
+                    );
+
+                    return;
+                }
+
+                if(depositValue < 0){
+
+                    etDeposit.setError(
+                            "Cannot be negative"
+                    );
+
                     return;
                 }
 
@@ -213,7 +278,6 @@ public class ItemDetailActivity extends AppCompatActivity {
                                         if(item == null)
                                             continue;
 
-                                        // ignore completed
                                         if("Returned".equalsIgnoreCase(
                                                 item.status
                                         )
@@ -236,10 +300,24 @@ public class ItemDetailActivity extends AppCompatActivity {
                                         generateCalendarGrid();
                                     }
 
+                                })
+
+                                .addOnFailureListener(e -> {
+
+                                    processed[0]++;
+
+                                    if(processed[0]
+                                            >= totalOrders){
+
+                                        generateCalendarGrid();
+                                    }
                                 });
+
                     }
 
                 });
+
+
     }
 
     private void generateCalendarGrid(){
@@ -277,7 +355,7 @@ public class ItemDetailActivity extends AppCompatActivity {
         // NEXT 30 DAYS
         // =========================
 
-        for(int i = 0; i < 90; i++){
+        for(int i = 0; i < 45; i++){
             View cell = getLayoutInflater()
 
                     .inflate(
@@ -574,6 +652,14 @@ public class ItemDetailActivity extends AppCompatActivity {
     }
     private void showLoading() {
 
+        if(progressDialog != null
+                &&
+                progressDialog.isShowing()){
+
+            return;
+        }
+
+
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.HORIZONTAL);
         layout.setPadding(50,50,50,50);
@@ -792,7 +878,29 @@ public class ItemDetailActivity extends AppCompatActivity {
                                         break;
                                     }
 
+
                                     if(hasActiveItem){
+
+                                        boolean alreadyAdded = false;
+
+                                        for(CurrentBookingModel m : list){
+
+                                            if(m.getOrderId().equals(
+                                                    order.orderId
+                                            )){
+
+                                                alreadyAdded = true;
+
+                                                break;
+                                            }
+                                        }
+
+                                        if(alreadyAdded){
+
+                                            processed[0]++;
+
+                                            return;
+                                        }
 
                                         list.add(
 

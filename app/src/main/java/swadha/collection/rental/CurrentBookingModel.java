@@ -49,6 +49,10 @@ public class CurrentBookingModel {
     public String getItemNo() {
         return itemNo;
     }
+    public String getOrderId() {
+
+        return orderId;
+    }
 
     public String getName() { return name; }
     public String getPhone() { return phone; }

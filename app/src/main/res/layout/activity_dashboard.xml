@@ -75,12 +75,12 @@
             android:id="@+id/tvReturnCount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="10dp"
             android:layout_marginStart="24dp"
             android:fontFamily="sans-serif-condensed-light"
             android:text="00"
             android:textColor="#1A1C1E"
-            android:textSize="72sp"
+            android:textSize="60sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/titleBarBackground" />
 
@@ -88,7 +88,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:layout_marginBottom="22dp"
+            android:layout_marginBottom="15sp"
             android:letterSpacing="0.2"
             android:text="RETURNS"
             android:textColor="#8E8E93"
@@ -105,7 +105,7 @@
             android:fontFamily="sans-serif-condensed-light"
             android:text="00"
             android:textColor="#800020"
-            android:textSize="72sp"
+            android:textSize="60dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="@id/tvReturnCount" />
 
@@ -113,7 +113,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:layout_marginBottom="22dp"
+            android:layout_marginBottom="15sp"
             android:letterSpacing="0.2"
             android:text="PICKUPS"
             android:textColor="#8E8E93"
@@ -125,9 +125,11 @@
         <androidx.appcompat.widget.SearchView
             android:id="@+id/searchView"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="46dp"
             android:layout_marginHorizontal="24dp"
             android:layout_marginTop="12dp"
+            android:padding="0dp"
+            android:minHeight="0dp"
             android:background="@drawable/bg_soft_search"
             app:iconifiedByDefault="false"
             app:queryHint="Track code or mobile..."
@@ -139,7 +141,7 @@
             android:id="@+id/labelList"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="10dp"
             android:letterSpacing="0.2"
             android:text="UPCOMING TIMELINE"
             android:textColor="#BDBDBD"
@@ -157,6 +159,51 @@
             android:paddingBottom="100dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintTop_toBottomOf="@id/labelList" />
+
+        <LinearLayout
+            android:id="@+id/layoutEmptyTips"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="24dp"
+            android:background="@drawable/bg_premium_card"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:padding="24dp"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/searchView"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <TextView
+                android:id="@+id/tvTipEmoji"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="👗"
+                android:textSize="42sp"/>
+
+            <TextView
+                android:id="@+id/tvTipTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="Fashion Tip"
+                android:textColor="#212121"
+                android:textSize="18sp"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/tvTipText"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:gravity="center"
+                android:lineSpacingExtra="4dp"
+                android:text="Silk outfits should always be stored in breathable garment covers."
+                android:textColor="#616161"
+                android:textSize="14sp"/>
+
+        </LinearLayout>
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/fabNewBooking"

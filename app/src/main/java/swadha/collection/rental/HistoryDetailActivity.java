@@ -15,34 +15,37 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.gson.Gson;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 public class HistoryDetailActivity extends AppCompatActivity {
 
-    TextView tvOrderId, tvItemNo, tvCustomer, tvPhone,tvTotalRent, tvRentPaid, tvDeposit;
+    TextView tvOrderId,tvTotalRent, tvRentPaid, tvDeposit,tvCustomerHeader,tvPhoneHeader,tvStatus;
 
     LinearLayout layoutItemsTimeline;
-    private RelativeLayout layoutPendingBalance;
     MaterialCardView btnSendWhatsapp;
-
-    private TextView tvPendingBalance,tvAlternatePhone;
+    private MaterialButton btnCallCustomer;
+    private TextView tvAlternatePhone;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_history_detail);
+
+
 
         String json = getIntent().getStringExtra("data");
 
         OrderHistoryModel m =
                 new Gson().fromJson(json, OrderHistoryModel.class);
 
-        TextView tvAlternatePhone =
+        tvAlternatePhone =
                 findViewById(
                         R.id.tvAlternatePhone
                 );
@@ -52,27 +55,36 @@ public class HistoryDetailActivity extends AppCompatActivity {
 
         addTimelineItems(m.items);
 
-        layoutPendingBalance =
-                findViewById(
-                        R.id.layoutPendingBalance
-                );
-
-        tvPendingBalance =
-                findViewById(
-                        R.id.tvPendingBalance
-                );
-
 
 
         Log.d("TEST123", new Gson().toJson(m));
 
         // Bind views
         tvOrderId = findViewById(R.id.tvOrderId);
+        tvStatus =
+                findViewById(R.id.tvStatus);
 
-        tvItemNo = findViewById(R.id.tvItemNo);
-        tvCustomer = findViewById(R.id.tvCustomer);
-        tvPhone = findViewById(R.id.tvPhone);
+
+        tvCustomerHeader =
+                findViewById(
+                        R.id.tvCustomerHeader
+                );
+
+        tvPhoneHeader =
+                findViewById(
+                        R.id.tvPhoneHeader
+                );
+
+        tvAlternatePhone =
+                findViewById(
+                        R.id.tvAlternatePhone
+                );
         btnSendWhatsapp = findViewById(R.id.btnSendWhatsapp);
+        btnCallCustomer =
+                findViewById(
+                        R.id.btnCallCustomer
+                );
+
 
         tvTotalRent = findViewById(R.id.tvTotalRent);
 
@@ -84,22 +96,46 @@ public class HistoryDetailActivity extends AppCompatActivity {
                 R.id.tvOrderDeposit
         );
 
+        TextView tvRefundAmount =
+                findViewById(
+                        R.id.tvRefundAmount
+                );
+
+
+
+        double totalDepositRefund = 0;
+
+        for(OrderHistoryModel.HistoryItem item
+                : m.items){
+
+            totalDepositRefund +=
+                    item.refundedDeposit;
+        }
+
+        tvRefundAmount.setText(
+
+                "₹ " + totalDepositRefund
+
+        );
+
         // Set values
         tvOrderId.setText(m.orderId);
 
-        // ✅ SHOW ITEMS
-        List<String> itemNos = new ArrayList<>();
-
-        for (OrderHistoryModel.HistoryItem item : m.items) {
-            itemNos.add(item.itemNo);
-        }
-
-        tvItemNo.setText(
-                TextUtils.join(", ", itemNos)
+        tvStatus.setText(
+                m.status.toUpperCase()
         );
-        tvCustomer.setText(m.customerName);
-        tvPhone.setText(m.phone);
 
+
+
+        // ✅ SHOW ITEMS
+
+        tvCustomerHeader.setText(
+                m.customerName
+        );
+
+        tvPhoneHeader.setText(
+                m.phone
+        );
         if(m.alternatePhone != null
                 &&
                 !m.alternatePhone.isEmpty()){
@@ -130,23 +166,20 @@ public class HistoryDetailActivity extends AppCompatActivity {
                 "₹ " + m.totalDeposit
         );
 
-        if(m.balanceRent > 0){
 
-            layoutPendingBalance.setVisibility(
-                    View.VISIBLE
+        btnCallCustomer.setOnClickListener(v -> {
+
+            Intent intent = new Intent(
+
+                    Intent.ACTION_DIAL,
+
+                    Uri.parse(
+                            "tel:" + m.phone
+                    )
             );
 
-            tvPendingBalance.setText(
-
-                    "₹ " + m.balanceRent
-            );
-
-        }else{
-
-            layoutPendingBalance.setVisibility(
-                    View.GONE
-            );
-        }
+            startActivity(intent);
+        });
 
         btnSendWhatsapp.setOnClickListener(v -> {
 
@@ -172,13 +205,18 @@ public class HistoryDetailActivity extends AppCompatActivity {
                     icon = "❌";
                 }
 
+
+                double pending =
+
+                        item.customRent
+                                - item.rentPaid;
+
                 itemsText
 
                         .append(icon)
-
-                        .append(" ")
-
-                        .append(item.itemNo);
+                        .append(" *")
+                        .append(item.itemNo)
+                        .append("*");
 
                 if(item.itemName != null
                         &&
@@ -187,17 +225,71 @@ public class HistoryDetailActivity extends AppCompatActivity {
                     itemsText
 
                             .append(" - ")
-
                             .append(item.itemName);
                 }
 
                 itemsText
 
-                        .append(" (")
-
+                        .append("\n")
+                        .append("Status : ")
                         .append(item.status)
+                        .append("\n");
 
-                        .append(")");
+                // =========================
+                // REFUNDED ITEM
+                // =========================
+
+                if(item.status.equalsIgnoreCase(
+                        "Returned"
+                )
+                        ||
+                        item.status.equalsIgnoreCase(
+                                "Cancelled"
+                        )){
+
+                    itemsText
+
+                            .append("Refunded : ₹")
+                            .append(item.totalRefund)
+                            .append("\n");
+
+                    itemsText
+
+                            .append("Rent Paid : ₹")
+                            .append(item.rentPaid)
+                            .append("\n");
+
+                    itemsText
+
+                            .append("Deposit Refunded : ₹")
+                            .append(item.refundedDeposit)
+                            .append("\n");
+                }
+
+                // =========================
+                // ACTIVE ITEM
+                // =========================
+
+                else{
+
+                    itemsText
+
+                            .append("Pending : ₹")
+                            .append(pending)
+                            .append("\n");
+
+                    itemsText
+
+                            .append("Rent Paid : ₹")
+                            .append(item.rentPaid)
+                            .append("\n");
+
+                    itemsText
+
+                            .append("Deposit : ₹")
+                            .append(item.customDeposit)
+                            .append("\n");
+                }
 
                 itemsText.append("\n");
             }
@@ -210,25 +302,29 @@ public class HistoryDetailActivity extends AppCompatActivity {
                             + m.customerName
                             + ",\n\n"
 
-                            + "Your rental booking has been updated successfully.\n\n"
+                            + "Your booking summary is below.\n\n"
 
                             + "*Order ID:* "
                             + m.orderId
                             + "\n\n"
 
-                            + "*Items:*\n"
-                            + itemsText
-                            + "\n"
+                            + "━━━━━━━━━━━━━━\n"
 
-                            + "*Total Rental:* ₹"
+                            + itemsText
+
+                            + "━━━━━━━━━━━━━━\n\n"
+
+                            + "*Order Summary*\n"
+
+                            + "Total Rent : ₹"
                             + m.totalRent
                             + "\n"
 
-                            + "*Collected:* ₹"
+                            + "Collected : ₹"
                             + m.totalRentPaid
                             + "\n"
 
-                            + "*Deposit Refunded:* ₹"
+                            + "Deposit Refund : ₹"
                             + m.refundAmount
                             + "\n";
 
@@ -236,10 +332,15 @@ public class HistoryDetailActivity extends AppCompatActivity {
 
                 message +=
 
-                        "\n*Pending Balance:* ₹"
+                        "Pending Balance : ₹"
                                 + m.balanceRent
                                 + "\n";
             }
+
+            message +=
+
+                    "\n📞 Contact : "
+                            + m.phone;
 
             if(m.alternatePhone != null
                     &&
@@ -247,17 +348,13 @@ public class HistoryDetailActivity extends AppCompatActivity {
 
                 message +=
 
-                        "📞 Alternate : "
-                                + m.alternatePhone
-                                + "\n";
+                        "\n📞 Alternate : "
+                                + m.alternatePhone;
             }
 
             message +=
 
-                    "\nThank you for choosing *Svadha Collection* 💛"
-
-                            + "\nWe look forward to serving you again.";
-
+                    "\n\nThank you for choosing *Svadha Collection* 💛";
             Intent intent = new Intent(
                     Intent.ACTION_VIEW
             );
@@ -295,6 +392,20 @@ public class HistoryDetailActivity extends AppCompatActivity {
                     layoutItemsTimeline,
                     false
             );
+            TextView tvBalanceLabel =
+                    v.findViewById(
+                            R.id.tvBalanceLabel
+                    );
+
+            TextView tvDepositLabel =
+                    v.findViewById(
+                            R.id.tvDepositLabel
+                    );
+
+            TextView tvRentPaidLabel =
+                    v.findViewById(
+                            R.id.tvRentPaidLabel
+                    );
 
             TextView tvItemCode =
                     v.findViewById(R.id.tvItemNo);
@@ -337,14 +448,23 @@ public class HistoryDetailActivity extends AppCompatActivity {
                     formatDateTime(item.returnMs)
             );
 
-            tvWash.setText(
-                    formatDateTime(item.washMs)
-            );
+            if(item.status.equalsIgnoreCase(
+                    "Cancelled"
+            )){
 
-            double balancePerItem =
+                tvReturn.setText(
+                        "Cancelled"
+                );
 
-                    item.customRent
-                            - item.rentPaid;
+                tvWash.setText("-");
+
+            }else{
+
+                tvWash.setText(
+                        formatDateTime(item.washMs)
+                );
+            }
+
             double pendingRent =
 
                     item.customRent
@@ -365,39 +485,81 @@ public class HistoryDetailActivity extends AppCompatActivity {
 
             if(refunded){
 
-                tvBalance.setText(
+                if(item.status.equalsIgnoreCase(
+                        "Cancelled"
+                )){
 
-                        "Refunded ₹ "
-                                + item.totalRefund
+                    tvBalanceLabel.setText(
+                            "Refunded"
+                    );
+                }
+                else if(item.status.equalsIgnoreCase(
+                        "Returned"
+                )){
+
+                    tvBalanceLabel.setText(
+                            "Pending"
+                    );
+                }
+
+                tvDepositLabel.setText(
+                        "Deposit Refunded"
+                );
+            }
+            else{
+
+                tvBalanceLabel.setText(
+                        "Pending"
                 );
 
-                tvDeposit.setText(
+                tvDepositLabel.setText(
+                        "Deposit"
+                );
+            }
 
-                        "Deposit Refunded ₹ "
-                                + item.refundedDeposit
+            if(item.status.equalsIgnoreCase(
+                    "Cancelled"
+            )){
+
+                tvBalance.setText(
+                        "₹ " + item.totalRefund
+                );
+            }
+            else if(item.status.equalsIgnoreCase(
+                    "Returned"
+            )){
+
+                tvBalance.setText(
+                        "₹ 0"
                 );
             }
             else{
 
                 tvBalance.setText(
-
-                        "Pending ₹ "
-                                + pendingRent
-                );
-
-                tvDeposit.setText(
-
-                        "Deposit ₹ "
-                                + item.customDeposit
+                        "₹ " + pendingRent
                 );
             }
 
-            tvRentPaid.setText(
+            tvDeposit.setText(
 
-                    "Rent Paid ₹ "
-                            + item.rentPaid
+                    refunded
+
+                            ?
+
+                            "₹ " + item.refundedDeposit
+
+                            :
+
+                            "₹ " + item.customDeposit
             );
 
+            tvRentPaidLabel.setText(
+                    "Rent Paid"
+            );
+
+            tvRentPaid.setText(
+                    "₹ " + item.rentPaid
+            );
             GradientDrawable bg =
                     (GradientDrawable)
 

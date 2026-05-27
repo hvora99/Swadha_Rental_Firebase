@@ -25,6 +25,8 @@ public class OrderHistoryModel {
 
     public long archivedAt;
 
+    public long createdAt;
+
     public String status;
 
     public double refundAmount;

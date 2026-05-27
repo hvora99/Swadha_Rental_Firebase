@@ -1,5 +1,7 @@
 package swadha.collection.rental;
 
+import static android.text.format.DateUtils.formatDateTime;
+
 import android.content.Intent;
 
 import android.content.res.ColorStateList;
@@ -53,7 +55,7 @@ public class ReturnDetailActivity extends AppCompatActivity {
     private static final String ACTION_PICKUP = "pickup";
     private static final String ACTION_RETURN = "return";
     private static final String ACTION_CANCEL = "cancel";
-
+    private TextView tvBookingTime;
     private FirebaseReturnRepository
             returnRepository;
     RentalBooking booking ;
@@ -105,7 +107,10 @@ public class ReturnDetailActivity extends AppCompatActivity {
         TextView tvPhoneHeader =
                 findViewById(R.id.tvPhoneHeader);
 
-
+        tvBookingTime =
+                findViewById(
+                        R.id.tvBookingTime
+                );
 
         TextView tvAlternatePhone =
                 findViewById(
@@ -180,9 +185,27 @@ public class ReturnDetailActivity extends AppCompatActivity {
         );
         tvOrder.setText(orderId != null ? orderId : "Order ID: N/A");
 
-
         SimpleDateFormat format =
-                new SimpleDateFormat("dd MMM yyyy HH:mm", Locale.getDefault());
+
+                new SimpleDateFormat(
+                        "dd MMM yyyy, hh:mm a",
+                        Locale.getDefault()
+                );
+
+
+        tvBookingTime.setText(
+
+                "Booked on: "
+
+                        +
+
+                        format.format(
+                                new Date(
+                                        booking.getCreatedAt()
+                                )
+                        )
+        );
+
 
 
         tvTotal.setText("₹ " + String.format("%.2f", totalRent));
@@ -810,8 +833,10 @@ public class ReturnDetailActivity extends AppCompatActivity {
 
                             if(action.equals(ACTION_PICKUP)){
 
-                                rentAmount +=
-                                        selected.getBalance();
+                                rentAmount += Math.max(
+                                        0,
+                                        selected.getBalance()
+                                );
                             }
 
                             else if(action.equals(ACTION_RETURN)){
@@ -895,40 +920,79 @@ public class ReturnDetailActivity extends AppCompatActivity {
 
                     return;
                 }
+                double refundedRent = 0;
 
-                double refundedRent =
+                try{
 
-                        etRefundRent
-                                .getText()
-                                .toString()
-                                .trim()
-                                .isEmpty()
+                    String rentText =
 
-                                ? 0
+                            etRefundRent
+                                    .getText()
+                                    .toString()
+                                    .trim();
 
-                                : Double.parseDouble(
+                    if(!rentText.isEmpty()){
 
-                                etRefundRent
-                                        .getText()
-                                        .toString()
-                        );
+                        refundedRent =
+                                Double.parseDouble(
+                                        rentText
+                                );
+                    }
 
-                double refundedDeposit =
+                }catch (Exception e){
 
-                        etRefundDeposit
-                                .getText()
-                                .toString()
-                                .trim()
-                                .isEmpty()
+                    etRefundRent.setError(
+                            "Invalid amount"
+                    );
 
-                                ? 0
+                    return;
+                }
 
-                                : Double.parseDouble(
+                if(refundedRent < 0){
 
-                                etRefundDeposit
-                                        .getText()
-                                        .toString()
-                        );
+                    etRefundRent.setError(
+                            "Cannot be negative"
+                    );
+
+                    return;
+                }
+
+                double refundedDeposit = 0;
+
+                try{
+
+                    String depositText =
+
+                            etRefundDeposit
+                                    .getText()
+                                    .toString()
+                                    .trim();
+
+                    if(!depositText.isEmpty()){
+
+                        refundedDeposit =
+                                Double.parseDouble(
+                                        depositText
+                                );
+                    }
+
+                }catch (Exception e){
+
+                    etRefundDeposit.setError(
+                            "Invalid amount"
+                    );
+
+                    return;
+                }
+
+                if(refundedDeposit < 0){
+
+                    etRefundDeposit.setError(
+                            "Cannot be negative"
+                    );
+
+                    return;
+                }
 
                 if(action.equals(ACTION_PICKUP)){
 
@@ -1323,6 +1387,13 @@ public class ReturnDetailActivity extends AppCompatActivity {
 
     private void showLoading(String message){
 
+        if(loadingDialog != null
+                &&
+                loadingDialog.isShowing()){
+
+            return;
+        }
+
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
         builder.setCancelable(false);
@@ -1682,8 +1753,18 @@ public class ReturnDetailActivity extends AppCompatActivity {
 
             tvReturn.setText(format.format(new Date(item.getReturnMs())));
 
-            tvWash.setText(format.format(new Date(item.getWashMs())));
+            if(item.getWashMs() > 0){
 
+                tvWash.setText(
+                        format.format(
+                                new Date(item.getWashMs())
+                        )
+                );
+            }
+            else{
+
+                tvWash.setText("-");
+            }
             if(item.getStatus().equalsIgnoreCase("Returned")
                     ||
                     item.getStatus().equalsIgnoreCase("Cancelled")){
@@ -1791,6 +1872,14 @@ public class ReturnDetailActivity extends AppCompatActivity {
 
             layoutItemTimeline.addView(row);
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+
+        super.onDestroy();
+
+        hideLoading();
     }
 
 }

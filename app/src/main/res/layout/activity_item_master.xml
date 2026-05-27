@@ -36,7 +36,7 @@
         android:background="@drawable/bg_minimal_line"
         android:drawableStart="@android:drawable/ic_menu_search"
         android:drawablePadding="12dp"
-        android:hint="Search Item No or Name..."
+        android:hint="Search item code, name or status"
         android:paddingHorizontal="16dp"
         android:textSize="15sp"
         android:textColorHint="#9E9E9E"

@@ -28,7 +28,8 @@ public class ItemActivity extends AppCompatActivity {
     // Make sure this URL matches your script URL
 
     private FirebaseItemRepository repository;
-
+    private List<ItemModel> filteredList =
+            new ArrayList<>();
     private AlertDialog progressDialog;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,16 +39,109 @@ public class ItemActivity extends AppCompatActivity {
 
         repository = new FirebaseItemRepository();
 
+        EditText etSearch =
+                findViewById(R.id.etItemSearch);
+
+        etSearch.addTextChangedListener(
+
+                new android.text.TextWatcher() {
+
+                    @Override
+                    public void beforeTextChanged(
+                            CharSequence s,
+                            int start,
+                            int count,
+                            int after
+                    ) {
+
+                    }
+
+                    @Override
+                    public void onTextChanged(
+                            CharSequence s,
+                            int start,
+                            int before,
+                            int count
+                    ) {
+
+                        filterItems(
+                                s.toString()
+                        );
+                    }
+
+                    @Override
+                    public void afterTextChanged(
+                            android.text.Editable s
+                    ) {
+
+                    }
+                }
+        );
+
         RecyclerView rv = findViewById(R.id.rvItems);
         rv.setLayoutManager(new GridLayoutManager(this, 2));
 
 
-        adapter = new ItemAdapter(itemList);
+        adapter = new ItemAdapter(filteredList);
         rv.setAdapter(adapter);
 
         listenToItems();
 
         findViewById(R.id.fabAddItem).setOnClickListener(v -> showAddItemDialog());
+    }
+
+    private void filterItems(String query){
+
+        filteredList.clear();
+
+        query = query
+                .trim()
+                .toLowerCase();
+
+        if(query.isEmpty()){
+
+            filteredList.addAll(itemList);
+
+        }else{
+
+            for(ItemModel item : itemList){
+
+                boolean matchCode =
+
+                        item.getItemNo()
+
+                                .toLowerCase()
+
+                                .contains(query);
+
+                boolean matchName =
+
+                        item.getItemName()
+
+                                .toLowerCase()
+
+                                .contains(query);
+
+                boolean matchStatus =
+
+                        item.getStatus()
+
+                                .toLowerCase()
+
+                                .contains(query);
+
+                if(matchCode
+                        ||
+                        matchName
+                        ||
+                        matchStatus){
+
+                    filteredList.add(item);
+                }
+            }
+        }
+
+        adapter.notifyDataSetChanged();
     }
 
 
@@ -63,6 +157,7 @@ public class ItemActivity extends AppCompatActivity {
                     ) {
 
                         itemList.clear();
+                        filteredList.clear();
 
                         for(FirebaseItemModel item : list){
 
@@ -90,7 +185,7 @@ public class ItemActivity extends AppCompatActivity {
                         }
 
                         runOnUiThread(() -> {
-
+                            filteredList.addAll(itemList);
                             adapter.notifyDataSetChanged();
                         });
                     }
@@ -188,9 +283,38 @@ public class ItemActivity extends AppCompatActivity {
                 return;
             }
 
+            if(itemNo.length() < 3){
+
+                etNo.setError(
+                        "Minimum 3 characters"
+                );
+
+                return;
+            }
+
+            if(!itemNo.matches(
+                    "[A-Z0-9]+"
+            )){
+
+                etNo.setError(
+                        "Only letters and numbers allowed"
+                );
+
+                return;
+            }
+
             if(itemName.isEmpty()){
 
                 etName.setError("Required");
+
+                return;
+            }
+
+            if(itemName.length() < 2){
+
+                etName.setError(
+                        "Too short"
+                );
 
                 return;
             }
@@ -202,9 +326,70 @@ public class ItemActivity extends AppCompatActivity {
                 return;
             }
 
+            double rent;
+
+            try{
+
+                rent = Double.parseDouble(
+                        rentText
+                );
+
+            }catch (Exception e){
+
+                etRent.setError(
+                        "Invalid amount"
+                );
+
+                return;
+            }
+
+            if(rent <= 0){
+
+                etRent.setError(
+                        "Must be greater than 0"
+                );
+
+                return;
+            }
+
+            if(rent > 100000){
+
+                etRent.setError(
+                        "Too large"
+                );
+
+                return;
+            }
+
             if(depositText.isEmpty()){
 
                 etDeposit.setError("Required");
+
+                return;
+            }
+
+            double deposit;
+
+            try{
+
+                deposit = Double.parseDouble(
+                        depositText
+                );
+
+            }catch (Exception e){
+
+                etDeposit.setError(
+                        "Invalid amount"
+                );
+
+                return;
+            }
+
+            if(deposit < 0){
+
+                etDeposit.setError(
+                        "Cannot be negative"
+                );
 
                 return;
             }
@@ -264,15 +449,9 @@ public class ItemActivity extends AppCompatActivity {
 
                         item.itemName = itemName;
 
-                        item.rent =
-                                Double.parseDouble(
-                                        rentText
-                                );
+                        item.rent = rent;
 
-                        item.deposit =
-                                Double.parseDouble(
-                                        depositText
-                                );
+                        item.deposit = deposit;
 
                         item.requiresWash =
                                 cbWash.isChecked();

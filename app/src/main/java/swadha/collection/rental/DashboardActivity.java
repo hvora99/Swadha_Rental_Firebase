@@ -2,7 +2,9 @@ package swadha.collection.rental;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
@@ -35,7 +37,9 @@ public class DashboardActivity extends AppCompatActivity {
     private FirebaseDashboardRepository
             dashboardRepository;
 
+    private LinearLayout layoutEmptyTips;
 
+    private TextView tvTipText;
     // Put your URL here once so you don't have to keep pasting it
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,8 +112,10 @@ public class DashboardActivity extends AppCompatActivity {
 
             drawerLayout.closeDrawers();
 
+
             return true;
         });
+
 
 
         rvDailyReturns = findViewById(R.id.rvDailyReturns);
@@ -150,10 +156,40 @@ public class DashboardActivity extends AppCompatActivity {
             }
         });
 
+        layoutEmptyTips =
+                findViewById(
+                        R.id.layoutEmptyTips
+                );
+
+        tvTipText =
+                findViewById(
+                        R.id.tvTipText
+                );
+
         loadDailyStats();
     }
 
 
+    private final String[] fashionTips = {
+
+            "👗 Heavy embroidery outfits should always be folded inside-out to protect stone work.",
+
+            "🧼 Velvet dresses should never be ironed directly. Use steam only.",
+
+            "✨ Customers trust rental shops more when outfits smell fresh and premium.",
+
+            "📦 Store lehengas in cotton bags instead of plastic covers to avoid moisture damage.",
+
+            "💎 Jewelry matching suggestions can increase repeat bookings.",
+
+            "🪡 Always inspect hooks and chains before giving outfits for pickup.",
+
+            "📸 Taking outfit photos before delivery helps avoid damage disputes.",
+
+            "🌸 Premium fragrance on packaging creates luxury customer experience.",
+
+            "👠 Bridal customers usually book matching accessories at the last moment."
+    };
     @Override
     protected void onResume() {
 
@@ -188,6 +224,7 @@ public class DashboardActivity extends AppCompatActivity {
                         bookingList.clear();
 
                         bookingList.addAll(bookings);
+                        //bookingList.clear();
 
                         Collections.sort(
 
@@ -225,6 +262,39 @@ public class DashboardActivity extends AppCompatActivity {
                         adapter.refreshData(
                                 bookingList
                         );
+
+                        if(bookingList.isEmpty()){
+
+                            rvDailyReturns.setVisibility(
+                                    View.GONE
+                            );
+
+                            layoutEmptyTips.setVisibility(
+                                    View.VISIBLE
+                            );
+
+                            int random =
+
+                                    new java.util.Random()
+
+                                            .nextInt(
+                                                    fashionTips.length
+                                            );
+
+                            tvTipText.setText(
+                                    fashionTips[random]
+                            );
+
+                        }else{
+
+                            rvDailyReturns.setVisibility(
+                                    View.VISIBLE
+                            );
+
+                            layoutEmptyTips.setVisibility(
+                                    View.GONE
+                            );
+                        }
 
                         updateDashboardStats();
                     }

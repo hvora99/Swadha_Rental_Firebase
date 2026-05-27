@@ -96,6 +96,9 @@ public class FirebaseDashboardRepository {
 
                                                         order.status
                                                 );
+                                        booking.setCreatedAt(
+                                                order.createdAt
+                                        );
 
                                         bookingList.add(booking);
                                     }

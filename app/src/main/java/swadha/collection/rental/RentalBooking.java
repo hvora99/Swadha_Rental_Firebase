@@ -16,7 +16,7 @@ public class RentalBooking {
     private long washMs;
     private long actualPickupMs;
      private double refundAmount;
-
+    private long createdAt;
     private double totalRent;
     private double deposit;
     private double rentPaid;
@@ -64,7 +64,17 @@ public class RentalBooking {
     }
 
 
+    public long getCreatedAt() {
 
+        return createdAt;
+    }
+
+    public void setCreatedAt(
+            long createdAt
+    ){
+
+        this.createdAt = createdAt;
+    }
 
             public String getItemsString(){
 
