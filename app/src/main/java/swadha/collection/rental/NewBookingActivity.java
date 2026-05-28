@@ -85,6 +85,7 @@ public class NewBookingActivity extends AppCompatActivity {
         etCustomerName = findViewById(R.id.etCustomerName);
         etPhone = findViewById(R.id.etPhone);
         etTotalRent = findViewById(R.id.etTotalRent);
+        etTotalRent.setEnabled(false);
         btnPickDate = findViewById(R.id.btnPickDate);
         btnReturnDate = findViewById(R.id.btnReturnDate);
         btnPickTime = findViewById(R.id.btnPickTime); // New
@@ -1173,14 +1174,32 @@ public class NewBookingActivity extends AppCompatActivity {
 
         String name = etCustomerName.getText().toString().trim();
         String phone = etPhone.getText().toString().trim();
-        String totalStr = etTotalRent.getText().toString().trim();
+        if(!phone.matches("[0-9]{10}")){
+
+            etPhone.setError(
+                    "Enter valid 10 digit mobile number"
+            );
+
+            etPhone.requestFocus();
+
+            return;
+        }
         String Alternatephon = etAlternatePhone.getText().toString().trim();
 
-        // Get rent paid now
-        double rentPaidValue = getCurrencyValue(RentPaidNow);
+        if(!Alternatephon.isEmpty()
 
-        // Get deposit collected
+                &&
 
+                !Alternatephon.matches("[0-9]{10}")){
+
+            etAlternatePhone.setError(
+                    "Enter valid 10 digit number"
+            );
+
+            etAlternatePhone.requestFocus();
+
+            return;
+        }
 
 
         // 2. Final Client-Side Validation

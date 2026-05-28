@@ -55,7 +55,7 @@ public class ReturnDetailActivity extends AppCompatActivity {
     private static final String ACTION_PICKUP = "pickup";
     private static final String ACTION_RETURN = "return";
     private static final String ACTION_CANCEL = "cancel";
-    private TextView tvBookingTime;
+    private TextView tvBookingTime,tvBalance,tvAdvance;
     private FirebaseReturnRepository
             returnRepository;
     RentalBooking booking ;
@@ -123,9 +123,9 @@ public class ReturnDetailActivity extends AppCompatActivity {
         Log.d("DETAIL_DEBUG", "Received timestamp: " + bookingTimestamp);
 
 
-        TextView tvBalance = findViewById(R.id.detBalance);
+        tvBalance = findViewById(R.id.detBalance);
         TextView tvTotal = findViewById(R.id.detTotal);
-        TextView tvAdvance = findViewById(R.id.detAdvance);
+        tvAdvance = findViewById(R.id.detAdvance);
         TextView tvDeposit = findViewById(R.id.detDeposit);
         TextView tvStatus = findViewById(R.id.tvStatus);
         TextView tvOrder = findViewById(R.id.tvOrderId);
@@ -333,20 +333,7 @@ public class ReturnDetailActivity extends AppCompatActivity {
             );
         }
 
-        double rentDue = totalRent - rentPaid;
 
-        if (rentDue > 0) {
-
-            tvBalance.setTextColor(Color.parseColor("#D32F2F"));
-            tvBalance.setText("Collect ₹ " + String.format("%.2f", rentDue));
-
-        } else {
-
-            double refund = deposit + Math.abs(rentDue);
-
-            tvBalance.setTextColor(Color.parseColor("#2E7D32"));
-            tvBalance.setText("Refund ₹ " + String.format("%.2f", refund));
-        }
 
 
         loadOrderItems();
@@ -490,6 +477,72 @@ public class ReturnDetailActivity extends AppCompatActivity {
 
                                 0
                         );
+
+                        double activePending = 0;
+
+                        double totalRefund = 0;
+
+                        for(RentalBooking.ItemStatus item
+                                : itemsList){
+
+                            if(item.getStatus().equalsIgnoreCase("Cancelled")){
+
+                                totalRefund +=
+                                        item.getRefundedRent()
+                                                +
+                                                item.getRefundedDeposit();
+
+                                continue;
+                            }
+
+                            if(item.getStatus().equalsIgnoreCase("Returned")){
+
+                                totalRefund +=
+                                        item.getRefundedDeposit();
+
+                                continue;
+                            }
+
+                            activePending +=
+                                    item.getBalance();
+                        }
+
+                        if(activePending > 0){
+
+                            tvBalance.setTextColor(
+                                    Color.parseColor("#D32F2F")
+                            );
+
+                            tvBalance.setText(
+
+                                    "Collect ₹ "
+
+                                            +
+
+                                            String.format(
+                                                    "%.2f",
+                                                    activePending
+                                            )
+                            );
+
+                        }else{
+
+                            tvBalance.setTextColor(
+                                    Color.parseColor("#2E7D32")
+                            );
+
+                            tvBalance.setText(
+
+                                    "Refund ₹ "
+
+                                            +
+
+                                            String.format(
+                                                    "%.2f",
+                                                    totalRefund
+                                            )
+                            );
+                        }
 
                         updateButtonStates();
                     }
@@ -735,17 +788,11 @@ public class ReturnDetailActivity extends AppCompatActivity {
 
             etRefundDeposit.setAlpha(1f);
         }
+        ReturnSelectAdapter adapter =
 
-        ArrayAdapter<String> adapter =
-
-                new ArrayAdapter<>(
-
+                new ReturnSelectAdapter(
                         this,
-
-                        android.R.layout
-                                .simple_list_item_multiple_choice,
-
-                        itemNames
+                        items
                 );
 
         listView.setAdapter(adapter);
@@ -796,6 +843,7 @@ public class ReturnDetailActivity extends AppCompatActivity {
         listView.setOnItemClickListener(
 
                 (parent, v, position, id) -> {
+                    adapter.notifyDataSetChanged();
 
                     RentalBooking.ItemStatus item =
                             items.get(position);

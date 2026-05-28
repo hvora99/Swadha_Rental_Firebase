@@ -23,6 +23,10 @@
             android:id="@+id/menuBackup"
             android:title="Backup Restore"
             android:icon="@drawable/ic_backup"/>
+        <item
+            android:id="@+id/navLogout"
+            android:icon="@drawable/ic_logout"
+            android:title="Logout"/>
 
     </group>
 

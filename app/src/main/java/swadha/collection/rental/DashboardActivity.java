@@ -16,6 +16,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import com.google.android.material.navigation.NavigationView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.auth.FirebaseAuth;
 
 import androidx.appcompat.widget.SearchView;
 import java.util.ArrayList;
@@ -109,6 +110,32 @@ public class DashboardActivity extends AppCompatActivity {
 
 
             }
+            else if(item.getItemId()
+                    == R.id.navLogout){
+
+                FirebaseAuth
+                        .getInstance()
+                        .signOut();
+
+                Intent intent =
+                        new Intent(
+                                DashboardActivity.this,
+                                LoginActivity.class
+                        );
+
+                intent.setFlags(
+
+                        Intent.FLAG_ACTIVITY_NEW_TASK
+                                |
+                                Intent.FLAG_ACTIVITY_CLEAR_TASK
+                );
+
+                startActivity(intent);
+
+                finish();
+            }
+
+
 
             drawerLayout.closeDrawers();
 
