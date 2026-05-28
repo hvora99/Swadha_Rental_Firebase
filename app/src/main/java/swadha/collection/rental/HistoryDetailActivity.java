@@ -12,7 +12,9 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.button.MaterialButton;
@@ -166,21 +168,94 @@ public class HistoryDetailActivity extends AppCompatActivity {
                 "₹ " + m.totalDeposit
         );
 
-
         btnCallCustomer.setOnClickListener(v -> {
 
-            Intent intent = new Intent(
+            String primary =
+                    m.phone;
 
-                    Intent.ACTION_DIAL,
+            String alternate =
+                    m.alternatePhone;
 
-                    Uri.parse(
-                            "tel:" + m.phone
+            ArrayList<String> numbers =
+                    new ArrayList<>();
+
+            if(primary != null
+                    &&
+                    !primary.trim().isEmpty()){
+
+                numbers.add(
+                        "Primary : " + primary
+                );
+            }
+
+            if(alternate != null
+                    &&
+                    !alternate.trim().isEmpty()){
+
+                numbers.add(
+                        "Alternate : " + alternate
+                );
+            }
+
+            if(numbers.isEmpty()){
+
+                Toast.makeText(
+
+                        HistoryDetailActivity.this,
+
+                        "No phone number found",
+
+                        Toast.LENGTH_SHORT
+
+                ).show();
+
+                return;
+            }
+
+            String[] items =
+                    numbers.toArray(
+                            new String[0]
+                    );
+
+            new AlertDialog.Builder(HistoryDetailActivity.this)
+
+                    .setTitle(
+                            "Call Customer"
                     )
-            );
 
-            startActivity(intent);
+                    .setItems(items,
+
+                            (dialog, which) -> {
+
+                                String selected =
+                                        items[which];
+
+                                String number =
+                                        selected.replace(
+                                                "Primary : ",
+                                                ""
+                                        ).replace(
+                                                "Alternate : ",
+                                                ""
+                                        );
+
+                                Intent intent =
+                                        new Intent(
+
+                                                Intent.ACTION_DIAL,
+
+                                                Uri.parse(
+                                                        "tel:" + number
+                                                )
+                                        );
+
+                                HistoryDetailActivity.this.startActivity(
+                                        intent
+                                );
+                            })
+
+                    .show();
         });
-
         btnSendWhatsapp.setOnClickListener(v -> {
 
             StringBuilder itemsText =

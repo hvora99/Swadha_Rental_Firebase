@@ -3,6 +3,8 @@ package swadha.collection.rental;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -14,7 +16,7 @@ import com.google.firebase.auth.FirebaseAuth;
 
 public class PinActivity
         extends AppCompatActivity {
-
+    EditText etPin;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -24,7 +26,7 @@ public class PinActivity
                 R.layout.activity_pin
         );
 
-        EditText etPin =
+        etPin =
                 findViewById(R.id.etPin);
 
         MaterialButton btnUnlock =
@@ -46,39 +48,71 @@ public class PinActivity
                         ""
                 );
 
-        btnUnlock.setOnClickListener(v -> {
+        etPin.addTextChangedListener(
 
-            String enteredPin =
+                new TextWatcher() {
 
-                    etPin.getText()
-                            .toString()
-                            .trim();
+                    @Override
+                    public void beforeTextChanged(
+                            CharSequence s,
+                            int start,
+                            int count,
+                            int after
+                    ) {
 
-            if(enteredPin.equals(savedPin)){
+                    }
 
-                startActivity(
+                    @Override
+                    public void onTextChanged(
+                            CharSequence s,
+                            int start,
+                            int before,
+                            int count
+                    ) {
 
-                        new Intent(
-                                this,
-                                DashboardActivity.class
-                        )
-                );
+                        String enteredPin =
+                                s.toString().trim();
 
-                finish();
+                        if(enteredPin.length() == 4){
 
-            }else{
+                            if(enteredPin.equals(savedPin)){
 
-                Toast.makeText(
+                                startActivity(
 
-                        this,
+                                        new Intent(
+                                                PinActivity.this,
+                                                DashboardActivity.class
+                                        )
+                                );
 
-                        "Invalid PIN",
+                                finish();
 
-                        Toast.LENGTH_SHORT
+                            }else{
 
-                ).show();
-            }
-        });
+                                etPin.setText("");
+
+                                Toast.makeText(
+
+                                        PinActivity.this,
+
+                                        "Invalid PIN",
+
+                                        Toast.LENGTH_SHORT
+
+                                ).show();
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void afterTextChanged(
+                            Editable s
+                    ) {
+
+                    }
+                }
+        );
+
 
         tvUsePassword.setOnClickListener(v -> {
 

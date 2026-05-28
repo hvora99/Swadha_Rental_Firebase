@@ -7,7 +7,8 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
-
+import android.text.Editable;
+import android.text.TextWatcher;
 public class SplashActivity
         extends AppCompatActivity {
 
@@ -16,6 +17,31 @@ public class SplashActivity
 
         super.onCreate(savedInstanceState);
 
+        setContentView(
+                R.layout.activity_splash
+        );
+
+        UpdateChecker.check(
+
+                this,
+
+                new UpdateChecker.UpdateCallback() {
+
+                    @Override
+                    public void onNoUpdate() {
+
+                        openNextScreen();
+                    }
+
+                    @Override
+                    public void onUpdateShown() {
+
+                    }
+                }
+        );
+    }
+
+    private void openNextScreen(){
 
         if(FirebaseAuth
                 .getInstance()
@@ -66,5 +92,6 @@ public class SplashActivity
             );
         }
 
+        finish();
     }
 }

@@ -27,7 +27,7 @@ import java.util.List;
 public class DashboardActivity extends AppCompatActivity {
 
     private RecyclerView rvDailyReturns;
-    private TextView tvReturnCount, tvTotalBalance;
+    private TextView tvReturnCount;
     private FloatingActionButton fabNewBooking;
     private List<RentalBooking> bookingList;
     private BookingAdapter adapter; // Global variable
@@ -46,6 +46,7 @@ public class DashboardActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
+
 
         dashboardRepository =
                 new FirebaseDashboardRepository();
@@ -147,7 +148,6 @@ public class DashboardActivity extends AppCompatActivity {
 
         rvDailyReturns = findViewById(R.id.rvDailyReturns);
         tvReturnCount = findViewById(R.id.tvReturnCount);
-        tvTotalBalance = findViewById(R.id.tvTotalBalance);
         fabNewBooking = findViewById(R.id.fabNewBooking);
         tvPickupTodayCount = findViewById(R.id.tvPickupTodayCount);
 
@@ -377,7 +377,6 @@ public class DashboardActivity extends AppCompatActivity {
                 String.valueOf(todayPickup)
         );
 
-        calculateTotalBalance();
     }
 
 
@@ -484,19 +483,5 @@ public class DashboardActivity extends AppCompatActivity {
         return 6;
     }
 
-    private void calculateTotalBalance() {
 
-        double totalDue = 0;
-
-        for (RentalBooking b : bookingList) {
-
-            double rentDue = b.getTotalRent() - b.getRentPaid();
-
-            if (rentDue > 0) {
-                totalDue += rentDue;
-            }
-        }
-
-        tvTotalBalance.setText("₹ " + String.format("%.2f", totalDue));
-    }
 }

@@ -18,7 +18,7 @@ public class LoginActivity
 
     private EditText etEmail;
     private EditText etPassword;
-
+    Button btnLogin;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -34,7 +34,7 @@ public class LoginActivity
         etPassword =
                 findViewById(R.id.etPassword);
 
-        Button btnLogin =
+        btnLogin =
                 findViewById(R.id.btnLogin);
 
         TextView tvForgotPassword =
@@ -99,6 +99,28 @@ public class LoginActivity
         });
     }
 
+    private void showLoading(){
+
+        btnLogin.setEnabled(false);
+
+        btnLogin.setAlpha(0.7f);
+
+        btnLogin.setText(
+                "Please wait..."
+        );
+    }
+
+    private void hideLoading(){
+
+        btnLogin.setEnabled(true);
+
+        btnLogin.setAlpha(1f);
+
+        btnLogin.setText(
+                "LOGIN"
+        );
+    }
+
     private void login(){
 
         String email =
@@ -119,6 +141,8 @@ public class LoginActivity
 
             return;
         }
+        showLoading();
+
 
         FirebaseAuth.getInstance()
 
@@ -144,7 +168,9 @@ public class LoginActivity
 
                             .addOnSuccessListener(doc -> {
 
+
                                 if(!doc.exists()){
+                                    hideLoading();
 
                                     Toast.makeText(
                                             this,
@@ -161,6 +187,7 @@ public class LoginActivity
                                 if(active == null
                                         ||
                                         !active){
+                                    hideLoading();
 
                                     Toast.makeText(
                                             this,
@@ -206,6 +233,7 @@ public class LoginActivity
                                         );
 
                                 if(pin == null){
+                                    hideLoading();
 
                                     startActivity(
 
@@ -216,7 +244,7 @@ public class LoginActivity
                                     );
 
                                 }else{
-
+                                    hideLoading();
                                     startActivity(
 
                                             new Intent(
@@ -231,6 +259,8 @@ public class LoginActivity
 
                 })
                 .addOnFailureListener(e -> {
+
+                    hideLoading();
 
                     String error =
 

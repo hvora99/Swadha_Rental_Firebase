@@ -22,7 +22,10 @@ import android.widget.Toast;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
+import android.net.Uri;
 
+import java.util.ArrayList;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.textfield.TextInputLayout;
@@ -379,14 +382,94 @@ public class ReturnDetailActivity extends AppCompatActivity {
 
 // Call Button Logic
         Button btnCall = findViewById(R.id.btnCallCustomer);
+
         btnCall.setOnClickListener(v -> {
-            if (phone != null && !phone.isEmpty() && !phone.equals("N/A")) {
-                Intent intent = new Intent(Intent.ACTION_DIAL);
-                intent.setData(android.net.Uri.parse("tel:" + phone));
-                startActivity(intent);
-            } else {
-                Toast.makeText(this, "Phone number not available", Toast.LENGTH_SHORT).show();
+
+            String primary =
+                    booking.getPhone();
+
+            String alternate =
+                    booking.getAlternatePhone();
+
+            ArrayList<String> numbers =
+                    new ArrayList<>();
+
+            if(primary != null
+                    &&
+                    !primary.trim().isEmpty()){
+
+                numbers.add(
+                        "Primary : " + primary
+                );
             }
+
+            if(alternate != null
+                    &&
+                    !alternate.trim().isEmpty()){
+
+                numbers.add(
+                        "Alternate : " + alternate
+                );
+            }
+
+            if(numbers.isEmpty()){
+
+                Toast.makeText(
+
+                        ReturnDetailActivity.this,
+
+                        "No phone number found",
+
+                        Toast.LENGTH_SHORT
+
+                ).show();
+
+                return;
+            }
+
+            String[] items =
+                    numbers.toArray(
+                            new String[0]
+                    );
+
+            new AlertDialog.Builder(ReturnDetailActivity.this)
+
+                    .setTitle(
+                            "Call Customer"
+                    )
+
+                    .setItems(items,
+
+                            (dialog, which) -> {
+
+                                String selected =
+                                        items[which];
+
+                                String number =
+                                        selected.replace(
+                                                "Primary : ",
+                                                ""
+                                        ).replace(
+                                                "Alternate : ",
+                                                ""
+                                        );
+
+                                Intent intent =
+                                        new Intent(
+
+                                                Intent.ACTION_DIAL,
+
+                                                Uri.parse(
+                                                        "tel:" + number
+                                                )
+                                        );
+
+                                ReturnDetailActivity.this.startActivity(
+                                        intent
+                                );
+                            })
+
+                    .show();
         });
 
         MaterialButton btnWhatsapp = findViewById(R.id.btnSendWhatsapp);
@@ -478,36 +561,40 @@ public class ReturnDetailActivity extends AppCompatActivity {
                                 0
                         );
 
-                        double activePending = 0;
+                        double collectAmount = 0;
 
-                        double totalRefund = 0;
+                        double refundAmount = 0;
+
+
 
                         for(RentalBooking.ItemStatus item
                                 : itemsList){
 
-                            if(item.getStatus().equalsIgnoreCase("Cancelled")){
+                            String status =
+                                    item.getStatus();
 
-                                totalRefund +=
-                                        item.getRefundedRent()
-                                                +
-                                                item.getRefundedDeposit();
+                            // ===================================
+                            // BOOKED
+                            // ===================================
 
-                                continue;
+                            if(status.equalsIgnoreCase("Booked")){
+
+                                collectAmount +=
+                                        item.getBalance();
                             }
 
-                            if(item.getStatus().equalsIgnoreCase("Returned")){
+                            // ===================================
+                            // PICKED UP
+                            // ===================================
 
-                                totalRefund +=
-                                        item.getRefundedDeposit();
+                            else if(status.equalsIgnoreCase("PickedUp")){
 
-                                continue;
+                                refundAmount +=
+                                        item.getDeposit();
                             }
-
-                            activePending +=
-                                    item.getBalance();
                         }
 
-                        if(activePending > 0){
+                        if(collectAmount > 0){
 
                             tvBalance.setTextColor(
                                     Color.parseColor("#D32F2F")
@@ -521,11 +608,11 @@ public class ReturnDetailActivity extends AppCompatActivity {
 
                                             String.format(
                                                     "%.2f",
-                                                    activePending
+                                                    collectAmount
                                             )
                             );
-
-                        }else{
+                        }
+                        else if(refundAmount > 0){
 
                             tvBalance.setTextColor(
                                     Color.parseColor("#2E7D32")
@@ -539,11 +626,20 @@ public class ReturnDetailActivity extends AppCompatActivity {
 
                                             String.format(
                                                     "%.2f",
-                                                    totalRefund
+                                                    refundAmount
                                             )
                             );
                         }
+                        else{
 
+                            tvBalance.setTextColor(
+                                    Color.parseColor("#757575")
+                            );
+
+                            tvBalance.setText(
+                                    "Settled"
+                            );
+                        }
                         updateButtonStates();
                     }
 
@@ -1040,6 +1136,70 @@ public class ReturnDetailActivity extends AppCompatActivity {
                     );
 
                     return;
+                }
+
+                if(action.equals(ACTION_CANCEL)){
+
+                    double maxRefundRent = 0;
+
+                    for(int i=0;i<items.size();i++){
+
+                        if(listView.isItemChecked(i)){
+
+                            RentalBooking.ItemStatus item =
+                                    items.get(i);
+
+                            maxRefundRent +=
+                                    item.getRentPaid();
+                        }
+                    }
+
+                    if(action.equals(ACTION_RETURN)
+                            ||
+                            action.equals(ACTION_CANCEL)){
+
+                        double maxDepositRefund = 0;
+
+                        for(int i=0;i<items.size();i++){
+
+                            if(listView.isItemChecked(i)){
+
+                                RentalBooking.ItemStatus item =
+                                        items.get(i);
+
+                                maxDepositRefund +=
+                                        item.getDeposit();
+                            }
+                        }
+
+                        if(refundedDeposit > maxDepositRefund){
+
+                            etRefundDeposit.setError(
+
+                                    "Maximum deposit refund ₹"
+
+                                            +
+
+                                            (int)maxDepositRefund
+                            );
+
+                            return;
+                        }
+                    }
+
+                    if(refundedRent > maxRefundRent){
+
+                        etRefundRent.setError(
+
+                                "Maximum refund allowed ₹"
+
+                                        +
+
+                                        (int)maxRefundRent
+                        );
+
+                        return;
+                    }
                 }
 
                 if(action.equals(ACTION_PICKUP)){

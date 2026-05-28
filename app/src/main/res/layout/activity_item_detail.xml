@@ -382,6 +382,7 @@
                 app:tint="#C5C5C5"/>
 
             <TextView
+                android:id="@+id/tvNoBookingTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
@@ -391,15 +392,17 @@
                 android:textStyle="bold"/>
 
             <TextView
+                android:id="@+id/tvNoBookingDesc"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
+                android:gravity="center"
                 android:text="This item is currently available"
+                android:textAlignment="center"
                 android:textColor="#B0B3B8"
                 android:textSize="12sp"/>
 
         </LinearLayout>
-
     </LinearLayout>
 
 </androidx.core.widget.NestedScrollView>

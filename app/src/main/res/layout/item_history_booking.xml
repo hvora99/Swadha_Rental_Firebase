@@ -100,7 +100,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="3 Items"
+                    android:text=""
                     android:textColor="#1A1C1E"
                     android:textSize="15sp"
                     android:textStyle="bold"/>

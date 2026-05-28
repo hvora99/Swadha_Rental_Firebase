@@ -31,7 +31,6 @@ public class FirebaseDashboardRepository {
 
         void onError(String error);
     }
-
     public void listenActiveOrders(
 
             DashboardCallback callback
@@ -54,8 +53,24 @@ public class FirebaseDashboardRepository {
                                         return;
                                     }
 
+                                    if(value == null
+                                            || value.isEmpty()){
+
+                                        callback.onDataChanged(
+                                                new ArrayList<>()
+                                        );
+
+                                        return;
+                                    }
+
                                     List<RentalBooking> bookingList =
                                             new ArrayList<>();
+
+                                    final int totalOrders =
+                                            value.size();
+
+                                    final int[] processed =
+                                            {0};
 
                                     for(QueryDocumentSnapshot doc
                                             : value){
@@ -76,6 +91,7 @@ public class FirebaseDashboardRepository {
                                                         order.customerName,
 
                                                         order.phone,
+
                                                         order.alternatePhone,
 
                                                         order.pickupMs,
@@ -84,7 +100,7 @@ public class FirebaseDashboardRepository {
 
                                                         order.washBlockMs,
 
-                                                        0,
+                                                        order.actualPickupMs,
 
                                                         order.totalRent,
 
@@ -96,16 +112,87 @@ public class FirebaseDashboardRepository {
 
                                                         order.status
                                                 );
+
                                         booking.setCreatedAt(
                                                 order.createdAt
                                         );
 
-                                        bookingList.add(booking);
-                                    }
+                                        // ==========================
+                                        // LOAD ITEMS SUBCOLLECTION
+                                        // ==========================
 
-                                    callback.onDataChanged(
-                                            bookingList
-                                    );
+                                        db.collection("orders")
+
+                                                .document(order.orderId)
+
+                                                .collection("items")
+
+                                                .get()
+
+                                                .addOnSuccessListener(itemSnapshots -> {
+
+                                                    for(QueryDocumentSnapshot itemDoc
+                                                            : itemSnapshots){
+
+                                                        FirebaseOrderItemModel item =
+
+                                                                itemDoc.toObject(
+                                                                        FirebaseOrderItemModel.class
+                                                                );
+
+                                                        booking.addItem(
+
+                                                                item.itemNo,
+
+                                                                item.itemName,
+
+                                                                item.status,
+
+                                                                item.customRent,
+
+                                                                item.customDeposit,
+
+                                                                item.rentPaid,
+
+                                                                item.pickupMs,
+
+                                                                item.returnMs,
+
+                                                                item.washMs
+                                                        );
+                                                    }
+
+                                                    bookingList.add(
+                                                            booking
+                                                    );
+
+                                                    processed[0]++;
+
+                                                    if(processed[0] >= totalOrders){
+
+                                                        callback.onDataChanged(
+                                                                bookingList
+                                                        );
+                                                    }
+
+                                                })
+
+                                                .addOnFailureListener(e -> {
+
+                                                    bookingList.add(
+                                                            booking
+                                                    );
+
+                                                    processed[0]++;
+
+                                                    if(processed[0] >= totalOrders){
+
+                                                        callback.onDataChanged(
+                                                                bookingList
+                                                        );
+                                                    }
+                                                });
+                                    }
                                 });
     }
 

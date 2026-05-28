@@ -290,25 +290,84 @@
                                 100
                         );
             });
-            double totalRent = booking.getTotalRent();
-            double rentPaid = booking.getRentPaid();
-            double deposit = booking.getDeposit();
 
-            double rentDue = totalRent - rentPaid;
+            double collectAmount = 0;
 
-            if (rentDue > 0) {
+            double refundAmount = 0;
 
-                holder.tvBalance.setText("Collect ₹" + String.format("%.2f", rentDue));
-                holder.tvBalance.setTextColor(Color.parseColor("#D32F2F"));
+            for(RentalBooking.ItemStatus item
+                    : booking.getItems()){
 
-            } else {
+                String itemStatus =
+                        item.getStatus();
 
-                double refund = deposit + Math.abs(rentDue);
+                // =========================
+                // BOOKED
+                // =========================
 
-                holder.tvBalance.setText("Refund ₹" + String.format("%.2f", refund));
-                holder.tvBalance.setTextColor(Color.parseColor("#2E7D32"));
+                if(itemStatus.equalsIgnoreCase("Booked")){
+
+                    collectAmount +=
+                            item.getBalance();
+                }
+
+                // =========================
+                // PICKED UP
+                // =========================
+
+                else if(itemStatus.equalsIgnoreCase("PickedUp")){
+
+                    refundAmount +=
+                            item.getDeposit();
+                }
             }
 
+            if(collectAmount > 0){
+
+                holder.tvBalance.setText(
+
+                        "Collect ₹"
+
+                                +
+
+                                String.format(
+                                        "%.2f",
+                                        collectAmount
+                                )
+                );
+
+                holder.tvBalance.setTextColor(
+                        Color.parseColor("#D32F2F")
+                );
+            }
+            else if(refundAmount > 0){
+
+                holder.tvBalance.setText(
+
+                        "Refund ₹"
+
+                                +
+
+                                String.format(
+                                        "%.2f",
+                                        refundAmount
+                                )
+                );
+
+                holder.tvBalance.setTextColor(
+                        Color.parseColor("#2E7D32")
+                );
+            }
+            else{
+
+                holder.tvBalance.setText(
+                        "Settled"
+                );
+
+                holder.tvBalance.setTextColor(
+                        Color.parseColor("#757575")
+                );
+            }
             // 3. Handle Long Click (For the "Mark as Returned" Popup)
             holder.itemView.setOnLongClickListener(v -> {
                 if (longClickListener != null) {

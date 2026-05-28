@@ -45,22 +45,6 @@
             app:layout_constraintStart_toEndOf="@id/btnMenu"
             app:layout_constraintTop_toTopOf="@id/titleBarBackground" />
 
-        <TextView
-            android:id="@+id/tvTotalBalance"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:background="@drawable/bg_balance_badge"
-            android:paddingHorizontal="12dp"
-            android:paddingVertical="4dp"
-            android:text="₹ 14,500"
-            android:textColor="#FFFFFF"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="@id/tvAppName"
-            app:layout_constraintStart_toEndOf="@id/tvAppName"
-            app:layout_constraintTop_toTopOf="@id/tvAppName" />
-
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

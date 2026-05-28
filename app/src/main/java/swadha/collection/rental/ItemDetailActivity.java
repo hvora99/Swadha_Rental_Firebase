@@ -297,6 +297,7 @@ public class ItemDetailActivity extends AppCompatActivity {
                                     if(processed[0]
                                             >= totalOrders){
 
+
                                         generateCalendarGrid();
                                     }
 
@@ -637,7 +638,10 @@ public class ItemDetailActivity extends AppCompatActivity {
 
                     updateLockButtonUI(btnToggleLock);
 
-                    loadActiveBookings(item);                })
+
+                    loadActiveBookings(item);
+
+                })
 
                 .addOnFailureListener(e -> {
 
@@ -853,6 +857,8 @@ public class ItemDetailActivity extends AppCompatActivity {
                                     for(DocumentSnapshot itemDoc
                                             : itemQuery.getDocuments()){
 
+
+
                                         FirebaseOrderItemModel orderItem =
 
                                                 itemDoc.toObject(
@@ -861,6 +867,13 @@ public class ItemDetailActivity extends AppCompatActivity {
 
                                         if(orderItem == null)
                                             continue;
+                                        Log.d(
+                                                "ITEM_STATUS",
+                                                item.itemNo
+                                                        + " -> "
+                                                        + orderItem.status
+                                        );
+
 
                                         if("Returned".equalsIgnoreCase(
                                                 orderItem.status
@@ -938,31 +951,24 @@ public class ItemDetailActivity extends AppCompatActivity {
 
                                     processed[0]++;
 
-                                    if(processed[0]
-                                            >= totalOrders){
+                                    if(processed[0] >= totalOrders){
 
-                                        if(list.isEmpty()){
+                                        boolean hasBooking =
+                                                !list.isEmpty();
 
-                                            tvNoBooking
-                                                    .setVisibility(
-                                                            View.VISIBLE
-                                                    );
+                                        btnRemove.setEnabled(
+                                                !hasBooking
+                                        );
 
-                                            rv.setVisibility(
+                                        btnRemove.setAlpha(
+                                                hasBooking ? 0.45f : 1f
+                                        );
+
+                                        if(hasBooking){
+
+                                            tvNoBooking.setVisibility(
                                                     View.GONE
                                             );
-
-                                            MaterialCardView btnRemove =
-                                                    findViewById(R.id.btnRemoveItem);
-                                            btnRemove.setEnabled(true);
-                                            btnRemove.setAlpha(1f);
-
-                                        }else{
-
-                                            tvNoBooking
-                                                    .setVisibility(
-                                                            View.GONE
-                                                    );
 
                                             rv.setVisibility(
                                                     View.VISIBLE
@@ -970,16 +976,29 @@ public class ItemDetailActivity extends AppCompatActivity {
 
                                             rv.setAdapter(
 
-
                                                     new CurrentBookingAdapter(
                                                             list
                                                     )
                                             );
 
-                                            MaterialCardView btnRemove =
-                                                    findViewById(R.id.btnRemoveItem);
-                                            btnRemove.setEnabled(false);
-                                            btnRemove.setAlpha(0.45f);
+                                        }else{
+
+                                            tvNoBooking.setVisibility(
+                                                    View.VISIBLE
+                                            );
+
+                                            rv.setVisibility(
+                                                    View.GONE
+                                            );
+
+                                            TextView tvDesc =
+                                                    findViewById(
+                                                            R.id.tvNoBookingDesc
+                                                    );
+
+                                            tvDesc.setText(
+                                                    "This item currently has no active bookings."
+                                            );
                                         }
                                     }
 
