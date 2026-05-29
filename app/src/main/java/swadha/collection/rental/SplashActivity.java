@@ -37,6 +37,12 @@ public class SplashActivity
                     public void onUpdateShown() {
 
                     }
+
+                    @Override
+                    public void onUpdateDismissed() {
+
+                        openNextScreen();
+                    }
                 }
         );
     }

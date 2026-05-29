@@ -58,7 +58,9 @@ public class ReturnDetailActivity extends AppCompatActivity {
     private static final String ACTION_PICKUP = "pickup";
     private static final String ACTION_RETURN = "return";
     private static final String ACTION_CANCEL = "cancel";
-    private TextView tvBookingTime,tvBalance,tvAdvance;
+    private TextView tvBookingTime,tvRentRefunded,tvBalance,tvAdvance,tvDepositRefunded,tvActualRent,tvDepositHeld,tvNetBalance;
+
+
     private FirebaseReturnRepository
             returnRepository;
     RentalBooking booking ;
@@ -132,6 +134,17 @@ public class ReturnDetailActivity extends AppCompatActivity {
         TextView tvDeposit = findViewById(R.id.detDeposit);
         TextView tvStatus = findViewById(R.id.tvStatus);
         TextView tvOrder = findViewById(R.id.tvOrderId);
+
+        tvRentRefunded=findViewById(R.id.detRentRefunded);
+
+        tvDepositRefunded=findViewById(R.id.detDepositRefunded);
+
+        tvActualRent=findViewById(R.id.detActualRent);
+
+        tvDepositHeld=findViewById(R.id.detDepositHeld);
+
+        tvNetBalance=findViewById(R.id.detNetBalance);
+
         layoutItemTimeline = findViewById(R.id.layoutItemTimeline);
         btnPickedUp = findViewById(R.id.btnPickedUp);
         btnCancel = findViewById(R.id.btnCancelBooking);
@@ -565,13 +578,31 @@ public class ReturnDetailActivity extends AppCompatActivity {
 
                         double refundAmount = 0;
 
+                        double rentCollected = 0;
 
+                        double rentRefunded = 0;
+
+                        double depositCollected = 0;
+
+                        double depositRefunded = 0;
 
                         for(RentalBooking.ItemStatus item
                                 : itemsList){
 
                             String status =
                                     item.getStatus();
+
+                            rentCollected +=
+                                    item.getRentPaid();
+
+                            rentRefunded +=
+                                    item.getRefundedRent();
+
+                            depositCollected +=
+                                    item.getDeposit();
+
+                            depositRefunded +=
+                                    item.getRefundedDeposit();
 
                             // ===================================
                             // BOOKED
@@ -594,6 +625,22 @@ public class ReturnDetailActivity extends AppCompatActivity {
                             }
                         }
 
+                        double actualRentEarned = rentCollected - rentRefunded;
+
+                        double depositHeld= depositCollected - depositRefunded;
+
+                        double netBalanceWithUs = actualRentEarned + depositHeld;
+                        tvRentRefunded.setText("₹ " + String.format("%.2f", rentRefunded));
+
+                        tvDepositRefunded.setText("₹ " + String.format("%.2f", depositRefunded));
+
+                        tvActualRent.setText("₹ " + String.format("%.2f", actualRentEarned));
+
+                        tvDepositHeld.setText("₹ " + String.format("%.2f", depositHeld));
+
+                        tvNetBalance.setText( "₹ " + String.format("%.2f", netBalanceWithUs));
+
+
                         if(collectAmount > 0){
 
                             tvBalance.setTextColor(
@@ -612,6 +659,7 @@ public class ReturnDetailActivity extends AppCompatActivity {
                                             )
                             );
                         }
+
                         else if(refundAmount > 0){
 
                             tvBalance.setTextColor(
@@ -640,6 +688,9 @@ public class ReturnDetailActivity extends AppCompatActivity {
                                     "Settled"
                             );
                         }
+
+
+
                         updateButtonStates();
                     }
 
@@ -1644,128 +1695,67 @@ public class ReturnDetailActivity extends AppCompatActivity {
 
         StringBuilder itemsBuilder =
                 new StringBuilder();
-        for(RentalBooking.ItemStatus item
-                : itemsList){
 
-            String status =
-                    item.getStatus();
+        double rentRefunded = 0;
 
-            double pending =
+        double depositRefunded = 0;
 
-                    item.getCustomRent()
+        for(RentalBooking.ItemStatus item : itemsList){
 
-                            - item.getRentPaid();
+            rentRefunded +=
+                    item.getRefundedRent();
 
-            switch(status){
+            depositRefunded +=
+                    item.getRefundedDeposit();
 
-                case "Returned":
+            String icon = "📦";
 
-                    itemsBuilder
+            switch(item.getStatus()){
 
-                            .append("✅ ")
+                case "Booked":
 
-                            .append(item.getItemName())
-
-                            .append(" (")
-
-                            .append(item.getItemNo())
-
-                            .append(")")
-
-                            .append(" - Returned\n")
-
-                            .append("↳ Deposit Refunded : ₹")
-
-                            .append(String.format(
-                                    Locale.getDefault(),
-                                    "%.0f",
-                                    item.getCustomDeposit()
-                            ))
-
-                            .append("\n\n");
-
-                    break;
-
-                case "Cancelled":
-
-                    itemsBuilder
-
-                            .append("❌ ")
-
-                            .append(item.getItemName())
-
-                            .append(" (")
-
-                            .append(item.getItemNo())
-
-                            .append(")")
-                            .append(" - Cancelled\n")
-
-                            .append("↳ Refund Amount : ₹")
-
-                            .append(String.format(
-                                    Locale.getDefault(),
-                                    "%.0f",
-                                    item.getRentPaid()
-                            ))
-
-                            .append("\n\n");
+                    icon = "📝";
 
                     break;
 
                 case "PickedUp":
 
-                    itemsBuilder
-
-                            .append("🚚 ")
-
-                            .append(item.getItemName())
-
-                            .append(" (")
-
-                            .append(item.getItemNo())
-
-                            .append(")")
-                            .append(" - Picked Up\n");
-
-                    if(pending > 0){
-
-                        itemsBuilder
-
-                                .append("↳ Pending Balance : ₹")
-
-                                .append(String.format(
-                                        Locale.getDefault(),
-                                        "%.0f",
-                                        pending
-                                ))
-
-                                .append("\n");
-                    }
-
-                    itemsBuilder.append("\n");
+                    icon = "🚚";
 
                     break;
 
-                case "Booked":
+                case "Returned":
 
-                    itemsBuilder
+                    icon = "✅";
 
-                            .append("📝 ")
+                    break;
 
-                            .append(item.getItemName())
+                case "Cancelled":
 
-                            .append(" (")
-
-                            .append(item.getItemNo())
-
-                            .append(")")
-                            .append(" - Booked\n\n");
+                    icon = "❌";
 
                     break;
             }
-        }
 
+            itemsBuilder
+
+                    .append(icon)
+
+                    .append(" ")
+
+                    .append(item.getItemName())
+
+                    .append(" (")
+
+                    .append(item.getItemNo())
+
+                    .append(") - ")
+
+                    .append(item.getStatus())
+
+                    .append("\n");
+        }
+        double finalRentCost = booking.getRentPaid() - rentRefunded;
         String orderStatus =
                 booking.getStatus();
 
@@ -1842,32 +1832,74 @@ public class ReturnDetailActivity extends AppCompatActivity {
         message.append(
                         "💰 Total Rent : ₹ "
                 )
-                .append(String.format(
-                        Locale.getDefault(),
-                        "%.0f",
-                        booking.getTotalRent()
-                ))
+                .append(
+                        String.format(
+                                Locale.getDefault(),
+                                "%.0f",
+                                booking.getTotalRent()
+                        )
+                )
                 .append("\n");
 
         message.append(
                         "💳 Rent Paid : ₹ "
                 )
-                .append(String.format(
-                        Locale.getDefault(),
-                        "%.0f",
-                        booking.getRentPaid()
-                ))
+                .append(
+                        String.format(
+                                Locale.getDefault(),
+                                "%.0f",
+                                booking.getRentPaid()
+                        )
+                )
                 .append("\n");
 
         message.append(
-                        "🔐 Total Deposit : ₹ "
+                        "↩️ Rent Refunded : ₹ "
                 )
-                .append(String.format(
-                        Locale.getDefault(),
-                        "%.0f",
-                        booking.getDeposit()
-                ))
-                .append("\n\n");
+                .append(
+                        String.format(
+                                Locale.getDefault(),
+                                "%.0f",
+                                rentRefunded
+                        )
+                )
+                .append("\n");
+
+        message.append(
+                        "🔐 Deposit Paid : ₹ "
+                )
+                .append(
+                        String.format(
+                                Locale.getDefault(),
+                                "%.0f",
+                                booking.getDeposit()
+                        )
+                )
+                .append("\n");
+
+        message.append(
+                        "↩️ Deposit Refunded : ₹ "
+                )
+                .append(
+                        String.format(
+                                Locale.getDefault(),
+                                "%.0f",
+                                depositRefunded
+                        )
+                )
+                .append("\n");
+
+        message.append(
+                        "✅ Final Rent Cost : ₹ "
+                )
+                .append(
+                        String.format(
+                                Locale.getDefault(),
+                                "%.0f",
+                                finalRentCost
+                        )
+                )
+                .append("\n");
 
         message.append(
                 "\n\n🙏 Thank you for choosing Svadha Collection"

@@ -296,7 +296,7 @@
                         <TextView
                             android:id="@+id/lblPaid"
                             android:layout_marginTop="12dp"
-                            android:text="Rent Paid ₹"
+                            android:text="Advance Rent Paid "
                             android:textColor="#667085"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toBottomOf="@id/detDeposit"
@@ -312,6 +312,114 @@
                             app:layout_constraintTop_toTopOf="@id/lblPaid"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content" />
+
+                        <!-- Rent Refunded -->
+
+                        <TextView
+                            android:id="@+id/lblRentRefunded"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:text="Rent Refunded"
+                            android:textColor="#667085"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/detAdvance"/>
+
+                        <TextView
+                            android:id="@+id/detRentRefunded"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="₹ 0"
+                            android:textColor="#D32F2F"
+                            android:textStyle="bold"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="@id/lblRentRefunded"/>
+
+                        <!-- Deposit Refunded -->
+
+                        <TextView
+                            android:id="@+id/lblDepositRefunded"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:text="Deposit Refunded"
+                            android:textColor="#667085"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/lblRentRefunded"/>
+
+                        <TextView
+                            android:id="@+id/detDepositRefunded"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="₹ 0"
+                            android:textColor="#D32F2F"
+                            android:textStyle="bold"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="@id/lblDepositRefunded"/>
+
+                        <!-- Actual Rent Earned -->
+
+                        <TextView
+                            android:id="@+id/lblActualRent"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:text="Actual Rent We Have"
+                            android:textColor="#667085"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/lblDepositRefunded"/>
+
+                        <TextView
+                            android:id="@+id/detActualRent"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="₹ 0"
+                            android:textColor="#2E7D32"
+                            android:textStyle="bold"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="@id/lblActualRent"/>
+
+                        <!-- Deposit Held -->
+
+                        <TextView
+                            android:id="@+id/lblDepositHeld"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:text="Deposit We have"
+                            android:textColor="#667085"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/lblActualRent"/>
+
+                        <TextView
+                            android:id="@+id/detDepositHeld"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="₹ 0"
+                            android:textColor="#3949AB"
+                            android:textStyle="bold"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="@id/lblDepositHeld"/>
+
+                        <TextView
+                            android:id="@+id/lblNetBalance"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:text="Net Balance With Us"
+                            android:textColor="#667085"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/lblDepositHeld"/>
+
+                        <TextView
+                            android:id="@+id/detNetBalance"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="₹ 0"
+                            android:textColor="#1565C0"
+                            android:textStyle="bold"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="@id/lblNetBalance"/>
 
 
                     </androidx.constraintlayout.widget.ConstraintLayout>

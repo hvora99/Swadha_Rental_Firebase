@@ -4,26 +4,23 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
+import android.app.ProgressDialog;
+import android.os.Environment;
+import android.widget.Toast;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.json.JSONObject;
 
 import java.io.IOException;
 
 import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
-import android.app.DownloadManager;
-import android.content.BroadcastReceiver;
-import android.content.IntentFilter;
-import android.os.Build;
-import android.os.Environment;
-
-import androidx.core.content.FileProvider;
-
-import java.io.File;
 
 public class UpdateChecker {
 
@@ -55,6 +52,13 @@ public class UpdateChecker {
                             Call call,
                             IOException e
                     ) {
+
+                        ((android.app.Activity) context)
+
+                                .runOnUiThread(() -> {
+
+                                    callback.onNoUpdate();
+                                });
                     }
 
                     @Override
@@ -93,16 +97,7 @@ public class UpdateChecker {
                                             Context.MODE_PRIVATE
                                     );
 
-                            boolean updating =
 
-                                    pref.getBoolean(
-                                            "update_in_progress",
-                                            false
-                                    );
-
-                            if(updating){
-                                return;
-                            }
                             if(!latestVersion.equals(
                                     currentVersion
                             )){
@@ -138,21 +133,11 @@ public class UpdateChecker {
                                                     )
 
                                                     .setCancelable(true)
-
                                                     .setPositiveButton(
 
                                                             "Update",
 
                                                             (d,w) -> {
-
-                                                                pref.edit()
-
-                                                                        .putBoolean(
-                                                                                "update_in_progress",
-                                                                                true
-                                                                        )
-
-                                                                        .apply();
 
                                                                 downloadAndInstall(
                                                                         context,
@@ -163,7 +148,12 @@ public class UpdateChecker {
 
                                                             "Later",
 
-                                                            (d,w) -> d.dismiss()
+                                                            (d,w) -> {
+
+                                                                d.dismiss();
+
+                                                                callback.onUpdateDismissed();
+                                                            }
                                                     )
 
                                                     .show();
@@ -179,20 +169,20 @@ public class UpdateChecker {
                                         });
                             }
 
-                        }catch (Exception ignored){
-                        }
+                        }catch (Exception e){
+
+                        ((android.app.Activity) context)
+
+                                .runOnUiThread(() -> {
+
+                                    callback.onNoUpdate();
+                                });
+                    }
                     }
                 });
 
 
     }
-    public interface UpdateCallback{
-
-        void onNoUpdate();
-
-        void onUpdateShown();
-    }
-
 
     private static void downloadAndInstall(
 
@@ -200,166 +190,225 @@ public class UpdateChecker {
 
             String apkUrl
     ){
-        File oldFile =
 
-                new File(
+        ProgressDialog progressDialog =
 
-                        context.getExternalFilesDir(
-                                Environment.DIRECTORY_DOWNLOADS
-                        ),
+                new ProgressDialog(context);
 
-                        "swadha_update.apk"
-                );
-
-        if(oldFile.exists()){
-
-            oldFile.delete();
-        }
-
-        DownloadManager.Request request =
-
-                new DownloadManager.Request(
-                        Uri.parse(apkUrl)
-                );
-
-        request.setTitle(
-                "Swadha Update"
+        progressDialog.setTitle(
+                "Downloading Update"
         );
 
-        request.setDescription(
-                "Downloading latest version..."
+        progressDialog.setProgressStyle(
+                ProgressDialog.STYLE_HORIZONTAL
         );
 
-        request.setNotificationVisibility(
+        progressDialog.setCancelable(false);
 
-                DownloadManager.Request
+        progressDialog.setMax(100);
 
-                        .VISIBILITY_VISIBLE_NOTIFY_COMPLETED
-        );
+        progressDialog.show();
 
-        File apkFile =
+        new Thread(() -> {
 
-                new File(
+            try{
 
-                        context.getExternalFilesDir(
-                                Environment.DIRECTORY_DOWNLOADS
-                        ),
+                File folder =
 
-                        "swadha_update.apk"
-                );
+                        new File(
 
-        request.setDestinationUri(
-                Uri.fromFile(apkFile)
-        );
+                                Environment
+                                        .getExternalStoragePublicDirectory(
+                                                Environment.DIRECTORY_DOCUMENTS
+                                        ),
 
-        DownloadManager manager =
-
-                (DownloadManager)
-
-                        context.getSystemService(
-                                Context.DOWNLOAD_SERVICE
+                                "Svadha"
                         );
 
-        long downloadId =
-                manager.enqueue(request);
+                if(!folder.exists()){
 
-        BroadcastReceiver receiver =
+                    folder.mkdirs();
+                }
 
-                new BroadcastReceiver() {
+                File apkFile =
 
-                    @Override
-                    public void onReceive(
-                            Context ctx,
-                            Intent intent
-                    ) {
+                        new File(
+                                folder,
+                                "swadha_latest.apk"
+                        );
 
-                        long id =
+                OkHttpClient client =
+                        new OkHttpClient();
 
-                                intent.getLongExtra(
+                Request request =
 
-                                        DownloadManager
-                                                .EXTRA_DOWNLOAD_ID,
+                        new Request.Builder()
 
-                                        -1
+                                .url(apkUrl)
+
+                                .build();
+
+                Response response =
+
+                        client.newCall(request)
+
+                                .execute();
+
+                if(response.body() == null){
+
+                    throw new Exception(
+                            "Download failed"
+                    );
+                }
+
+                long fileSize =
+
+                        response.body()
+                                .contentLength();
+
+                InputStream inputStream =
+
+                        response.body()
+                                .byteStream();
+
+                FileOutputStream outputStream =
+
+                        new FileOutputStream(
+                                apkFile
+                        );
+
+                byte[] buffer =
+                        new byte[8192];
+
+                long totalBytes =
+                        0;
+
+                int count;
+
+                while((count =
+                        inputStream.read(buffer))
+                        != -1){
+
+                    totalBytes += count;
+
+                    outputStream.write(
+                            buffer,
+                            0,
+                            count
+                    );
+
+                    final int progress =
+
+                            (int)(
+                                    totalBytes
+                                            * 100
+                                            / fileSize
+                            );
+
+                    ((android.app.Activity)
+                            context)
+
+                            .runOnUiThread(() -> {
+
+                                progressDialog.setProgress(
+                                        progress
                                 );
+                            });
+                }
 
-                        if(id == downloadId){
-                            File file =
+                outputStream.flush();
 
-                                    new File(
+                outputStream.close();
 
-                                            context.getExternalFilesDir(
-                                                    Environment.DIRECTORY_DOWNLOADS
-                                            ),
+                inputStream.close();
 
-                                            "swadha_update.apk"
-                                    );
+                android.media.MediaScannerConnection
+                        .scanFile(
 
-                            Uri uri =
+                                context,
 
-                                    FileProvider.getUriForFile(
+                                new String[]{
+                                        apkFile.getAbsolutePath()
+                                },
 
-                                            context,
+                                null,
 
-                                            context.getPackageName()
-                                                    + ".provider",
+                                null
+                        );
 
-                                            file
-                                    );
+                ((android.app.Activity)
+                        context)
 
-                            Intent installIntent =
+                        .runOnUiThread(() -> {
 
-                                    new Intent(
-                                            Intent.ACTION_VIEW
-                                    );
+                            progressDialog.dismiss();
 
-                            installIntent.setDataAndType(
+                            new AlertDialog.Builder(
+                                    context
+                            )
 
-                                    uri,
+                                    .setTitle(
+                                            "Download Complete"
+                                    )
 
-                                    "application/vnd.android.package-archive"
-                            );
+                                    .setMessage(
 
-                            installIntent.addFlags(
+                                            "APK saved successfully.\n\n"
 
-                                    Intent.FLAG_ACTIVITY_NEW_TASK
-                            );
+                                                    + apkFile
+                                                    .getAbsolutePath()
 
-                            installIntent.addFlags(
+                                                    + "\n\nPlease install manually from Documents/Svadha folder."
+                                    )
 
-                                    Intent.FLAG_GRANT_READ_URI_PERMISSION
-                            );
+                                    .setPositiveButton(
 
-                            context.startActivity(
-                                    installIntent
-                            );
-                        }
-                    }
-                };
+                                            "OK",
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
+                                            (d,w) -> {
 
-            context.registerReceiver(
+                                                ((android.app.Activity)
+                                                        context)
 
-                    receiver,
+                                                        .finish();
+                                            }
+                                    )
 
-                    new IntentFilter(
-                            DownloadManager.ACTION_DOWNLOAD_COMPLETE
-                    ),
+                                    .show();
+                        });
 
-                    Context.RECEIVER_NOT_EXPORTED
-            );
+            }catch (Exception e){
 
-        }else{
+                ((android.app.Activity)
+                        context)
 
-            context.registerReceiver(
+                        .runOnUiThread(() -> {
 
-                    receiver,
+                            progressDialog.dismiss();
 
-                    new IntentFilter(
-                            DownloadManager.ACTION_DOWNLOAD_COMPLETE
-                    )
-            );
-        }
+                            Toast.makeText(
+
+                                    context,
+
+                                    "Download Failed : "
+                                            + e.getMessage(),
+
+                                    Toast.LENGTH_LONG
+
+                            ).show();
+                        });
+            }
+
+        }).start();
     }
+    public interface UpdateCallback{
+
+        void onNoUpdate();
+
+        void onUpdateShown();
+
+        void onUpdateDismissed();
+    }
+
+
 }

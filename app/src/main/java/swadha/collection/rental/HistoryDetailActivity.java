@@ -29,8 +29,19 @@ import java.util.Locale;
 
 public class HistoryDetailActivity extends AppCompatActivity {
 
-    TextView tvOrderId,tvTotalRent, tvRentPaid, tvDeposit,tvCustomerHeader,tvPhoneHeader,tvStatus;
+    TextView tvOrderId;
+    TextView tvTotalRent;
+    TextView tvRentPaid;
+    TextView tvDeposit;
 
+    TextView tvRentRefunded;
+    TextView tvActualRent;
+    TextView tvDepositHeld;
+    TextView tvNetBalance;
+
+    TextView tvCustomerHeader;
+    TextView tvPhoneHeader;
+    TextView tvStatus;
     LinearLayout layoutItemsTimeline;
     MaterialCardView btnSendWhatsapp;
     private MaterialButton btnCallCustomer;
@@ -63,81 +74,89 @@ public class HistoryDetailActivity extends AppCompatActivity {
 
         // Bind views
         tvOrderId = findViewById(R.id.tvOrderId);
-        tvStatus =
-                findViewById(R.id.tvStatus);
+        tvStatus=findViewById( R.id.tvStatus );
 
 
-        tvCustomerHeader =
-                findViewById(
-                        R.id.tvCustomerHeader
-                );
+        tvCustomerHeader=findViewById( R.id.tvCustomerHeader );
 
-        tvPhoneHeader =
-                findViewById(
-                        R.id.tvPhoneHeader
-                );
+        tvPhoneHeader=findViewById( R.id.tvPhoneHeader );
 
-        tvAlternatePhone =
-                findViewById(
-                        R.id.tvAlternatePhone
-                );
-        btnSendWhatsapp = findViewById(R.id.btnSendWhatsapp);
-        btnCallCustomer =
-                findViewById(
-                        R.id.btnCallCustomer
-                );
+        tvAlternatePhone=findViewById( R.id.tvAlternatePhone );
+        btnSendWhatsapp=findViewById( R.id.btnSendWhatsapp );
+        btnCallCustomer=findViewById( R.id.btnCallCustomer );
 
 
-        tvTotalRent = findViewById(R.id.tvTotalRent);
+        tvTotalRent=findViewById( R.id.tvTotalRent );
 
-        tvRentPaid = findViewById(
-                R.id.tvOrderRentPaid
-        );
+        tvRentPaid=findViewById( R.id.tvOrderRentPaid );
 
-        tvDeposit = findViewById(
-                R.id.tvOrderDeposit
-        );
+        tvDeposit=findViewById( R.id.tvOrderDeposit );
 
-        TextView tvRefundAmount =
-                findViewById(
-                        R.id.tvRefundAmount
-                );
+        tvRentRefunded=findViewById( R.id.tvRentRefunded );
 
+        tvActualRent=findViewById( R.id.tvActualRent );
 
+        tvDepositHeld=findViewById( R.id.tvDepositHeld );
+
+        tvNetBalance=findViewById( R.id.tvNetBalance );
+
+        TextView tvRefundAmount=findViewById( R.id.tvRefundAmount );
+
+        double totalRentRefund = 0;
 
         double totalDepositRefund = 0;
 
         for(OrderHistoryModel.HistoryItem item
                 : m.items){
 
-            totalDepositRefund +=
-                    item.refundedDeposit;
+            totalRentRefund+=item.refundedRent;
+
+            totalDepositRefund+=item.refundedDeposit;
         }
+
+        double actualRentEarned=
+
+                m.totalRentPaid - totalRentRefund;
+
+        double depositHeld=
+
+                m.totalDeposit - totalDepositRefund;
+
+        double netBalanceWithUs=
+
+                actualRentEarned + depositHeld;
 
         tvRefundAmount.setText(
 
-                "₹ " + totalDepositRefund
+                "₹ " + totalDepositRefund );
 
-        );
+        tvRentRefunded.setText(
+
+                "₹ " + totalRentRefund );
+
+        tvActualRent.setText(
+
+                "₹ " + actualRentEarned );
+
+        tvDepositHeld.setText(
+
+                "₹ " + depositHeld );
+
+        tvNetBalance.setText(
+
+                "₹ " + netBalanceWithUs );
 
         // Set values
-        tvOrderId.setText(m.orderId);
+        tvOrderId.setText( m.orderId );
 
-        tvStatus.setText(
-                m.status.toUpperCase()
-        );
-
+        tvStatus.setText( m.status.toUpperCase() );
 
 
         // ✅ SHOW ITEMS
 
-        tvCustomerHeader.setText(
-                m.customerName
-        );
+        tvCustomerHeader.setText( m.customerName );
 
-        tvPhoneHeader.setText(
-                m.phone
-        );
+        tvPhoneHeader.setText( m.phone );
         if(m.alternatePhone != null
                 &&
                 !m.alternatePhone.isEmpty()){
@@ -261,10 +280,20 @@ public class HistoryDetailActivity extends AppCompatActivity {
             StringBuilder itemsText =
                     new StringBuilder();
 
+            double rentRefunded = 0;
+
+            double depositRefunded = 0;
+
             for(OrderHistoryModel.HistoryItem item
                     : m.items){
 
-                String icon = "•";
+                rentRefunded +=
+                        item.refundedRent;
+
+                depositRefunded +=
+                        item.refundedDeposit;
+
+                String icon = "📦";
 
                 if(item.status.equalsIgnoreCase(
                         "Returned"
@@ -272,102 +301,47 @@ public class HistoryDetailActivity extends AppCompatActivity {
 
                     icon = "✅";
                 }
-
                 else if(item.status.equalsIgnoreCase(
                         "Cancelled"
                 )){
 
                     icon = "❌";
                 }
+                else if(item.status.equalsIgnoreCase(
+                        "PickedUp"
+                )){
 
+                    icon = "🚚";
+                }
+                else if(item.status.equalsIgnoreCase(
+                        "Booked"
+                )){
 
-                double pending =
-
-                        item.customRent
-                                - item.rentPaid;
+                    icon = "📝";
+                }
 
                 itemsText
 
                         .append(icon)
-                        .append(" *")
+
+                        .append(" ")
+
+                        .append(item.itemName)
+
+                        .append(" (")
+
                         .append(item.itemNo)
-                        .append("*");
 
-                if(item.itemName != null
-                        &&
-                        !item.itemName.isEmpty()){
+                        .append(") - ")
 
-                    itemsText
-
-                            .append(" - ")
-                            .append(item.itemName);
-                }
-
-                itemsText
-
-                        .append("\n")
-                        .append("Status : ")
                         .append(item.status)
+
                         .append("\n");
-
-                // =========================
-                // REFUNDED ITEM
-                // =========================
-
-                if(item.status.equalsIgnoreCase(
-                        "Returned"
-                )
-                        ||
-                        item.status.equalsIgnoreCase(
-                                "Cancelled"
-                        )){
-
-                    itemsText
-
-                            .append("Refunded : ₹")
-                            .append(item.totalRefund)
-                            .append("\n");
-
-                    itemsText
-
-                            .append("Rent Paid : ₹")
-                            .append(item.rentPaid)
-                            .append("\n");
-
-                    itemsText
-
-                            .append("Deposit Refunded : ₹")
-                            .append(item.refundedDeposit)
-                            .append("\n");
-                }
-
-                // =========================
-                // ACTIVE ITEM
-                // =========================
-
-                else{
-
-                    itemsText
-
-                            .append("Pending : ₹")
-                            .append(pending)
-                            .append("\n");
-
-                    itemsText
-
-                            .append("Rent Paid : ₹")
-                            .append(item.rentPaid)
-                            .append("\n");
-
-                    itemsText
-
-                            .append("Deposit : ₹")
-                            .append(item.customDeposit)
-                            .append("\n");
-                }
-
-                itemsText.append("\n");
             }
+            double finalRentCost =
+
+                    m.totalRentPaid
+                            - rentRefunded;
 
             String message =
 
@@ -389,18 +363,30 @@ public class HistoryDetailActivity extends AppCompatActivity {
 
                             + "━━━━━━━━━━━━━━\n\n"
 
-                            + "*Order Summary*\n"
+                            + "*Order Summary*\n\n"
 
-                            + "Total Rent : ₹"
+                            + "💰 Total Rent : ₹"
                             + m.totalRent
                             + "\n"
 
-                            + "Collected : ₹"
+                            + "💳 Rent Paid : ₹"
                             + m.totalRentPaid
                             + "\n"
 
-                            + "Deposit Refund : ₹"
-                            + m.refundAmount
+                            + "↩️ Rent Refunded : ₹"
+                            + rentRefunded
+                            + "\n"
+
+                            + "🔐 Deposit Paid : ₹"
+                            + m.totalDeposit
+                            + "\n"
+
+                            + "↩️ Deposit Refunded : ₹"
+                            + depositRefunded
+                            + "\n"
+
+                            + "✅ Final Rent Cost : ₹"
+                            + finalRentCost
                             + "\n";
 
             if(m.balanceRent > 0){
@@ -412,20 +398,7 @@ public class HistoryDetailActivity extends AppCompatActivity {
                                 + "\n";
             }
 
-            message +=
 
-                    "\n📞 Contact : "
-                            + m.phone;
-
-            if(m.alternatePhone != null
-                    &&
-                    !m.alternatePhone.isEmpty()){
-
-                message +=
-
-                        "\n📞 Alternate : "
-                                + m.alternatePhone;
-            }
 
             message +=
 
